@@ -95,6 +95,9 @@ public abstract class ViewModelVisitor extends FileUtilities implements IViewMod
 	public abstract void printDetailFragment_onCreate(MClass theClass);
 	
 	@Override
+	public abstract void printDetailFragment_onSaveInstanceState(MClass cls);
+	
+	@Override
 	public abstract void printDetailFragment_onDestroy(MClass theClass);
 	
 	@Override
@@ -113,13 +116,13 @@ public abstract class ViewModelVisitor extends FileUtilities implements IViewMod
 	public abstract void printDetailFragment_SetInputMethod(MClass theClass);
 	
 	@Override
-	public abstract void printDetailFragment_getViewDetail(MClass theClass);
+	public abstract void printDetailFragment_setViewDetailData(MClass theClass);
 	
 	@Override
 	public abstract void printDetailFragment_ActionViewDetail(MClass theClass);
 	
 	@Override
-	public abstract void printDetailFragment_getViewNewOrEdit(MClass theClass);
+	public abstract void printDetailFragment_setViewNewOrEditData(MClass theClass);
 
 	@Override
 	public abstract void printDetailFragment_ActionViewNew(MClass theClass);
@@ -135,6 +138,9 @@ public abstract class ViewModelVisitor extends FileUtilities implements IViewMod
 	
 	@Override
 	public abstract void printDetailFragment_ScreenClickListeners(MClass theClass);
+	
+	@Override
+	public abstract void printDetailFragment_BusinessListeners(MClass theClass);
 
 //	******************** --- Fragment - Detail - End --- *****************************
 
@@ -152,6 +158,9 @@ public abstract class ViewModelVisitor extends FileUtilities implements IViewMod
 	
 	@Override
 	public abstract void printNavigationBarFragment_onCreate(MClass theClass);
+	
+	@Override
+	public abstract void printNavigationBarFragment_onSaveInstanceState(MClass theClass);
 	
 	@Override
 	public abstract void printNavigationBarFragment_onDestroy(MClass theClass);

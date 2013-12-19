@@ -164,7 +164,7 @@ public interface IBusinessVisitor
 
 	public void printAccessServerPersistenceMethods(MClass theClass);
 
-	public void printDB4OModelSpecification(String javaWorkspace, MClass theClass);
+	public void printDB4OModelSpecification(String sourcePath, String targetWorkspace, MClass theClass);
 
 
 

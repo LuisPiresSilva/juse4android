@@ -1,5 +1,5 @@
 /*
- * J-USE - Java prototyping for the UML based specification environment (USE)
+ * use2android - Java prototyping for the UML based specification environment (USE)
  * Copyright (C) 2012 Fernando Brito e Abrey, QUASAR research group
  *
  * This program is free software; you can redistribute it and/or
@@ -19,39 +19,24 @@
 
 package org.quasar.use2android.api.implementation;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.quasar.juse.api.implementation.AssociationInfo;
 import org.quasar.juse.api.implementation.BasicFacade;
 import org.quasar.juse.api.implementation.FileUtilities;
-import org.quasar.juse.api.implementation.JavaTypes;
 import org.quasar.juse.api.implementation.ModelUtilities;
 
 import org.tzi.use.uml.mm.MAssociationClass;
-import org.tzi.use.uml.mm.MAttribute;
 import org.tzi.use.uml.mm.MClass;
 import org.tzi.use.uml.mm.MOperation;
 import org.tzi.use.uml.ocl.type.EnumType;
-import org.tzi.use.uml.ocl.type.Type;
-import org.tzi.use.uml.ocl.value.BooleanValue;
-import org.tzi.use.uml.ocl.value.EnumValue;
-import org.tzi.use.uml.ocl.value.IntegerValue;
-import org.tzi.use.uml.ocl.value.RealValue;
-import org.tzi.use.uml.ocl.value.StringValue;
-import org.tzi.use.uml.sys.MLink;
-import org.tzi.use.uml.sys.MLinkObject;
-import org.tzi.use.uml.sys.MObject;
-import org.tzi.use.uml.sys.MObjectState;
+
 
 /***********************************************************
- * @author fba 25 de Abr de 2012
+ * @author Luis Pires Silva and fba
  * 
  ***********************************************************/
 public class PrototypeGeneratorFacade extends BasicFacade
@@ -68,7 +53,7 @@ public class PrototypeGeneratorFacade extends BasicFacade
 	 * @see org.quasar.juse.api.JUSE_PrototypeGeneratorFacade#javaGeneration(java.lang.String, java.lang.String,
 	 * java.lang.String, java.lang.String, java.lang.String)
 	 */
-	public void androidGeneration(final String author, final String projectName, final String javaWorkspace, final String basePackageName, final String businessLayerName,
+	public void androidGeneration(final String author, final String projectName, final String sourcePath, final String targetWorkspace, final String basePackageName, final String businessLayerName,
 			final String presentationLayerName, final String persistenceLayerName,
 			final String libraryDirectory, final String db4oCoreJar, final String db4oCsJar, final String db4oOptionalJar,
 			final String user, final String pass, final String port, final String ip)
@@ -87,9 +72,6 @@ public class PrototypeGeneratorFacade extends BasicFacade
 		
 		String BASEPACKAGENAME = basePackageName + PROJECTNAME;
 		
-		
-		System.out.println("\nJava plugin for USE version 1.0.6, Copyright (C) 2012-2013 QUASAR Group");
-		
 		System.out.println("\n\t - USE to Android Model Validation - Validating...");
 		DomainModelRestrictions secondValidator = new DomainModelRestrictions();
 		for (MClass cls : getSystem().model().classes()){
@@ -99,15 +81,15 @@ public class PrototypeGeneratorFacade extends BasicFacade
 		}
 		System.out.println("\n\t - USE to Android Model Validation - Model passed");
 		
-		System.out.println("\n\t - generating Code for " + getSystem().model().name() + "...");
+		System.out.println("\n\t - generating Code for " + getSystem().model().name() + "...\n");
 		
-		String targetDirectory = javaWorkspace + "/" + PROJECTNAME + "/src/" + BASEPACKAGENAME.replace('.', '/');
+		String targetDirectory = targetWorkspace + "/" + PROJECTNAME + "/src/" + BASEPACKAGENAME.replace('.', '/');
 		String businessDirectory = targetDirectory	+ "/" + businessLayerName;
 		String presentationDirectory = targetDirectory + "/" + presentationLayerName;
 		String persistenceDirectory = targetDirectory + "/" + persistenceLayerName;
 		String utilsDirectory = targetDirectory + "/" + "utils";
 		String utilsLayerName = "utils";
-		String libraryPath = javaWorkspace + "/" + PROJECTNAME + "/libs";
+		String libraryPath = targetWorkspace + "/" + PROJECTNAME + "/libs";
 		String USER = user;
 		String PASS = pass;
 		String PORT = port;
@@ -116,11 +98,21 @@ public class PrototypeGeneratorFacade extends BasicFacade
 			IP = "10.0.2.2";
 		else
 			IP = ip;
-				
+		
+		System.out.println("Android Generation Settings:");
+		System.out.println("\tAndroid project name: " + PROJECTNAME);
+		System.out.println("\tDatabase access username: " + USER);
+		System.out.println("\tDatabase access password: " + PASS);
+		System.out.println("\tDatabase access port: " + PORT);
+		System.out.println("\tDatabase access ip: " + IP);
+		System.out.println("\n");
+		
+		System.out.println("Android Generation Started:\n\n");
+
 		System.out.println("\n\t\t - generating Android XML code...");
 		
 		ModelToXMLUtilities statistics = new ModelToXMLUtilities();
-		AndroidViewLayer ViewVisitor = new AndroidViewLayer(BASEPACKAGENAME, PROJECTNAME, getSystem().model(), author, javaWorkspace, presentationLayerName, statistics);
+		AndroidViewLayer ViewVisitor = new AndroidViewLayer(BASEPACKAGENAME, PROJECTNAME, getSystem().model(), author, sourcePath ,targetWorkspace, presentationLayerName, statistics);
 		ViewVisitor.generateFolders();
 		ViewVisitor.generateXMLs();
 		
@@ -135,7 +127,7 @@ public class PrototypeGeneratorFacade extends BasicFacade
 		FileUtilities.createDirectory(persistenceDirectory);
 		//we create an temporary java file so that we can use reflection in this project without having to import
 		//the new project and later we copy this file to the project and remove it
-		FileUtilities.copyAndCompileFile(javaWorkspace + "/J-USE/src/org/quasar/usemodel2Android/persistence/", "Database.txt", javaWorkspace + "/J-USE/src/org/quasar/usemodel2Android/persistence/", "Database");
+//		FileUtilities.copyAndCompileFile(sourcePath + "/res/use2android/persistence/", "Database.txt", sourcePath + "JUSE4Android/org/quasar/usemodel2android/persistence/", "Database");
 		FileUtilities.createDirectory(libraryPath);
 		FileUtilities.copyFile(libraryDirectory + "/" + db4oCoreJar, libraryPath + "/" + db4oCoreJar);
 		FileUtilities.copyFile(libraryDirectory + "/" + db4oCsJar, libraryPath + "/" + db4oCsJar);
@@ -160,7 +152,7 @@ public class PrototypeGeneratorFacade extends BasicFacade
 		// visit classes
 		for (MClass cls : getSystem().model().classes())
 		{
-			if(cls.isAnnotated() && cls.getAnnotation("business") != null){
+			if(cls.isAnnotated() && cls.getAnnotation("domain") != null){
 				if (FileUtilities.openOutputFile(businessDirectory, cls.name() + ".java"))
 				{
 					visitor.printClassHeader(cls, businessLayerName);
@@ -229,20 +221,48 @@ public class PrototypeGeneratorFacade extends BasicFacade
 					FileUtilities.closeOutputFile();
 				}
 				
-				visitor.printDB4OModelSpecification(javaWorkspace, cls);
+//				visitor.printDB4OModelSpecification(sourcePath, targetWorkspace, cls);
 			}
 		}
 		
-		FileUtilities.replaceStringInFile(javaWorkspace + "/J-USE/src/org/quasar/usemodel2Android/persistence/Database.java", "org.quasar.usemodel2Android.persistence", BASEPACKAGENAME + "." + persistenceLayerName);
-		StringBuffer modelimports = new StringBuffer();
-		for (MClass cls : getSystem().model().classes())
+		PersistenceVisitor Pvisitor = new AndroidPersistenceVisitor(getSystem().model(), author, BASEPACKAGENAME, businessLayerName, persistenceLayerName);
+		
+		if (FileUtilities.openOutputFile(persistenceDirectory, "Database.java"))
 		{
-			if(cls.isAnnotated() && cls.getAnnotation("business") != null)
-				modelimports.append("import " + BASEPACKAGENAME + "." + businessLayerName + "." + cls.name() + ";\r\n");
+			List<MClass> domainClasses = new ArrayList<MClass>();
+			for (MClass cls : getSystem().model().classes())
+				if(cls.isAnnotated() && cls.getAnnotation("domain") != null)
+					domainClasses.add(cls);
+			Pvisitor.printClassHeader("Database", persistenceLayerName, businessLayerName, domainClasses);
+			
+			FileUtilities.incIndent();
+			
+			Pvisitor.printAttributes();
+			
+			Pvisitor.printDefaultDBMethods();
+			
+			Pvisitor.printDefaultDBConfigMethods(domainClasses);
+			
+			Pvisitor.printAllInstances();
+			
+			Pvisitor.printGetters();
+			
+			FileUtilities.decIndent();
+			FileUtilities.println("}");
+
+			FileUtilities.closeOutputFile();
 		}
-		FileUtilities.replaceStringInFile(javaWorkspace + "/J-USE/src/org/quasar/usemodel2Android/persistence/Database.java", "//MODEL_CLASSES_IMPORT", modelimports.toString());
-		FileUtilities.copyFile(javaWorkspace + "/J-USE/src/org/quasar/usemodel2Android/persistence/Database.java", persistenceDirectory + "/" + "Database.java");
-		FileUtilities.deleteFile(javaWorkspace + "/J-USE/src/org/quasar/usemodel2Android/persistence/Database.java");
+		
+//		FileUtilities.replaceStringInFile(sourcePath + "/res/use2android/persistence/Database.java", "org.quasar.use2android.persistence", BASEPACKAGENAME + "." + persistenceLayerName);
+//		StringBuffer modelimports = new StringBuffer();
+//		for (MClass cls : getSystem().model().classes())
+//		{
+//			if(cls.isAnnotated() && cls.getAnnotation("domain") != null)
+//				modelimports.append("import " + BASEPACKAGENAME + "." + businessLayerName + "." + cls.name() + ";\r\n");
+//		}
+//		FileUtilities.replaceStringInFile(sourcePath + "/res/use2android/persistence/Database.java", "//MODEL_CLASSES_IMPORT", modelimports.toString());
+//		FileUtilities.copyFile(sourcePath + "/res/use2android/persistence/Database.java", persistenceDirectory + "/" + "Database.java");
+//		FileUtilities.deleteFile(sourcePath + "/res/use2android/persistence/Database.java");
 		
 		
 //		for (Integer n : JavaTypes.getTupleTypesCardinalities())
@@ -258,7 +278,7 @@ public class PrototypeGeneratorFacade extends BasicFacade
 //			FileUtilities.closeOutputFile();
 //		}
 
-		generateAndroidTemplates(javaWorkspace + "/J-USE/src/org/quasar/usemodel2Android/defaultdata/java", BASEPACKAGENAME, targetDirectory,
+		generateAndroidTemplates(sourcePath + "/res/use2android/defaultdata/java", BASEPACKAGENAME, targetDirectory,
 				businessDirectory, businessLayerName, persistenceDirectory, persistenceLayerName, presentationDirectory,
 				presentationLayerName, utilsDirectory, utilsLayerName,
 				USER, PASS, PORT, IP);
@@ -275,7 +295,7 @@ public class PrototypeGeneratorFacade extends BasicFacade
 			
 		for (MClass cls : getSystem().model().classes())
 		{
-			if(cls.isAnnotated() && cls.getAnnotation("business") != null){
+			if(cls.isAnnotated() && cls.getAnnotation("domain") != null){
 				if (FileUtilities.openOutputFile(presentationDirectory + "/" + cls.name() , cls.name() + "Activity.java"))
 				{
 					VMvisitor.printActivity_ClassHeader(cls, presentationLayerName);
@@ -332,6 +352,8 @@ public class PrototypeGeneratorFacade extends BasicFacade
 					
 					VMvisitor.printDetailFragment_onCreate(cls);
 					
+					VMvisitor.printDetailFragment_onSaveInstanceState(cls);
+					
 					VMvisitor.printDetailFragment_onDestroy(cls);
 					
 					VMvisitor.printDetailFragment_onActivityCreated(cls);
@@ -344,11 +366,11 @@ public class PrototypeGeneratorFacade extends BasicFacade
 					
 					VMvisitor.printDetailFragment_SetInputMethod(cls);
 					
-					VMvisitor.printDetailFragment_getViewDetail(cls);
+					VMvisitor.printDetailFragment_setViewDetailData(cls);
 					
 					VMvisitor.printDetailFragment_ActionViewDetail(cls);
 					
-					VMvisitor.printDetailFragment_getViewNewOrEdit(cls);
+					VMvisitor.printDetailFragment_setViewNewOrEditData(cls);
 	
 					VMvisitor.printDetailFragment_ActionViewNew(cls);
 					
@@ -359,6 +381,8 @@ public class PrototypeGeneratorFacade extends BasicFacade
 					VMvisitor.printDetailFragment_CallBackDeclaration(cls);
 					
 					VMvisitor.printDetailFragment_ScreenClickListeners(cls);
+					
+					VMvisitor.printDetailFragment_BusinessListeners(cls);
 					
 					FileUtilities.decIndent();
 					FileUtilities.println("}");
@@ -377,6 +401,8 @@ public class PrototypeGeneratorFacade extends BasicFacade
 					VMvisitor.printNavigationBarFragment_DefaultConstructor(cls);
 					
 					VMvisitor.printNavigationBarFragment_onCreate(cls);
+					
+					VMvisitor.printNavigationBarFragment_onSaveInstanceState(cls);
 					
 					VMvisitor.printNavigationBarFragment_onDestroy(cls);
 					
@@ -431,14 +457,14 @@ public class PrototypeGeneratorFacade extends BasicFacade
 		
 		System.out.println("\n\t\t - Editing proguard code...");
 		
-		FileUtilities.openOutputForExistingFile(javaWorkspace + "/" + PROJECTNAME, "proguard-project.txt");
+		FileUtilities.openOutputForExistingFile(targetWorkspace + "/" + PROJECTNAME, "proguard-project.txt");
 		generateDb4oProGuardRequirements();
 		FileUtilities.closeOutputForExistingFile();
 		
 		System.out.println("\n\t\t - Edition to proguard code concluded");
 		
 		ModelUtilities util = new ModelUtilities(getSystem().model());
-		System.out.println("\n\t - " + getSystem().model().name() + " code generation concluded (" + util.numberClasses() + " classes, " + util.numberAttributes()
+		System.out.println("\nAndroid code generation for model " + getSystem().model().name() + " concluded (" + util.numberClasses() + " classes, " + util.numberAttributes()
 						+ " attributes, " + util.numberOperations() + " operations)\n");
 	}
 
@@ -480,17 +506,17 @@ public class PrototypeGeneratorFacade extends BasicFacade
 			String currentFile = "";
 			if(files.get(file).equals(utilsLayerName)){
 				FileUtilities.copyFile(sourceDirectory + "/" + file + ".txt", utilsDirectory + "/" + file + ".java");
-				FileUtilities.replaceStringInFile(utilsDirectory + "/" + file + ".java", "org.quasar.usemodel2Android.defaultdata.java", basePackageName + "." + utilsLayerName);
+				FileUtilities.replaceStringInFile(utilsDirectory + "/" + file + ".java", "org.quasar.use2android.defaultdata.java", basePackageName + "." + utilsLayerName);
 				currentFile = utilsDirectory + "/" + file + ".java";
 			}
 			if(files.get(file).equals(businessLayerName)){
 				FileUtilities.copyFile(sourceDirectory + "/" + file + ".txt", businessDirectory + "/" + file + ".java");
-				FileUtilities.replaceStringInFile(businessDirectory + "/" + file + ".java", "org.quasar.usemodel2Android.defaultdata.java", basePackageName + "." + businessLayerName);
+				FileUtilities.replaceStringInFile(businessDirectory + "/" + file + ".java", "org.quasar.use2android.defaultdata.java", basePackageName + "." + businessLayerName);
 				currentFile = businessDirectory + "/" + file + ".java";
 			}
 			if(files.get(file).equals(basePackageName)){
 				FileUtilities.copyFile(sourceDirectory + "/" + file + ".txt", baseDirectory + "/" + file + ".java");
-				FileUtilities.replaceStringInFile(baseDirectory + "/" + file + ".java", "org.quasar.usemodel2Android.defaultdata.java", basePackageName);
+				FileUtilities.replaceStringInFile(baseDirectory + "/" + file + ".java", "org.quasar.use2android.defaultdata.java", basePackageName);
 				currentFile = baseDirectory + "/" + file + ".java";
 			}
 
@@ -575,7 +601,7 @@ public class PrototypeGeneratorFacade extends BasicFacade
 			String currentFile = "";
 			if(files.get(file).equals(basePackageName)){
 				FileUtilities.copyFile(sourceDirectory + "/" + file + ".txt", baseDirectory + "/" + file + ".java");
-				FileUtilities.replaceStringInFile(baseDirectory + "/" + file + ".java", "org.quasar.usemodel2Android.defaultdata.java", basePackageName);
+				FileUtilities.replaceStringInFile(baseDirectory + "/" + file + ".java", "org.quasar.use2android.defaultdata.java", basePackageName);
 				currentFile = baseDirectory + "/" + file + ".java";
 			}
 
@@ -588,10 +614,10 @@ public class PrototypeGeneratorFacade extends BasicFacade
 		}
 	}
 	
-	public void serverGeneration(final String author, final String projectName, final String javaWorkspace, final String basePackageName,
+	public void serverGeneration(final String author, final String projectName, final String sourcePath, final String targetWorkspace, final String basePackageName,
 			final String libraryDirectory, final String db4oCoreJar, final String db4oCsJar, final String db4oOptionalJar,
 			final String user, final String pass, final String port, final String ip) {
-			
+		
 		String PROJECTNAME;
 		if(projectName.equals(""))
 			PROJECTNAME = getSystem().model().name() + "Server";
@@ -600,8 +626,8 @@ public class PrototypeGeneratorFacade extends BasicFacade
 		
 		String BASEPACKAGENAME = basePackageName + PROJECTNAME;
 		
-		String targetDirectory = javaWorkspace + "/" + PROJECTNAME + "/src/" + BASEPACKAGENAME.replace('.', '/');
-		String libraryPath = javaWorkspace + "/" + PROJECTNAME + "/libs";
+		String targetDirectory = targetWorkspace + "/" + PROJECTNAME + "/src/" + BASEPACKAGENAME.replace('.', '/');
+		String libraryPath = targetWorkspace + "/" + PROJECTNAME + "/libs";
 		String USER = user;
 		String PASS = pass;
 		String PORT = port;
@@ -611,20 +637,31 @@ public class PrototypeGeneratorFacade extends BasicFacade
 		else
 			IP = ip;
 		
+		System.out.println("Server Generation Settings:");
+		System.out.println("\tServer project name: " + PROJECTNAME);
+		System.out.println("\tDatabase access username: " + USER);
+		System.out.println("\tDatabase access password: " + PASS);
+		System.out.println("\tDatabase access port: " + PORT);
+		System.out.println("\tDatabase access ip: " + IP);
+		System.out.println("\n");
+		
+		System.out.println("Server Generation Started:\n");
+		
 		FileUtilities.createDirectory(targetDirectory);
-		generateServerTemplates(javaWorkspace + "/J-USE/src/org/quasar/usemodel2Android/defaultdata/java", BASEPACKAGENAME, targetDirectory,
+		generateServerTemplates(sourcePath + "/res/use2android/defaultdata/java", BASEPACKAGENAME, targetDirectory,
 				USER, PASS, PORT, IP);
 		
-		FileUtilities.copyFile(javaWorkspace + "/J-USE/src/org/quasar/usemodel2Android/defaultdata/java/StartServer.txt", targetDirectory + "/" + "StartServer.java");
-		FileUtilities.replaceStringInFile(targetDirectory + "/" + "StartServer.java", "org.quasar.usemodel2Android.defaultdata.java", BASEPACKAGENAME);
-		FileUtilities.copyFile(javaWorkspace + "/J-USE/src/org/quasar/usemodel2Android/defaultdata/java/StopServer.txt", targetDirectory + "/" + "StopServer.java");
-		FileUtilities.replaceStringInFile(targetDirectory + "/" + "StopServer.java", "org.quasar.usemodel2Android.defaultdata.java", BASEPACKAGENAME);
+		FileUtilities.copyFile(sourcePath + "/res/use2android/defaultdata/java/StartServer.txt", targetDirectory + "/" + "StartServer.java");
+		FileUtilities.replaceStringInFile(targetDirectory + "/" + "StartServer.java", "org.quasar.use2android.defaultdata.java", BASEPACKAGENAME);
+		FileUtilities.copyFile(sourcePath + "/res/use2android/defaultdata/java/StopServer.txt", targetDirectory + "/" + "StopServer.java");
+		FileUtilities.replaceStringInFile(targetDirectory + "/" + "StopServer.java", "org.quasar.use2android.defaultdata.java", BASEPACKAGENAME);
 		
 		FileUtilities.createDirectory(libraryPath);
 		FileUtilities.copyFile(libraryDirectory + "/" + db4oCoreJar, libraryPath + "/" + db4oCoreJar);
 		FileUtilities.copyFile(libraryDirectory + "/" + db4oCsJar, libraryPath + "/" + db4oCsJar);
 		FileUtilities.copyFile(libraryDirectory + "/" + db4oOptionalJar, libraryPath + "/" + db4oOptionalJar);
 		
+		System.out.println("Server Generation Concluded:\n");
 	}
 
 }

@@ -10,6 +10,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.channels.FileChannel;
 import java.util.Arrays;
 import java.util.Locale;
@@ -17,11 +20,11 @@ import java.util.Locale;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaCompiler;
+import javax.tools.JavaCompiler.CompilationTask;
 import javax.tools.JavaFileObject;
 import javax.tools.SimpleJavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
-import javax.tools.JavaCompiler.CompilationTask;
 
 import org.quasar.use2android.api.DynamicJavaSourceCodeObject;
 
@@ -68,7 +71,7 @@ public abstract class FileUtilities
 		File sourceFile = new File(sourceFilename);
 		File destFile = new File(destFilename);
 
-		// System.out.println("Copying file " + sourceFilename + " to " + destFilename);
+//		 System.out.println("Copying file " + sourceFilename + " to " + destFilename);
 
 		if (!sourceFile.exists())
 		{
@@ -185,6 +188,7 @@ public abstract class FileUtilities
 		return result;
 	}
 
+	//not used
 	/***********************************************************
 	 * @param directoryname
 	 *            The name of the directory where the file to open is placed
@@ -250,7 +254,7 @@ public abstract class FileUtilities
 		}
 	}
 
-	
+	//not used
 	/***********************************************************
 	 * @param sourceFilename
 	 * @param destFilename
@@ -261,14 +265,17 @@ public abstract class FileUtilities
 	{
 		FileUtilities.copyFile(sourcePath + sourceFile, destPath + filename + ".java");
 		
-		String packag = "org" + destPath.split("org")[1];
-		packag = packag.replace("/" , ".");
-		System.out.println(packag);
+//		String packag = "org" + destPath.split("org")[1];
+//		packag = packag.replace("/" , ".");
+//		System.out.println(packag);
+		String fixedpath = sourcePath.replace("\\" , "/");
+		sourcepath = fixedpath;
+		System.out.println(fixedpath);
 		try
 		{
 			File sourcefile = new File(destPath + filename + ".java");
 //			File destinationfile = new File(path + destinationClass + ".java");
-			filetocompile = packag + filename;
+			filetocompile = fixedpath + filename;
 			sourceCode = new StringBuffer();
 			
 			BufferedReader reader = new BufferedReader(new FileReader(sourcefile));
@@ -289,7 +296,7 @@ public abstract class FileUtilities
 		}
 	}
 	
-//	estou a fazer isto mas penso que nao va utilizar no futuro e mais uma experienciazita
+//	estou a fazer isto mas penso que nao va utilizar no futuro e mais uma experienciazita - //not used
 	/***********************************************************
 	* @param path
 	* @param name of source class
@@ -299,15 +306,28 @@ public abstract class FileUtilities
 	***********************************************************/
 	public static void openMethodForInput(String path, String sourceClass, String destinationClass, String methodname, Class<?>... param)
 	{
-		String packag = "org" + path.split("org")[1];
-		packag = packag.replace("\\" , ".");
+//		String packag = "org" + path.split("org")[1];
+//		packag = packag.replace("\\" , ".");
+		String fixedpath = path.replace("\\" , "/");
 
 		Class<?> fileClass = null;
 		Method method = null;
 		try {
-			fileClass = Class.forName(packag + sourceClass);
-			method = fileClass.getMethod(methodname, param);
-		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException e) {
+			URL[] urls = new URL[1];
+			try {
+				urls[0] = new File(fixedpath + sourceClass).toURI().toURL();
+			} catch (MalformedURLException e) {
+				e.printStackTrace();
+			}
+			ClassLoader loader = URLClassLoader.newInstance(urls);
+			try {
+				fileClass = loader.loadClass("Database");
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			}
+
+			method = fileClass.getDeclaredMethod(methodname, param);
+		} catch (NoSuchMethodException | SecurityException e) {
 			e.printStackTrace();
 		}
 		if(method != null){
@@ -315,9 +335,10 @@ public abstract class FileUtilities
 			{
 				fileopened = true;
 				forMethod = true;
-				File sourcefile = new File(path + sourceClass + ".java");
-				destinationfile = new File(path + destinationClass + ".java");
-				filetocompile = packag + destinationClass;
+				File sourcefile = new File(fixedpath + sourceClass + ".java");
+				destinationfile = new File(fixedpath + destinationClass + ".java");
+				filetocompile = fixedpath + destinationClass;
+				sourcepath = fixedpath;
 				
 				BufferedReader reader = new BufferedReader(new FileReader(sourcefile));
 				sourceCode = new StringBuffer();
@@ -385,6 +406,7 @@ public abstract class FileUtilities
 			{
 				fileopened = false;
 				filetocompile = "";
+				sourcepath = "";
 				sourceCode = null;
 				ioe.printStackTrace();
 			}
@@ -396,15 +418,22 @@ public abstract class FileUtilities
 	private static String filetocompile = "";
 	private static StringBuffer sourceCode;
 	private static StringBuffer sourceCodeEnd;
+	private static String sourcepath;
 	
+	//not used
 	private static void doCompilation (){
         /*Creating dynamic java source code file object*/
         SimpleJavaFileObject fileObject = new DynamicJavaSourceCodeObject (filetocompile, sourceCode.toString()) ;
         JavaFileObject javaFileObjects[] = new JavaFileObject[]{fileObject} ;
  
         /*Instantiating the java compiler*/
-        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
- 
+        JavaCompiler compiler = null;
+		try {
+			compiler = (JavaCompiler) Class.forName("com.sun.tools.javac.api.JavacTool").newInstance();
+		} catch (InstantiationException | IllegalAccessException
+				| ClassNotFoundException e1) {
+			e1.printStackTrace();
+		}
         /**
          * Retrieving the standard file manager from compiler object, which is used to provide
          * basic building block for customizing how a compiler reads and writes to files.
@@ -419,7 +448,7 @@ public abstract class FileUtilities
  
         /*Prepare any compilation options to be used during compilation*/
         //In this example, we are asking the compiler to place the output files under bin folder.
-        String[] compileOptions = new String[]{"-d", "bin"} ;
+        String[] compileOptions = new String[]{"-d", sourcepath} ;
         Iterable<String> compilationOptionss = Arrays.asList(compileOptions);
  
         /*Create a diagnostic controller, which holds the compilation problems*/
@@ -465,6 +494,7 @@ public abstract class FileUtilities
 			doCompilation();
 			destinationfile = null;
 			filetocompile = "";
+			sourcepath = "";
 			sourceCode = null;
 			sourceCodeEnd = null;
 			forMethod= false;

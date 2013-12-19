@@ -314,9 +314,12 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 	public void printParameterizedAttributeConstructor(MClass theClass)
 	{
 		List<AttributeInfo> inheritedAttributes = new ArrayList<AttributeInfo>();
-		for (MClass theParentClass : theClass.allParents())
+		for (MClass theParentClass : theClass.allParents()){
+			List<AttributeInfo> inheritedAttributes_temp = new ArrayList<AttributeInfo>();
 			for(AttributeInfo attribute : AttributeInfo.getAttributesInfo(theParentClass))
-				inheritedAttributes.add(attribute);
+				inheritedAttributes_temp.add(attribute);
+			inheritedAttributes.addAll(0, inheritedAttributes_temp);
+		}
 
 		if (inheritedAttributes.size() + theClass.attributes().size() == 0)
 			return;
@@ -481,8 +484,12 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 	public void printParameterizedConstructor(MClass theClass)
 	{
 		List<AttributeInfo> inheritedAttributes = new ArrayList<AttributeInfo>();
-		for (MClass theParentClass : theClass.allParents())
-			inheritedAttributes.addAll(AttributeInfo.getAttributesInfo(theParentClass));
+		for (MClass theParentClass : theClass.allParents()){
+			List<AttributeInfo> inheritedAttributes_temp = new ArrayList<AttributeInfo>();
+			for(AttributeInfo attribute : AttributeInfo.getAttributesInfo(theParentClass))
+				inheritedAttributes_temp.add(attribute);
+			inheritedAttributes.addAll(0, inheritedAttributes_temp);
+		}
 
 		if (inheritedAttributes.size() + theClass.attributes().size() == 0)
 			return;
@@ -2156,16 +2163,17 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 			println("try{");
 				incIndent();
 				println(theClass.name() + " object = Database.get(" + theClass.name() + ".class, " + theClass.name().toLowerCase() + ".ID());");
-				println("if(object != null)");
+				println("int oldID = " + theClass.name().toLowerCase() + ".ID();");
+				println("object.setID();");
+				println("if(Database.get(" + theClass.name() + ".class, object.ID()) == null)");
 				println("{");
 					incIndent();
-					println("object.setID();");
 					println("object.checkModelRestrictions();");
 					println("object.checkModelRestrictions();");
 					println("");
 					println("Transactions.getSession().store(object);");
-					println("Transactions.AddCommand(new Command(getAccess(), CommandType.UPDATE, CommandTargetLayer.DATABASE, " + theClass.name().toLowerCase() + ".ID(), " + theClass.name().toLowerCase() + ", object, null, 0, null, null));");
-					println("Transactions.AddCommand(new Command(getAccess(), CommandType.UPDATE, CommandTargetLayer.VIEW, " + theClass.name().toLowerCase() + ".ID(), " + theClass.name().toLowerCase() + ", object, null, 0, null, null));");
+					println("Transactions.AddCommand(new Command(getAccess(), CommandType.UPDATE, CommandTargetLayer.DATABASE, " + "oldID, " + theClass.name().toLowerCase() + ", object, null, 0, null, null));");
+					println("Transactions.AddCommand(new Command(getAccess(), CommandType.UPDATE, CommandTargetLayer.VIEW, " + "oldID, " + theClass.name().toLowerCase() + ", object, null, 0, null, null));");
 					decIndent();
 				println("}else{");
 					incIndent();
@@ -2197,11 +2205,12 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 				println("if(object != null)");
 				println("{");
 					incIndent();
+					println("int oldID = " + theClass.name().toLowerCase() + ".ID();");
 					println("notifyDeletion(object);");
 					println("Transactions.getSession().delete(object);");
 					println("");
-					println("Transactions.AddCommand(new Command(getAccess(), CommandType.DELETE, CommandTargetLayer.DATABASE, object.ID(), object, null, null, 0, null, null));");
-					println("Transactions.AddCommand(new Command(getAccess(), CommandType.DELETE, CommandTargetLayer.VIEW, object.ID(), object, null, null, 0, null, null));");
+					println("Transactions.AddCommand(new Command(getAccess(), CommandType.DELETE, CommandTargetLayer.DATABASE, oldID, object, null, null, 0, null, null));");
+					println("Transactions.AddCommand(new Command(getAccess(), CommandType.DELETE, CommandTargetLayer.VIEW, oldID, object, null, null, 0, null, null));");
 					decIndent();
 				println("}else{");
 					incIndent();
@@ -2792,9 +2801,12 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 	public void printAccessServerInsert(MClass theClass)
 	{
 		List<AttributeInfo> inheritedAttributes = new ArrayList<AttributeInfo>();
-		for (MClass theParentClass : theClass.allParents())
+		for (MClass theParentClass : theClass.allParents()){
+			List<AttributeInfo> inheritedAttributes_temp = new ArrayList<AttributeInfo>();
 			for(AttributeInfo attribute : AttributeInfo.getAttributesInfo(theParentClass))
-				inheritedAttributes.add(attribute);
+				inheritedAttributes_temp.add(attribute);
+			inheritedAttributes.addAll(0, inheritedAttributes_temp);
+		}
 		
 		println("/**********************************************************************");
 		println("* @param the object to be inserted");
@@ -2843,9 +2855,12 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 	public void printAccessServerUpdate(MClass theClass)
 	{
 		List<AttributeInfo> inheritedAttributes = new ArrayList<AttributeInfo>();
-		for (MClass theParentClass : theClass.allParents())
+		for (MClass theParentClass : theClass.allParents()){
+			List<AttributeInfo> inheritedAttributes_temp = new ArrayList<AttributeInfo>();
 			for(AttributeInfo attribute : AttributeInfo.getAttributesInfo(theParentClass))
-				inheritedAttributes.add(attribute);
+				inheritedAttributes_temp.add(attribute);
+			inheritedAttributes.addAll(0, inheritedAttributes_temp);
+		}
 		
 		println("/**********************************************************************");
 		println("* @param the object to be update");
@@ -3253,9 +3268,9 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 	 * @see org.quasar.use.api.implementation.IJavaVisitor#printClassHeader(org.tzi.use.uml.mm.MClass)
 	 */
 	@Override
-	public void printDB4OModelSpecification(String workspace, MClass theClass)
+	public void printDB4OModelSpecification(String sourcePath, String target, MClass theClass)
 	{
-		openMethodForInput(workspace + "\\J-USE\\src\\org\\quasar\\usemodel2Android\\persistence\\", "Database", "Database", "dbConfig", null);
+		openMethodForInput(sourcePath + "JUSE4Android/org/quasar/usemodel2Android/persistence", "Database", "Database", "dbConfig", null);
 		int updateDepth = 1;
 
 		//preciso de ver se preciso de fazer para as hierarquias - ou seja - se o updateDepth é maior que 2
@@ -3278,7 +3293,7 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 
 		closeMethodForInput();
 		
-		openMethodForInput(workspace + "\\J-USE\\src\\org\\quasar\\usemodel2Android\\persistence\\", "Database", "Database", "dbServerConfig", null);		
+		openMethodForInput(sourcePath + "JUSE4Android/org/quasar/usemodel2Android/persistence", "Database", "Database", "dbServerConfig", null);		
 		for (AssociationInfo ai : AssociationInfo.getAssociationsInfo(theClass))
 		{
 			if(ai.getKind().toString().equals(AssociationKind.MANY2MANY.toString())){

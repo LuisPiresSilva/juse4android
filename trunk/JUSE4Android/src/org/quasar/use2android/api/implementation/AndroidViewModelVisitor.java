@@ -29,7 +29,10 @@ import org.tzi.use.uml.mm.MModel;
 import org.tzi.use.uml.mm.MMultiplicity;
 import org.tzi.use.uml.ocl.type.Type;
 
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.Context;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -102,7 +105,7 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 	***********************************************************/
 	private MClass associationTargetBaseAncestor(MClass theClass, AssociationInfo ass)
 	{
-		System.out.println("" + ass.getSourceAE().cls().name());
+//		System.out.println("" + ass.getSourceAE().cls().name());
 		return (!theClass.parents().isEmpty() && ass.getSourceAE().cls() != theClass) ? associationTargetBaseAncestor(theClass.parents().iterator().next(), ass) : theClass;
 	}
 	
@@ -768,7 +771,7 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 				RepeteadNeighbors.put(association.getTargetAE().cls(), 1);
 			}else
 				RepeteadNeighbors.put(association.getTargetAE().cls(), RepeteadNeighbors.get(association.getTargetAE().cls()) + 1);
-			println("private final String " + association.getTargetAE().name().toUpperCase() + "Association = \"" + association.getTargetAE().name().toUpperCase() + "Association\";");
+			println("private final String " + association.getTargetAE().name().toUpperCase() + "_" + association.getSourceAE().name().toUpperCase() + "Association = \"" + association.getTargetAE().name().toUpperCase() +  "_" + association.getSourceAE().name().toUpperCase() + "Association\";");
 
 		}
 		
@@ -864,10 +867,10 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 					println("list_fragment.setListAdapter(new ListAdapter(this, new " + theClass.name() + "ListViewHolder(), " + theClass.name() + ".allInstances()));");
 				FileUtilities.decIndent();
 				println("}");
-				println("if(ONCREATION)");
-				FileUtilities.incIndent();
-					println("setDetailFragment(" + theClass.name() + "DetailFragment.ARG_VIEW_NEW, null);");
-				FileUtilities.decIndent();
+//				println("if(ONCREATION)");
+//				FileUtilities.incIndent();
+//					println("setDetailFragment(" + theClass.name() + "DetailFragment.ARG_VIEW_NEW, null);");
+//				FileUtilities.decIndent();
 			FileUtilities.decIndent();
 			println("}");
 		FileUtilities.decIndent();
@@ -904,13 +907,14 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 			println("detail_fragment = new " + theClass.name() + "DetailFragment();");
 			println("UtilNavigate.replaceFragment(this, detail_fragment, R.id." + theClass.name().toLowerCase() + "_detail_container, UtilNavigate.setFragmentBundleArguments(View," + theClass.name().toLowerCase() + "));");
 			println();
-			println("if (!mTwoPane)");
-			println("{");
-			FileUtilities.incIndent();
-				println("list_fragment.hide();");
-				println("((DetailFragment) detail_fragment).show();");
-			FileUtilities.decIndent();
-			println("}");
+		println("if(!mTwoPane && AssociationEnd != ToONE)");
+		println("{");
+		FileUtilities.incIndent();
+			println("list_fragment.hide();");
+			println("((DetailFragment) detail_fragment).show();");
+		FileUtilities.decIndent();
+		println("}");
+		println("showingDetail = true;");
 		FileUtilities.decIndent();
 		println("}");
 		println();
@@ -920,19 +924,19 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 		println("public void orientationSettings(" + theClass.name() + " clicked" + theClass.name() + ")");
 		println("{");
 		FileUtilities.incIndent();
-			println("if(mTwoPane)");
-			println("{");
-			FileUtilities.incIndent();
+//			println("if(mTwoPane)");
+//			println("{");
+//			FileUtilities.incIndent();
 				println("if((!showingDetail || detail_fragment == null) && clicked" + theClass.name() + " != null)");
 				println("{");
 				FileUtilities.incIndent();
 					println("setDetailFragment(" + theClass.name() + "DetailFragment.ARG_VIEW_DETAIL, clicked" + theClass.name() + ");");
 				FileUtilities.decIndent();
 				println("}");
-				println("showingDetail = true;");
-			FileUtilities.decIndent();
-			println("}");
-			println("else");
+//				println("showingDetail = true;");
+//			FileUtilities.decIndent();
+//			println("}");
+			println("if(!mTwoPane && AssociationEnd != ToONE)");
 			println("{");
 				FileUtilities.incIndent();
 				println("if(detail_fragment != null && showingDetail)");
@@ -973,19 +977,120 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 		println("{");
 		FileUtilities.incIndent();
 			println("super.onCreate(savedInstanceState);");
-			println("setContentView(R.layout."+ theClass.name().toLowerCase() + "_layout_onepane);");
 			println();
-			println("if (findViewById(R.id." + theClass.name().toLowerCase() + "_layout_onepane) == null)");
+			println("if(extras() != null)");
+			println("{");
+			FileUtilities.incIndent();
+			
+				List<MClass> alreadyAdded = new ArrayList<MClass>();
+				Map<MClass, Integer> RepeteadNeighbors = new HashMap<MClass, Integer>();
+				for (AssociationInfo association : AssociationInfo.getAllAssociationsInfo(theClass)){
+					if(!alreadyAdded.contains(association.getTargetAE().cls())){
+						RepeteadNeighbors.put(association.getTargetAE().cls(), 1);
+						alreadyAdded.add(association.getTargetAE().cls());
+					}
+					else
+						RepeteadNeighbors.put(association.getTargetAE().cls(), RepeteadNeighbors.get(association.getTargetAE().cls()) + 1);
+				}
+				
+				alreadyAdded.clear();
+				for (AssociationInfo association : AssociationInfo.getAllAssociationsInfo(theClass)){
+					if(!alreadyAdded.contains(association.getTargetAE().cls())){
+						println("if(extras().containsKey(" + association.getTargetAE().cls().name().toUpperCase() + "Object))");
+						println("{");
+						
+						FileUtilities.incIndent();
+							if(is2Many(association, association.getSourceAE())){//source(theClass) -> 2MANY
+								println(association.getTargetAE().cls().name().toLowerCase() + " = " + association.getTargetAE().cls().name() + ".get" + association.getTargetAE().cls().name() + "((Integer)extras().getInt(" + association.getTargetAE().cls().name().toUpperCase() + "Object));");
+								println("if(ONCREATION)");
+								FileUtilities.incIndent();
+									println("AssociationEnd = ToMANY;");
+								FileUtilities.decIndent();
+								println("else ");
+								FileUtilities.incIndent();
+									println("AssociationEnd = extras().getInt(" + association.getTargetAE().name().toUpperCase() + "_" + association.getSourceAE().name().toUpperCase() + "Association);");
+								FileUtilities.decIndent();
+							}else{//source(theClass) -> 2ONE
+								println(association.getTargetAE().cls().name().toLowerCase() + " = " + association.getTargetAE().cls().name() + ".get" + association.getTargetAE().cls().name() + "((Integer)extras().getInt(" + association.getTargetAE().cls().name().toUpperCase() + "Object));");
+								println("if(ONCREATION)");
+								FileUtilities.incIndent();
+									println("AssociationEnd = ToMANY;");
+								FileUtilities.decIndent();
+								println("else ");
+								FileUtilities.incIndent();
+									println("AssociationEnd = extras().getInt(" + association.getTargetAE().name().toUpperCase() + "_" + association.getSourceAE().name().toUpperCase() + "Association);");
+								FileUtilities.decIndent();
+							}
+							if(isSubClass(theClass))
+								if(RepeteadNeighbors.get(association.getTargetAE().cls()) > 1)
+									println(association.getTargetAE().cls().name() + "End = extras().getString(" + association.getTargetAE().cls().name().toUpperCase() + "END);");
+						FileUtilities.decIndent();
+						println("}");
+						alreadyAdded.add(association.getTargetAE().cls());
+					}
+				}
+				if(isSuperClass(theClass)){//navegacao sub -> super (ToONE)
+					for(MClass x : getAllSubClasses(Arrays.asList(theClass))){
+						if(x.parents().iterator().next() == theClass && !alreadyAdded.contains(theClass)){//if is direct super							
+							println("if(extras().containsKey(" + theClass.name().toUpperCase() + "Object))");
+							println("{");
+						
+							FileUtilities.incIndent();
+								println(theClass.name().toLowerCase() + " = " + theClass.name() + ".get" + theClass.name() + "((Integer)extras().getInt(" + theClass.name().toUpperCase() + "Object));");
+								println("AssociationEnd = extras().getInt(" + theClass.name().toUpperCase() + "Association);");
+							FileUtilities.decIndent();
+							println("}");
+							alreadyAdded.add(theClass);
+						}
+					}
+				}
+				if(isSubClass(theClass)){//navegacao super -> sub (ToMany)
+					if(!alreadyAdded.contains(theClass.parents().iterator().next())){		
+						println("if(extras().containsKey(" + theClass.parents().iterator().next().name().toUpperCase() + "Object))");
+						println("{");
+						FileUtilities.incIndent();
+							println(theClass.parents().iterator().next().name().toLowerCase() + " = " + theClass.parents().iterator().next().name() + ".get" + theClass.parents().iterator().next().name() + "((Integer)extras().getInt(" + theClass.parents().iterator().next().name().toUpperCase() + "Object));");
+							println("AssociationEnd = extras().getInt(" + theClass.parents().iterator().next().name().toUpperCase() + "Association);");
+						FileUtilities.decIndent();
+						println("}");
+					}
+				}
+				FileUtilities.decIndent();
+				println("}");
+				println("else");
+				println("{");
+				FileUtilities.incIndent();
+					println("//camed from launcher therefore AssociationEnd = -1 (*) -> allInstances");
+					println("AssociationEnd = ToMANY;");
+				FileUtilities.decIndent();
+			println("}");
+//			println("setContentView(R.layout."+ theClass.name().toLowerCase() + "_layout_onepane);");
+			
+			println();
+			println("if (getResources().getBoolean(R.bool.has_two_panes) && AssociationEnd != ToONE)");
+			println("{");
 			FileUtilities.incIndent();
 				println("mTwoPane = true;");
+				println("setContentView(R.layout." + theClass.name().toLowerCase() + "_layout_twopane);");
 			FileUtilities.decIndent();
+			println("}");
+			println("else");
+			FileUtilities.incIndent();
+				println("setContentView(R.layout." + theClass.name().toLowerCase() + "_layout_onepane);");
+			FileUtilities.decIndent();
+			
 			println();
 			println("FragmentTransaction ft = getFragmentManager().beginTransaction();");
 			println("if(savedInstanceState == null)");
 			println("{");
 			FileUtilities.incIndent();
+			println("if (AssociationEnd != ToONE)");
+			println("{");
+			FileUtilities.incIndent();
 				println("list_fragment = new ListFragmentController();");
 				println("ft.add(R.id."+ theClass.name().toLowerCase() + "_list_container, list_fragment);");
+			FileUtilities.decIndent();
+			println("}");
 				println("navigation_bar = new " + theClass.name() + "NavigationBarFragment();");
 				println("ft.add(R.id."+ theClass.name().toLowerCase() + "_navigationbar_container, navigation_bar);");
 				println("ft.commit();");
@@ -994,25 +1099,18 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 			println("else");
 			println("{");
 			FileUtilities.incIndent();
-				println("list_fragment = (ListFragmentController) getFragmentManager().findFragmentById(R.id."+ theClass.name().toLowerCase() + "_list_container);");
+				println("if (AssociationEnd != ToONE)");
+				FileUtilities.incIndent();
+					println("list_fragment = (ListFragmentController) getFragmentManager().findFragmentById(R.id."+ theClass.name().toLowerCase() + "_list_container);");
+				FileUtilities.decIndent();
 				println("navigation_bar = (Fragment) getFragmentManager().findFragmentById(R.id."+ theClass.name().toLowerCase() + "_navigationbar_container);");
 				println("detail_fragment = (Fragment) getFragmentManager().findFragmentById(R.id."+ theClass.name().toLowerCase() + "_detail_container);");
 				println("showingDetail = savedInstanceState.getBoolean(SHOWINGDetail);");
 				println("restarted = savedInstanceState.getBoolean(\"RESTARTED\");");
 			FileUtilities.decIndent();
 			println("}");
-		FileUtilities.decIndent();
-		println("}");
-		println();
-	}
-	
-	@Override
-	public void printActivity_onStart(MClass theClass){
-		println("@Override");
-		println("public void onStart()");
-		println("{");
-		println("super.onStart();");
-		FileUtilities.incIndent();
+			println();
+			println();
 			println("if(ONCREATION)");
 			FileUtilities.incIndent();
 				println("Transactions.StartTransaction();");
@@ -1022,8 +1120,8 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 			println("{");
 			FileUtilities.incIndent();
 			
-				List<MClass> alreadyAdded = new ArrayList<MClass>();
-				Map<MClass, Integer> RepeteadNeighbors = new HashMap<MClass, Integer>();
+				alreadyAdded = new ArrayList<MClass>();
+				RepeteadNeighbors = new HashMap<MClass, Integer>();
 				for (AssociationInfo association : AssociationInfo.getAllAssociationsInfo(theClass)){
 					if(!alreadyAdded.contains(association.getTargetAE().cls())){
 						RepeteadNeighbors.put(association.getTargetAE().cls(), 1);
@@ -1056,7 +1154,7 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 								println("else ");
 								println("{");
 								FileUtilities.incIndent();
-									println("AssociationEnd = extras().getInt(" + association.getTargetAE().name().toUpperCase() + "Association);");
+									println("AssociationEnd = extras().getInt(" + association.getTargetAE().name().toUpperCase() + "_" + association.getSourceAE().name().toUpperCase() + "Association);");
 									//CUIDADO NA PROX LINHA
 									println("startActivity_ToMANY((" + JavaTypes.javaInterfaceType(association.getSourceAE().getType()) + ") " + association.getTargetAE().cls().name().toLowerCase() + "." + association.getSourceAE().name() + "(), extras());");
 								FileUtilities.decIndent();
@@ -1074,7 +1172,7 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 								println("else ");
 								println("{");
 								FileUtilities.incIndent();
-									println("AssociationEnd = extras().getInt(" + association.getTargetAE().name().toUpperCase() + "Association);");
+									println("AssociationEnd = extras().getInt(" + association.getTargetAE().name().toUpperCase() + "_" + association.getSourceAE().name().toUpperCase() + "Association);");
 									println("mTwoPane = false;");
 								
 									if(association.getSourceAE().cls() == theClass)
@@ -1084,7 +1182,7 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 									println("startActivity_ToONE(clicked" + theClass.name() + ");");
 								FileUtilities.decIndent();
 								println("}");
-								println(association.getTargetAE().cls().name() + ".getAccess().setChangeListener(this);");
+//								println(association.getTargetAE().cls().name() + ".getAccess().setChangeListener(this);");
 							}
 							if(isSubClass(theClass))
 								if(RepeteadNeighbors.get(association.getTargetAE().cls()) > 1)
@@ -1135,7 +1233,7 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 							println("AssociationEnd = extras().getInt(" + theClass.parents().iterator().next().name().toUpperCase() + "Association);");
 //							CUIDADO NA PROX LINHA
 							println("startActivity_ToMANY(null" + ", extras());");
-							println(theClass.parents().iterator().next().name() + ".getAccess().setChangeListener(this);");
+//							println(theClass.parents().iterator().next().name() + ".getAccess().setChangeListener(this);");
 						FileUtilities.decIndent();
 						println("}");
 					}
@@ -1159,8 +1257,26 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 					println("startActivity_ToMANY(null, extras());");
 					println("AssociationEnd = ToMANY;");
 				FileUtilities.decIndent();
-				println("}");
+			println("}");
 			println();
+			println("if(AssociationEnd != ToONE)");
+			println("{");
+			FileUtilities.incIndent();
+				println(theClass.name() + ".getAccess().setChangeListener(list_fragment);");
+			FileUtilities.decIndent();
+			println("}");
+		FileUtilities.decIndent();
+		println("}");
+		println();
+	}
+	
+	@Override
+	public void printActivity_onStart(MClass theClass){
+		println("@Override");
+		println("public void onStart()");
+		println("{");
+		FileUtilities.incIndent();
+			println("super.onStart();");
 			println("if(AssociationEnd != ToONE)");
 			println("{");
 			FileUtilities.incIndent();
@@ -1173,14 +1289,48 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 					println("list_fragment.setActivatedLongClick(true);");
 				FileUtilities.decIndent();
 				println("list_fragment.setActivateOnItemClick(true);");
-				println(theClass.name() + ".getAccess().setChangeListener(list_fragment);");
+//				println(theClass.name() + ".getAccess().setChangeListener(list_fragment);");
+				println();
+				println("if(list_fragment.getSelectedPosition() != ListView.INVALID_POSITION)");
+				println("{");
+				FileUtilities.incIndent();
+					println("clicked" + theClass.name() + " = (" + theClass.name() + ") list_fragment.getListAdapter().getItem(list_fragment.getSelectedPosition());");
+//					println("list_fragment.setActivatedPosition(clicked" + theClass.name() + ");");
+//					println("list_fragment.setSelection(clicked" + theClass.name() + ");");
+					println();
+				FileUtilities.decIndent();
+				println("}");
+				println();
+				
+//				println("if (showingDetail && !mTwoPane)");
+//				println("{");
+//				FileUtilities.incIndent();
+//					println("list_fragment.hide();");
+//					println("((DetailFragment) detail_fragment).show();");
+//				FileUtilities.decIndent();
+//				println("}");
+//			FileUtilities.decIndent();
+//			println("}");
+//			println("else");
+//			FileUtilities.incIndent();
+//				println("showingDetail = true;");
+//			FileUtilities.decIndent();
+//			println();
+//			println("if(AssociationEnd != ToONE)");
+//			println("{");
+//			FileUtilities.incIndent();
+//				
+//			FileUtilities.decIndent();
+//			println("}");
+//			println("if(AssociationEnd != ToONE)");
+//			println("{");
+//			FileUtilities.incIndent();
+//				println("orientationSettings(clicked" + theClass.name() + ");");
+//				println("((NavigationBarFragment)navigation_bar).setViewingObject(clicked" + theClass.name() + ");");
 			FileUtilities.decIndent();
 			println("}");
-			println("else");
-			FileUtilities.incIndent();
-				println("showingDetail = true;");
-			FileUtilities.decIndent();
-			println();
+			println("((NavigationBarFragment)navigation_bar).setViewingObject(clicked" + theClass.name() + ");");
+			println("orientationSettings(clicked" + theClass.name() + ");");
 		FileUtilities.decIndent();
 		println("}");
 		println();
@@ -1192,23 +1342,8 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 		println("public void onResume()");
 		println("{");
 		FileUtilities.incIndent();
-			println("if(AssociationEnd != ToONE)");
-			println("{");
-			FileUtilities.incIndent();
-				println("if(list_fragment.getSelectedPosition() != ListView.INVALID_POSITION)");
-				println("{");
-				FileUtilities.incIndent();
-					println("clicked" + theClass.name() + " = (" + theClass.name() + ") list_fragment.getListAdapter().getItem(list_fragment.getSelectedPosition());");
-					println("list_fragment.setActivatedPosition(clicked" + theClass.name() + ");");
-					println("list_fragment.setSelection(clicked" + theClass.name() + ");");
-					println();
-				FileUtilities.decIndent();
-				println("}");
-			FileUtilities.decIndent();
-			println("}");
-			println("orientationSettings(clicked" + theClass.name() + ");");
-			println("((NavigationBarFragment)navigation_bar).setViewingObject(clicked" + theClass.name() + ");");
 			println("super.onResume();");
+			println("restarted = false;");
 		FileUtilities.decIndent();
 		println("}");
 		println();
@@ -1285,7 +1420,7 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 				println("{");
 				FileUtilities.incIndent();
 					println("setDetailFragment(" + theClass.name() + "DetailFragment.ARG_VIEW_DETAIL, clicked" + theClass.name() + ");");
-					println("showingDetail = true;");
+//					println("showingDetail = true;");
 				FileUtilities.decIndent();
 				println("}");
 			FileUtilities.decIndent();
@@ -1306,9 +1441,9 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 			FileUtilities.incIndent();
 				println("case R.id.menu_new:");
 				FileUtilities.incIndent();
-					println("((NavigationBarFragment) navigation_bar).hide();");
+//					println("((NavigationBarFragment) navigation_bar).hide();");
 					println("setDetailFragment(" + theClass.name() + "DetailFragment.ARG_VIEW_NEW, null);");
-					println("showingDetail = true;");
+//					println("showingDetail = true;");
 					println("break;");
 				FileUtilities.decIndent();
 				println("case R.id.menu_confirm_oncreation:");
@@ -1327,9 +1462,9 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 					println("if (AssociationEnd == ToONE || list_fragment.getSelectedPosition() != ListView.INVALID_POSITION)");
 					println("{");
 					FileUtilities.incIndent();
-						println("((NavigationBarFragment) navigation_bar).hide();");
+//						println("((NavigationBarFragment) navigation_bar).hide();");
 						println("setDetailFragment(" + theClass.name() + "DetailFragment.ARG_VIEW_EDIT,	clicked" + theClass.name() + ");");
-						println("showingDetail = true;");
+//						println("showingDetail = true;");
 					FileUtilities.decIndent();
 					println("}");
 					println("break;");
@@ -1343,9 +1478,10 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 						println("{");
 						FileUtilities.incIndent();
 							println("clicked" + theClass.name() + ".delete();");
-							println("list_fragment.setActivatedPosition(ListView.INVALID_POSITION);");
-							println("list_fragment.setSelection(ListView.INVALID_POSITION);");
-							println("getFragmentManager().beginTransaction().detach(detail_fragment).commit();");
+							println("list_fragment.show();");
+//							println("list_fragment.setActivatedPosition(ListView.INVALID_POSITION);");
+//							println("list_fragment.setSelection(ListView.INVALID_POSITION);");
+//							println("getFragmentManager().beginTransaction().detach(detail_fragment).commit();");
 						FileUtilities.decIndent();
 						println("}");
 						println("else");
@@ -1466,7 +1602,7 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 				println("{");
 				FileUtilities.incIndent();
 					println("clicked" + theClass.name() + " = new" + theClass.name() + ";");
-					println("((NavigationBarFragment) navigation_bar).show();");
+//					println("((NavigationBarFragment) navigation_bar).show();");
 					println("if (mTwoPane)");
 					FileUtilities.incIndent();
 						println("setDetailFragment(" + theClass.name() + "DetailFragment.ARG_VIEW_DETAIL,clicked" + theClass.name() + ");");
@@ -1648,7 +1784,7 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 
 		print("class " + theClass.name() + "DetailFragment");
 		
-		print(" extends Fragment implements DetailFragment");
+		print(" extends Fragment implements PropertyChangeListener, DetailFragment");
 		println("{");
 	}
 
@@ -1660,6 +1796,8 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 		println("import " + basePackageName + ".R;");
 		println("import " + basePackageName + "." + utilsLayerName + ".UtilNavigate;");
 		println("import " + basePackageName + "." + utilsLayerName + ".DetailFragment;");
+		println("import " + basePackageName + "." + utilsLayerName + ".PropertyChangeEvent;");
+		println("import " + basePackageName + "." + utilsLayerName + ".PropertyChangeListener;");
 		println("import " + basePackageName + "." + businessLayerName + "." + theClass.name() + ";");
 		println();
 
@@ -1686,6 +1824,7 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 
 		androidClassTypes.add("Activity");
 		androidClassTypes.add("Fragment");
+		androidClassTypes.add("FragmentTransaction");
 		androidClassTypes.add("Bundle");
 		androidClassTypes.add("LayoutInflater");
 		androidClassTypes.add("View");
@@ -1711,8 +1850,11 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 		println("public static final String ARG_VIEW_DETAIL = \"detail\";");
 		println("public static final String ARG_VIEW_NEW = \"new\";");
 		println("public static final String ARG_VIEW_EDIT = \"edit\";");
+		println("private Fragment fragment;");
 		println("private View rootView = null;");
 		println("private " + theClass.name() + " " + theClass.name().toLowerCase() + " = null;");
+		println("private int " + theClass.name().toLowerCase() + "ID = 0;");
+		println("private final String " + theClass.name().toUpperCase() + "ID = \"" + theClass.name().toUpperCase() + "ID\";");
 
 //		--------------*************** CODIGO NOVO - START  ******************* ------------------
 		List<MAttribute> finalAttributes = getDetailViewAttributes(theClass, true, true);
@@ -1743,29 +1885,61 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 		println("{");
 		FileUtilities.incIndent();
 			println("super.onCreate(savedInstanceState);");
-		 	println("if(getArguments() != null)");
+			println("if(savedInstanceState != null)");
 		 	println("{");
 		 	FileUtilities.incIndent();
-		 		println("if (getArguments().containsKey(ARG_VIEW_DETAIL))");
-		 		println("{");
-		 		FileUtilities.incIndent();
-		 			println(theClass.name().toLowerCase() + " = (" + theClass.name() + ") getArguments().getSerializable(ARG_VIEW_DETAIL);");
-		 		FileUtilities.decIndent();
-		 		println("}");
-		 		println("if(getArguments().containsKey(ARG_VIEW_EDIT))");
-		 		println("{");
-				FileUtilities.incIndent();
-		 			println(theClass.name().toLowerCase() + " = (" + theClass.name() + ") getArguments().getSerializable(ARG_VIEW_EDIT);");
-		 		FileUtilities.decIndent();
-		 		println("}");
-		 		println("if(getArguments().containsKey(ARG_VIEW_NEW))");
-		 		println("{");
-		 		FileUtilities.incIndent();
-		 			println("");
-		 		FileUtilities.decIndent();
-		 		println("}");
+		 		println(theClass.name().toLowerCase() + " = " + theClass.name() + ".get" + theClass.name() + "(savedInstanceState.getInt(" + theClass.name().toUpperCase() + "ID));");
 		 	FileUtilities.decIndent();
 		 	println("}");
+		 	println("else");
+		 	println("{");
+		 	FileUtilities.incIndent();
+			 	println("if(getArguments() != null)");
+			 	println("{");
+			 	FileUtilities.incIndent();
+			 		println("if (getArguments().containsKey(ARG_VIEW_DETAIL))");
+			 		println("{");
+			 		FileUtilities.incIndent();
+			 			println(theClass.name().toLowerCase() + " = (" + theClass.name() + ") getArguments().getSerializable(ARG_VIEW_DETAIL);");
+			 			println(theClass.name().toLowerCase() + "ID = " + theClass.name().toLowerCase() + ".ID();");
+			 			println(theClass.name() + ".getAccess().setChangeListener(this);");
+			 		FileUtilities.decIndent();
+			 		println("}");
+			 		println("if(getArguments().containsKey(ARG_VIEW_EDIT))");
+			 		println("{");
+					FileUtilities.incIndent();
+			 			println(theClass.name().toLowerCase() + " = (" + theClass.name() + ") getArguments().getSerializable(ARG_VIEW_EDIT);");
+			 			println(theClass.name().toLowerCase() + "ID = " + theClass.name().toLowerCase() + ".ID();");
+			 			println(theClass.name() + ".getAccess().setChangeListener(this);");
+			 		FileUtilities.decIndent();
+			 		println("}");
+			 		println("if(getArguments().containsKey(ARG_VIEW_NEW))");
+			 		println("{");
+			 		FileUtilities.incIndent();
+			 			println("");
+			 		FileUtilities.decIndent();
+			 		println("}");
+			 	FileUtilities.decIndent();
+				println("}");
+		 	FileUtilities.decIndent();
+		 	println("}");
+		 	println("fragment = this;");
+		FileUtilities.decIndent();
+		println("}");
+		println();
+	}
+	
+	@Override
+	public void printDetailFragment_onSaveInstanceState(MClass theClass){
+		println("@Override");
+		println("public void onSaveInstanceState(Bundle outState)");
+		println("{");
+		FileUtilities.incIndent();
+			println("super.onSaveInstanceState(outState);");
+			println("if(" + theClass.name().toLowerCase() + " != null)");
+			FileUtilities.incIndent();
+				println("outState.putInt(" + theClass.name().toUpperCase() + "ID, " + theClass.name().toLowerCase() + ".ID());");
+			FileUtilities.decIndent();
 		FileUtilities.decIndent();
 		println("}");
 		println();
@@ -1778,6 +1952,7 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 		println("{");
 		FileUtilities.incIndent();
 			println("super.onDestroy();");
+			println(theClass.name() + ".getAccess().removeChangeListener(this);");
 		FileUtilities.decIndent();
 		println("}");
 		println();
@@ -1811,29 +1986,29 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 
 			println("mCallbacks = (Callbacks) activity;");
 			
-			println("if(getArguments() != null)");
-		 	println("{");
-		 	FileUtilities.incIndent();
-		 		println("if (getArguments().containsKey(ARG_VIEW_DETAIL))");
-		 		println("{");
-		 		FileUtilities.incIndent();
-		 			println(theClass.name().toLowerCase() + " = (" + theClass.name() + ") getArguments().getSerializable(ARG_VIEW_DETAIL);");
-		 		FileUtilities.decIndent();
-		 		println("}");
-		 		println("if(getArguments().containsKey(ARG_VIEW_EDIT))");
-		 		println("{");
-				FileUtilities.incIndent();
-		 			println(theClass.name().toLowerCase() + " = (" + theClass.name() + ") getArguments().getSerializable(ARG_VIEW_EDIT);");
-		 		FileUtilities.decIndent();
-		 		println("}");
-		 		println("if(getArguments().containsKey(ARG_VIEW_NEW))");
-		 		println("{");
-		 		FileUtilities.incIndent();
-		 			println("");
-		 		FileUtilities.decIndent();
-		 		println("}");
-		 	FileUtilities.decIndent();
-		 	println("}");
+//			println("if(getArguments() != null)");
+//		 	println("{");
+//		 	FileUtilities.incIndent();
+//		 		println("if (getArguments().containsKey(ARG_VIEW_DETAIL))");
+//		 		println("{");
+//		 		FileUtilities.incIndent();
+//		 			println(theClass.name().toLowerCase() + " = (" + theClass.name() + ") getArguments().getSerializable(ARG_VIEW_DETAIL);");
+//		 		FileUtilities.decIndent();
+//		 		println("}");
+//		 		println("if(getArguments().containsKey(ARG_VIEW_EDIT))");
+//		 		println("{");
+//				FileUtilities.incIndent();
+//		 			println(theClass.name().toLowerCase() + " = (" + theClass.name() + ") getArguments().getSerializable(ARG_VIEW_EDIT);");
+//		 		FileUtilities.decIndent();
+//		 		println("}");
+//		 		println("if(getArguments().containsKey(ARG_VIEW_NEW))");
+//		 		println("{");
+//		 		FileUtilities.incIndent();
+//		 			println("");
+//		 		FileUtilities.decIndent();
+//		 		println("}");
+//		 	FileUtilities.decIndent();
+//		 	println("}");
 			
 		FileUtilities.decIndent();
 		println("}");
@@ -1859,13 +2034,15 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 		 		println("if (getArguments().containsKey(ARG_VIEW_DETAIL))");
 		 		println("{");
 		 		FileUtilities.incIndent();
-		 			println("rootView = getViewDetail(inflater, container, savedInstanceState);");
+		 			println("rootView = inflater.inflate(R.layout." + theClass.name().toLowerCase() + "_view_detail, container, false);");
+		 			println("setViewDetailData();");
 		 		FileUtilities.decIndent();
 		 		println("}");
 		 		println("if(getArguments().containsKey(ARG_VIEW_NEW) || getArguments().containsKey(ARG_VIEW_EDIT))");
 		 		println("{");
 				FileUtilities.incIndent();
-		 			println("rootView = getViewNewOrEdit(inflater, container, savedInstanceState);");
+					println("rootView = inflater.inflate(R.layout." + theClass.name().toLowerCase() + "_view_insertupdate, container, false);");
+		 			println("setViewNewOrEditData();");
 		 			println("rootView.findViewById(R.id.okButton).setOnClickListener(ClickListener);");
 		 			println("rootView.findViewById(R.id.cancelButton).setOnClickListener(ClickListener);");
 		 			println("if(getArguments().containsKey(ARG_VIEW_NEW))");
@@ -1896,7 +2073,10 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 		println("public void hide()");
 		println("{");
 		FileUtilities.incIndent();
-			println("((View) getView().getParent()).setVisibility(android.view.View.GONE);");
+			println("if(getView() != null)");
+			FileUtilities.incIndent();
+				println("((View) getView().getParent()).setVisibility(android.view.View.GONE);");
+			FileUtilities.decIndent();
 		FileUtilities.decIndent();
 		println("}");
 		println();
@@ -1905,7 +2085,10 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 		println("public void show()");
 		println("{");
 		FileUtilities.incIndent();
+			println("if(getView() != null)");
+			FileUtilities.incIndent();
 			println("((View) getView().getParent()).setVisibility(android.view.View.VISIBLE);");
+			FileUtilities.decIndent();
 		FileUtilities.decIndent();
 		println("}");
 		println();
@@ -1937,18 +2120,17 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 //		--------------*************** CODIGO NOVO - END  ******************* ------------------
 			for (MAttribute att : finalAttributes)
 //				if(att.name() != "ID")
-					println(att.name().toLowerCase() + "View = (" + AndroidTypes.androidPrimitiveTypeToWriteWidget(att.type()) + ") rootView.findViewById(R.id." + attributeBaseAncestor(theClass, att).name().toLowerCase() + "_insertupdate_value_" + att.name().toLowerCase() + ");");
+					println(att.name().toLowerCase() + "View = (" + AndroidTypes.androidPrimitiveTypeToWriteWidget(att.type()) + ") rootView.findViewById(R.id." + attributeBaseAncestor(theClass, att).name().toLowerCase() + "_insertupdate_" + att.name().toLowerCase() + "_value);");
 		FileUtilities.decIndent();
 		println("}");
 		println();
 	}
 	
 	@Override
-	public void printDetailFragment_getViewDetail(MClass theClass) {
-		println("public View getViewDetail(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState)");
+	public void printDetailFragment_setViewDetailData(MClass theClass) {
+		println("public View setViewDetailData()");
 		println("{");
 		FileUtilities.incIndent();
-			println("rootView = inflater.inflate(R.layout." + theClass.name().toLowerCase() + "_view_detail, container, false);");
 			println("if (" + theClass.name().toLowerCase() + " != null)");
 			println("{");
 			FileUtilities.incIndent();
@@ -1957,7 +2139,7 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 //			--------------*************** CODIGO NOVO - END  ******************* ------------------
 				for (MAttribute att : finalAttributes)
 					if(att.name() != "ID")
-						println("((" + AndroidTypes.androidPrimitiveTypeToReadWidget(att.type()) + ") rootView.findViewById(R.id." + attributeBaseAncestor(theClass, att).name().toLowerCase() + "_detail_value_" + att.name().toLowerCase() + "))." + AndroidTypes.androidWidgetContentSetter(att.type(), theClass.name().toLowerCase() + "." + att.name() + "()") + ";");
+						println("((" + AndroidTypes.androidPrimitiveTypeToReadWidget(att.type()) + ") rootView.findViewById(R.id." + attributeBaseAncestor(theClass, att).name().toLowerCase() + "_detail_" + att.name().toLowerCase() + "_value))." + AndroidTypes.androidWidgetContentSetter(att.type(), theClass.name().toLowerCase() + "." + att.name() + "()") + ";");
 			FileUtilities.decIndent();
 			println("}");
 			println("return rootView;");
@@ -1983,11 +2165,10 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 	}
 	
 	@Override
-	public void printDetailFragment_getViewNewOrEdit(MClass theClass) {
-		println("public View getViewNewOrEdit(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState)");
+	public void printDetailFragment_setViewNewOrEditData(MClass theClass) {
+		println("public View setViewNewOrEditData()");
 		println("{");
 		FileUtilities.incIndent();
-			println("rootView = inflater.inflate(R.layout." + theClass.name().toLowerCase() + "_view_insertupdate, container, false);");
 			println("if (" + theClass.name().toLowerCase() + " != null)");
 			println("{");
 			FileUtilities.incIndent();
@@ -2019,8 +2200,12 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 //			--------------*************** CODIGO NOVO - END  ******************* ------------------
 			
 			List<MAttribute> inheritedUniqueAttributes = new ArrayList<MAttribute>();
-			for (MClass theParentClass : theClass.allParents())
-					inheritedUniqueAttributes.addAll(theParentClass.attributes());
+			for (MClass theParentClass : theClass.allParents()){
+				List<MAttribute> inheritedAttributes_temp = new ArrayList<MAttribute>();
+				for(MAttribute attribute : theParentClass.attributes())
+					inheritedAttributes_temp.add(attribute);
+				inheritedUniqueAttributes.addAll(0, inheritedAttributes_temp);
+			}
 			List<MAttribute> AllAttributes = new ArrayList<MAttribute>();
 			AllAttributes.addAll(inheritedUniqueAttributes);
 			AllAttributes.addAll(theClass.attributes());
@@ -2168,8 +2353,8 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 		 		println("if(v.getId() == R.id.okButton)");
 		 		println("{");
 		 		FileUtilities.incIndent();
-		 			println("InputMethodManager inputManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);");
-		 			println("inputManager.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);");
+//		 			println("InputMethodManager inputManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);");
+//		 			println("inputManager.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);");
 		 			println("if(getArguments().containsKey(ARG_VIEW_NEW))");
 		 			println("{");
 		 			FileUtilities.incIndent();
@@ -2196,8 +2381,8 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 				println("if(v.getId() == R.id.cancelButton)");
 	 			println("{");
 	 			FileUtilities.incIndent();
-	 				println("InputMethodManager inputManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);");
-	 				println("inputManager.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);");
+//	 				println("InputMethodManager inputManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);");
+//	 				println("inputManager.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);");
 	 				println("mCallbacks.onDetailCancel();");
 	 			FileUtilities.decIndent();
 	 			println("}");
@@ -2208,6 +2393,86 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 		println();
 	}
 
+	@Override
+	public void printDetailFragment_BusinessListeners(MClass theClass) {
+		println("@Override");
+		println("public void propertyChange(final PropertyChangeEvent event)");
+		println("{");
+		FileUtilities.incIndent();
+			println("getActivity().runOnUiThread(new Runnable()");
+			println("{");
+			FileUtilities.incIndent();
+				println("@Override");
+				println("public void run()");
+				println("{");
+				FileUtilities.incIndent();
+					println("switch(event.getCommandType())");
+					println("{");
+					FileUtilities.incIndent();
+						println("case INSERT:");
+						FileUtilities.incIndent();
+							println("//no need to change anything");
+						FileUtilities.decIndent();
+						println("break;");
+						
+						println("case INSERT_ASSOCIATION:");
+						FileUtilities.incIndent();
+							println("//no need to change anything");
+						FileUtilities.decIndent();
+						println("break;");
+						
+						println("case UPDATE:");
+						FileUtilities.incIndent();
+							println("if(" + theClass.name().toLowerCase() + "ID == event.getOldObjectID())");
+							FileUtilities.incIndent();
+								println(theClass.name().toLowerCase() + " = (" + theClass.name() + ") event.getNewObject();");
+								println(theClass.name().toLowerCase() + "ID = " + theClass.name().toLowerCase() + ".ID();");
+								println("if (getArguments().containsKey(ARG_VIEW_DETAIL))");
+								FileUtilities.incIndent();
+									println("setViewDetailData();");
+								FileUtilities.decIndent();
+								println("else if(getArguments().containsKey(ARG_VIEW_EDIT))");
+								FileUtilities.incIndent();
+									println("setViewNewOrEditData();");
+								FileUtilities.decIndent();
+							FileUtilities.decIndent();
+						FileUtilities.decIndent();
+						println("break;");
+						
+						println("case DELETE:");
+						FileUtilities.incIndent();
+							println("if(" + theClass.name().toLowerCase() + "ID == event.getOldObjectID())");
+							println("{");
+							FileUtilities.incIndent();
+								println("FragmentTransaction ft = getActivity().getFragmentManager().beginTransaction();");
+								println("ft.remove(fragment);");
+								println("ft.commit();");
+							FileUtilities.decIndent();
+							println("}");
+						FileUtilities.decIndent();
+						println("break;");
+						
+						println("case DELETE_ASSOCIATION:");
+						FileUtilities.incIndent();
+							println("//no need to change anything");
+						FileUtilities.decIndent();
+						println("break;");
+						
+						println("default:");
+						FileUtilities.incIndent();
+						
+						FileUtilities.decIndent();
+						println("break;");
+					FileUtilities.decIndent();
+					println("}");
+				FileUtilities.decIndent();
+				println("}");
+			FileUtilities.decIndent();
+			println("});");
+		FileUtilities.decIndent();
+		println("}");
+		println();
+	}
 	
 //	******************** --- Fragment - Detail - End --- *****************************
 	
@@ -2254,7 +2519,17 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 		println("import " + basePackageName + "." + utilsLayerName + ".PropertyChangeListener;");
 		println("import " + basePackageName + "." + utilsLayerName + ".NavigationBarFragment;");
 		println("import " + basePackageName + "." + businessLayerName + "." + theClass.name() + ";");
-		
+		//inheritance navigations - start
+		if(isSubClass(theClass)){
+			println("import " + basePackageName + "." + businessLayerName + "." + theClass.parents().iterator().next().name() + ";");
+		}
+		if(isSuperClass(theClass)){
+			for(MClass sub : theClass.children()){
+				println("import " + basePackageName + "." + businessLayerName + "." + sub.name() + ";");
+			}
+		}
+		//inheritance navigations - end
+				
 		List<MClass> activityImport = new ArrayList<MClass>();
 		
 		for (AssociationInfo association : AssociationInfo.getAllAssociationsInfo(theClass)){
@@ -2265,6 +2540,16 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 			if(!activityImport.contains(association.getTargetAE().cls()))
 				activityImport.add(association.getTargetAE().cls());
 		}
+		//inheritance navigations - start
+		if(isSubClass(theClass)){
+			activityImport.add(theClass.parents().iterator().next());
+		}
+		if(isSuperClass(theClass)){
+			for(MClass sub : theClass.children()){
+				activityImport.add(sub);
+			}
+		}
+		//inheritance navigations - end
 		for (MClass clazz : activityImport)
 			println("import " + basePackageName + "." + presentationLayerName + "." + clazz.name() + "." + clazz.name() + "Activity;");
 		println();
@@ -2302,10 +2587,19 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 		println("private View rootView = null;");
 		println("private " + theClass.name() + " clicked" + theClass.name() + " = null;");
 		println("private int clicked" + theClass.name() + "ID;");
+		println("private final String " + theClass.name().toUpperCase() + "ID = \"" + theClass.name().toUpperCase() + "ID\";");
 		println("private TextView number_objects;");
 		
 		for (AssociationInfo association : AssociationInfo.getAllAssociationsInfo(theClass))
 			println("private View " + association.getTargetAE().name() + "View;");
+		
+		//inheritance navigations - start
+		if(isSubClass(theClass))
+			println("private View " + theClass.parents().iterator().next().name() + "View;");
+		if(isSuperClass(theClass))
+			for(MClass sub : theClass.children())
+				println("private View " + sub.name() + "View;");
+		//inheritance navigations - end
 		
 		println();
 	}
@@ -2329,12 +2623,36 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 		println("{");
 		FileUtilities.incIndent();
 			println("super.onCreate(savedInstanceState);");
+			println("if(savedInstanceState != null)");
+			println("{");
+			FileUtilities.incIndent();
+				println("clicked" + theClass.name() + " = " + theClass.name() + ".get" + theClass.name() + "(savedInstanceState.getInt(" + theClass.name().toUpperCase() + "ID));");
+			FileUtilities.decIndent();
+			println("}");
 			println(theClass.name() + ".getAccess().setChangeListener(this);");
 		FileUtilities.decIndent();
 		println("}");
 		println();
 	}
 
+	@Override
+	public void printNavigationBarFragment_onSaveInstanceState(MClass theClass) {
+		println("@Override");
+		println("public void onSaveInstanceState(Bundle outState)");
+		println("{");
+		FileUtilities.incIndent();
+			println("super.onSaveInstanceState(outState);");
+			println("if(clicked" + theClass.name() + " != null)");
+			println("{");
+			FileUtilities.incIndent();
+				println("outState.putInt(" + theClass.name().toUpperCase() + "ID, clicked" + theClass.name() + ".ID());");
+			FileUtilities.decIndent();
+			println("}");
+		FileUtilities.decIndent();
+		println("}");
+		println();
+	}
+	
 	@Override
 	public void printNavigationBarFragment_onDestroy(MClass theClass) {
 		println("@Override");
@@ -2355,7 +2673,6 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 		println("{");
 		FileUtilities.incIndent();
 			println("super.onActivityCreated(savedInstanceState);");
-			println("setRetainInstance(true);");
 			println();
 			for (AssociationInfo association : AssociationInfo.getAllAssociationsInfo(theClass)){
 				if(association.getSourceAE().cls() == theClass)
@@ -2366,6 +2683,24 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 				println(association.getTargetAE().name() + "View.setOnLongClickListener(LongClickListener);");
 				println();
 			}
+			//inheritance navigations - start
+			if(isSubClass(theClass)){
+				println(theClass.parents().iterator().next().name() + "View = (View) getActivity().findViewById(R.id." + theClass.name().toLowerCase() + "_navigationbar_association_" + theClass.parents().iterator().next().name().toLowerCase() + ");");
+				println(theClass.parents().iterator().next().name() + "View.setOnClickListener(ClickListener);");
+				println(theClass.parents().iterator().next().name() + "View.setOnLongClickListener(LongClickListener);");
+				println();
+			}
+			if(isSuperClass(theClass)){
+				for(MClass sub : theClass.children()){
+					println(sub.name() + "View = (View) getActivity().findViewById(R.id." + theClass.name().toLowerCase() + "_navigationbar_association_" + sub.name().toLowerCase() + ");");
+					println(sub.name() + "View.setOnClickListener(ClickListener);");
+					println(sub.name() + "View.setOnLongClickListener(LongClickListener);");
+					println();
+				}
+			}
+			//inheritance navigations - end
+			
+			println("setViewingObject(clicked" + theClass.name() + ");");
 		FileUtilities.decIndent();
 		println("}");
 		println();
@@ -2402,7 +2737,10 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 		println("public void hide()");
 		println("{");
 		FileUtilities.incIndent();
-			println("((View) getView().getParent()).setVisibility(android.view.View.GONE);");
+			println("if(getView() != null)");
+			FileUtilities.incIndent();
+				println("((View) getView().getParent()).setVisibility(android.view.View.GONE);");
+			FileUtilities.decIndent();
 		FileUtilities.decIndent();
 		println("}");
 		println();
@@ -2411,7 +2749,10 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 		println("public void show()");
 		println("{");
 		FileUtilities.incIndent();
-			println("((View) getView().getParent()).setVisibility(android.view.View.VISIBLE);");
+			println("if(getView() != null)");
+			FileUtilities.incIndent();
+				println("((View) getView().getParent()).setVisibility(android.view.View.VISIBLE);");
+			FileUtilities.decIndent();
 		FileUtilities.decIndent();
 		println("}");
 		println();
@@ -2464,9 +2805,9 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 			FileUtilities.incIndent();
 				for (AssociationInfo association : AssociationInfo.getAllAssociationsInfo(theClass)){
 					if(association.getSourceAE().cls() == theClass)
-						println("number_objects = (TextView) rootView.findViewById(R.id." + theClass.name().toLowerCase() + "_navigationbar_association_number_objects_text_" + association.getTargetAE().cls().name().toLowerCase() + ");");
+						println("number_objects = (TextView) rootView.findViewById(R.id." + theClass.name().toLowerCase() + "_navigationbar_association_" + association.getTargetAE().cls().name().toLowerCase() + "_numberobjects);");
 					else
-						println("number_objects = (TextView) rootView.findViewById(R.id." + associationTargetBaseAncestor(theClass, association).name().toLowerCase() + "_navigationbar_association_number_objects_text_" + association.getTargetAE().cls().name().toLowerCase() + ");");
+						println("number_objects = (TextView) rootView.findViewById(R.id." + associationTargetBaseAncestor(theClass, association).name().toLowerCase() + "_navigationbar_association_" + association.getTargetAE().cls().name().toLowerCase() + "_numberobjects);");
 					
 					if(association.getTargetAE().isCollection()){
 						println("if(" + theClass.name().toLowerCase() + "." + association.getTargetAE().name() + "().isEmpty())");
@@ -2502,6 +2843,31 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 						println();
 					}
 				}
+				//inheritance navigations - start
+//				if(isSubClass(theClass)){
+//					not needed -> always 1
+//				}
+				if(isSuperClass(theClass)){
+					for(MClass sub : theClass.children()){
+						println("number_objects = (TextView) rootView.findViewById(R.id." + theClass.name().toLowerCase() + "_navigationbar_association_" + sub.name().toLowerCase() + "_numberobjects);");
+						println("if(" + sub.name() + ".allInstances" + "().isEmpty())");
+						println("{");
+						FileUtilities.incIndent();
+							println("prepareView(" + sub.name() + "View, true);");
+							println("setNumberAssociation(number_objects, 0);");
+						FileUtilities.decIndent();
+						println("}");
+						println("else");
+						println("{");
+						FileUtilities.incIndent();
+							println("prepareView(" + sub.name() + "View, true);");
+							println("setNumberAssociation(number_objects, " + sub.name() + ".allInstances().size());");
+						FileUtilities.decIndent();
+						println("}");
+						println();
+					}
+				}
+				//inheritance navigations - end
 				
 				println("objectValidation();");
 			FileUtilities.decIndent();
@@ -2561,16 +2927,26 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 				println("if(clicked" + theClass.name() + ".has" + capitalize(association.getTargetAE().name()) + "())");
 				println("{");
 				FileUtilities.incIndent();
-					println(association.getTargetAE().name() + "View.setBackgroundColor(Color.TRANSPARENT);");
+					println(association.getTargetAE().name() + "View.setBackgroundResource(R.drawable.navigationbar_selector);");
 				FileUtilities.decIndent();
 				println("}");
 				println("else");
 				println("{");
 				FileUtilities.incIndent();
-					println(association.getTargetAE().name() + "View.setBackgroundColor(Color.RED);");
+					println(association.getTargetAE().name() + "View.setBackgroundResource(R.drawable.navigationbar_selector_error);");
 				FileUtilities.decIndent();
 				println("}");
 			}
+			//inheritance navigations - start
+//			if(isSubClass(theClass)){
+//				not needed -> always 1
+//			}
+//			if(isSuperClass(theClass)){
+//				for(MClass sub : theClass.children()){
+//					not needed -> it is not mandatory to have subs
+//				}
+//			}
+			//inheritance navigations - end
 		FileUtilities.decIndent();
 		println("}");
 		println();
@@ -2610,12 +2986,46 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 								if(upperRange.equals("*"))
 									upperRange = "-1";
 								if(association.getSourceAE().cls() == theClass)
-									println("UtilNavigate.toActivity(getActivity(), " + association.getTargetAE().cls().name() + "Activity.class, MasterActivity.ACTION_MODE_READ, UtilNavigate.setActivityBundleArguments(\"" + theClass.name().toUpperCase() + "Object\", clicked" + theClass.name() + ".ID(), \"" + theClass.name().toUpperCase() + "Association\", " + upperRange + "));");
+									println("UtilNavigate.toActivity(getActivity(), " + association.getTargetAE().cls().name() + "Activity.class, MasterActivity.ACTION_MODE_READ, UtilNavigate.setActivityBundleArguments(\"" + theClass.name().toUpperCase() + "Object\", clicked" + theClass.name() + ".ID(), \"" + association.getSourceAE().name().toUpperCase() + "_" + association.getTargetAE().name().toUpperCase() + "Association\", " + upperRange + "));");
 								else
 									println("UtilNavigate.toActivity(getActivity(), " + association.getTargetAE().cls().name() + "Activity.class, MasterActivity.ACTION_MODE_READ, UtilNavigate.setActivityBundleArguments(\"" + associationTargetBaseAncestor(theClass, association).name().toUpperCase() + "Object\", clicked" + theClass.name() + ".ID(), \"" + associationTargetBaseAncestor(theClass, association).name().toUpperCase() + "Association\", " + upperRange + "));");
 							FileUtilities.decIndent();
 							println("}");
 						}
+						//inheritance navigations - start
+						if(isSubClass(theClass)){
+							println("if(view.getId() == R.id." + theClass.name().toLowerCase() + "_navigationbar_association_" + theClass.parents().iterator().next().name().toLowerCase() + ")");
+							println("{");
+							FileUtilities.incIndent();
+								MMultiplicity targetMultiplicity = new MMultiplicity();
+								targetMultiplicity.addRange(1, 1);
+								String upperRange = targetMultiplicity.toString();
+								if(targetMultiplicity.toString().contains(".."))
+									upperRange = targetMultiplicity.toString().split("\\.\\.")[1];
+								if(upperRange.equals("*"))
+									upperRange = "-1";
+								println("UtilNavigate.toActivity(getActivity(), " + theClass.parents().iterator().next().name() + "Activity.class, MasterActivity.ACTION_MODE_READ, UtilNavigate.setActivityBundleArguments(\"" + theClass.parents().iterator().next().name().toUpperCase() + "Object\", clicked" + theClass.name() + ".ID(), \"" + theClass.parents().iterator().next().name().toUpperCase() + "Association\", " + upperRange + "));");
+							FileUtilities.decIndent();
+							println("}");
+						}
+						if(isSuperClass(theClass)){
+							for(MClass sub : theClass.children()){
+								println("if(view.getId() == R.id." + theClass.name().toLowerCase() + "_navigationbar_association_" + sub.name().toLowerCase() + ")");
+								println("{");
+								FileUtilities.incIndent();
+									MMultiplicity targetMultiplicity = new MMultiplicity();
+									targetMultiplicity.addRange(0, MMultiplicity.MANY);
+									String upperRange = targetMultiplicity.toString();
+									if(targetMultiplicity.toString().contains(".."))
+										upperRange = targetMultiplicity.toString().split("\\.\\.")[1];
+									if(upperRange.equals("*"))
+										upperRange = "-1";
+									println("UtilNavigate.toActivity(getActivity(), " + sub.name() + "Activity.class, MasterActivity.ACTION_MODE_READ, UtilNavigate.setActivityBundleArguments(\"" + theClass.name().toUpperCase() + "Object\", clicked" + theClass.name() + ".ID(), \"" + theClass.name().toUpperCase() + "Association\", " + upperRange + "));");
+								FileUtilities.decIndent();
+								println("}");
+							}
+						}
+						//inheritance navigations - end
 					FileUtilities.decIndent();
 					println("}");
 				FileUtilities.decIndent();
@@ -2658,6 +3068,26 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 							FileUtilities.decIndent();
 							println("}");
 						}
+						//inheritance navigations - start
+						if(isSubClass(theClass)){
+							println("if(view.getId() == R.id." + theClass.name().toLowerCase() + "_navigationbar_association_" + theClass.parents().iterator().next().name().toLowerCase() + ")");
+							println("{");
+							FileUtilities.incIndent();
+								println("UtilNavigate.showWarning(getActivity(), \"Action - Association creation\", \"this action is not define since is a navigation to a super class\");");
+							FileUtilities.decIndent();
+							println("}");
+						}
+						if(isSuperClass(theClass)){
+							for(MClass sub : theClass.children()){
+								println("if(view.getId() == R.id." + theClass.name().toLowerCase() + "_navigationbar_association_" + sub.name().toLowerCase() + ")");
+								println("{");
+								FileUtilities.incIndent();
+									println("UtilNavigate.showWarning(getActivity(), \"Action - Association creation\", \"this action is not define since is a navigation to a sub class\");");
+								FileUtilities.decIndent();
+								println("}");
+							}
+						}
+						//inheritance navigations - end
 					FileUtilities.decIndent();
 					println("}");
 				FileUtilities.decIndent();
@@ -2849,7 +3279,7 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 
 		print("class " + theClass.name() + "ListViewHolder");
 		
-		print(" implements ListViewHolder");
+		print(" implements ListViewHolder, Serializable");
 		println("{");
 	}
 
@@ -2858,6 +3288,7 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 	 ***********************************************************/
 	private void printListViewHolder_Imports(MClass theClass)
 	{
+		println("import java.io.Serializable;");
 		println("import " + basePackageName + ".R;");
 		println("import " + basePackageName + "." + utilsLayerName + ".ListViewHolder;");
 		println("import " + basePackageName + "." + businessLayerName + "." + theClass.name() + ";");
@@ -2888,12 +3319,12 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 	@Override
 	public void printListViewHolder_Attributes(MClass theClass)
 	{
-		println("private ViewHolder holder;");
-		println("private int layout = R.layout." + theClass.name().toLowerCase() + "_view_list;");
-		println("private int contractError = R.id.default_list_invalid;");
+		println("private transient ViewHolder holder;");
+		println("private final int layout = R.layout." + theClass.name().toLowerCase() + "_view_list;");
+		println("private final int contractError = R.id.default_list_invalid;");
 		
 		for (MAttribute att : ModelUtilities.annotationValuesToAttributeOrdered(theClass.allAttributes(), theClass.getAnnotation("list").getValues()))
-			println("private int " + att.name() + " = R.id." +  attributeBaseAncestor(theClass, att).name().toLowerCase() + "_list_value_" + att.name().toLowerCase() + ";");
+			println("private final int " + att.name() + " = R.id." +  attributeBaseAncestor(theClass, att).name().toLowerCase() + "_list_" + att.name().toLowerCase() + "_value;");
 		
 		println();
 	}
@@ -2943,9 +3374,21 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 	{
 		printListViewHolder_setViewHolderContent(theClass);
 		printListViewHolder_setNewViewHolder(theClass);
+		printListViewHolder_getViewHolder(theClass);
 	}
 	
-	public void printListViewHolder_setViewHolderContent(MClass theClass)
+	private void printListViewHolder_getViewHolder(MClass theClass)
+	{
+		println("@Override");
+		println("public int getViewHolder()");
+		println("{");
+		incIndent();
+			println("return this.layout;");
+		decIndent();
+		println("}");
+	}
+	
+	private void printListViewHolder_setViewHolderContent(MClass theClass)
 	{
 		println("@Override");
 		println("public View setViewHolderContent(View convertView, Object object)");
@@ -2995,7 +3438,7 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 		println();
 	}
 	
-	public void printListViewHolder_setNewViewHolder(MClass theClass)
+	private void printListViewHolder_setNewViewHolder(MClass theClass)
 	{
 		println("@Override");
 		println("public View setNewViewHolder(Activity context, View convertView)");
