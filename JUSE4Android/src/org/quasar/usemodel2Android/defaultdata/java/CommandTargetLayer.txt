@@ -1,5 +1,0 @@
-package org.quasar.usemodel2Android.defaultdata.java;
-
-public enum CommandTargetLayer {
-		DATABASE, VIEW
-}

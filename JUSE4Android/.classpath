@@ -8,6 +8,7 @@
 	<classpathentry kind="lib" path="lib/db4o-8.0.249.16098-cs-java5.jar"/>
 	<classpathentry kind="lib" path="lib/db4o-8.0.249.16098-optional-java5.jar"/>
 	<classpathentry kind="lib" path="lib/jdom-2.0.5_(OneAttributePerLine_change (AbstractXMLOutputProcessor)).jar"/>
-	<classpathentry kind="lib" path="lib/use.jar"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/USE3.0.6"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/jdom"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

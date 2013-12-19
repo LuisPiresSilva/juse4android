@@ -4,9 +4,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.jdom2.Attribute;
@@ -37,7 +39,6 @@ import org.quasar.use2android.jdom.android.XML.widgets.ScrollView;
 import org.quasar.use2android.jdom.android.XML.widgets.Strings;
 import org.quasar.use2android.jdom.android.XML.widgets.Style;
 import org.quasar.use2android.jdom.android.XML.widgets.Text;
-import org.quasar.use2android.jdom.android.XML.widgets.TextAppearance;
 import org.quasar.use2android.jdom.android.XML.widgets.TextView;
 import org.quasar.use2android.jdom.android.XML.widgets.Width;
 import org.tzi.use.uml.mm.MAttribute;
@@ -78,15 +79,16 @@ public class AndroidViewLayer extends ViewVisitor{
 	private String xlarge_port = values + separator + xlarge + separator + port;
 	private String xlarge_land = values + separator + xlarge + separator + land;
 
-	public AndroidViewLayer(String targetPackage, String ProjectName, MModel mModel, String author, String javaWorkspace, String presentationLayerName, ModelToXMLUtilities statistics) {
+	public AndroidViewLayer(String targetPackage, String ProjectName, MModel mModel, String author, String sourcePath, String targetWorkspace, String presentationLayerName, ModelToXMLUtilities statistics) {
 		this.targetPackage = targetPackage;
-		this.javaWorkspace = javaWorkspace;
+		this.targetWorkspace = targetWorkspace;
 		this.presentationLayerName = presentationLayerName;
-		this.rootDirectory = javaWorkspace + "/" + ProjectName + "/res/";
+		this.rootDirectory = targetWorkspace + "/" + ProjectName + "/res/";
 		this.mModel = mModel;
 		this.author = author;
 		this.statistics = statistics;
 		this.ProjectName = ProjectName;
+		this.sourcePath = sourcePath;
 		
 		this.format = Format.getPrettyFormat();
 		format.setIndent("    ");
@@ -97,9 +99,10 @@ public class AndroidViewLayer extends ViewVisitor{
 	private String targetPackage;
 	private MModel mModel;
 	private String author;
-	private String javaWorkspace;
+	private String targetWorkspace;
 	private String presentationLayerName;
 	private String rootDirectory;
+	private String sourcePath;
 	private Namespace namespace = Namespace.getNamespace("android", "http://schemas.android.com/apk/res/android");
 	private Format format;
 	
@@ -205,6 +208,20 @@ public class AndroidViewLayer extends ViewVisitor{
 		generateMultiPaneRef(xlarge_port, "twopane");
 		generateMultiPaneRef(xlarge_land, "twopane");
 		
+		generateDefaultComponentStyles(normal_port);
+		generateDefaultComponentStyles(normal_land);
+		generateDefaultComponentStyles(large_port);
+		generateDefaultComponentStyles(large_land);
+		generateDefaultComponentStyles(xlarge_port);
+		generateDefaultComponentStyles(xlarge_land);
+		
+		generateTypeComponentStyles(normal_port);
+		generateTypeComponentStyles(normal_land);
+		generateTypeComponentStyles(large_port);
+		generateTypeComponentStyles(large_land);
+		generateTypeComponentStyles(xlarge_port);
+		generateTypeComponentStyles(xlarge_land);
+		
 		generateRawStrings();
 		generateDefaultXML();
 		generateDefaultMedia(hdpi);
@@ -229,7 +246,7 @@ public class AndroidViewLayer extends ViewVisitor{
 	}
 
 	public void generateManifest(){
-		String targetDirectory = javaWorkspace + "/" + ProjectName + "/";
+		String targetDirectory = targetWorkspace + "/" + ProjectName + "/";
 		String XMLName = "AndroidManifest";
 		String classId;
 		
@@ -271,7 +288,7 @@ public class AndroidViewLayer extends ViewVisitor{
 			application.addContent(launcher_activity);
 			
 			for (MClass cls : mModel.classes()){
-				if(cls.isAnnotated() && cls.getAnnotation("business") != null){
+				if(cls.isAnnotated() && cls.getAnnotation("domain") != null){
 					classId = cls.name().toLowerCase();
 					Element activity = new Element("activity");
 					activity.setAttribute("configChanges","orientation");
@@ -308,7 +325,7 @@ public class AndroidViewLayer extends ViewVisitor{
 		String XMLName;
 		String classId;
 		for (MClass cls : mModel.classes()){
-			if(cls.isAnnotated() && cls.getAnnotation("business") != null){
+			if(cls.isAnnotated() && cls.getAnnotation("domain") != null){
 				classId = cls.name().toLowerCase();
 				XMLName = classId + "_layout_onepane";
 				if (FileUtilities.openOutputFile(targetDirectory, XMLName + ".xml")){					
@@ -351,7 +368,7 @@ public class AndroidViewLayer extends ViewVisitor{
 		String XMLName;
 		String classId;
 		for (MClass cls : mModel.classes()){
-			if(cls.isAnnotated() && cls.getAnnotation("business") != null){
+			if(cls.isAnnotated() && cls.getAnnotation("domain") != null){
 				classId = cls.name().toLowerCase();
 				XMLName = classId + "_layout_twopane";
 				if (FileUtilities.openOutputFile(targetDirectory, XMLName + ".xml")){					
@@ -400,22 +417,28 @@ public class AndroidViewLayer extends ViewVisitor{
 		XMLName = "PaneDecider";
 		if (FileUtilities.openOutputFile(targetDirectory, XMLName + ".xml")){					
 			Element rootView = new Resources();
+			Element bool = new Element("bool");
+			bool.setAttribute("name", "has_two_panes");
+			if(typePane.equals("onepane"))
+				bool.setText("false");
+			else if(typePane.equals("twopane"))
+				bool.setText("true");
 			
-			if(!typePane.equals("onepane")){
-				for (MClass cls : mModel.classes()){
-					if(cls.isAnnotated() && cls.getAnnotation("business") != null){
-						classId = cls.name().toLowerCase();
-						
-						Element item = new Element("item");
-						item.setAttribute("name", classId + "_layout_onepane");
-						item.setAttribute("type", "layout");
-						item.setText("@layout/" + classId + "_layout_" + typePane);
-						
-						
-						rootView.addContent(item);
-					}
-				}
-			}
+			rootView.addContent(bool);
+//				for (MClass cls : mModel.classes()){
+//					if(cls.isAnnotated() && cls.getAnnotation("domain") != null){
+//						classId = cls.name().toLowerCase();
+//						
+//						Element item = new Element("item");
+//						item.setAttribute("name", classId + "_layout_onepane");
+//						item.setAttribute("type", "layout");
+//						item.setText("@layout/" + classId + "_layout_" + typePane);
+//						
+//						
+//						rootView.addContent(item);
+//					}
+//				}
+//			}
 						
 			XMLOutputter outputter = new XMLOutputter();
 			try {
@@ -428,13 +451,274 @@ public class AndroidViewLayer extends ViewVisitor{
 		}
 	}
 	
+	public void generateDefaultComponentStyles(String typeScreen) {
+		String targetDirectory = rootDirectory + typeScreen + "/";
+		String XMLName;
+		XMLName = "default_component_styles";
+		if (FileUtilities.openOutputFile(targetDirectory, XMLName + ".xml")){					
+			Element rootView = new Resources();
+			
+			//TextView - start
+			Element textViewstyle = new Element("style");
+			textViewstyle.setAttribute("name", "default_textview_style");
+			if(typeScreen.equals(normal_port) || typeScreen.equals(normal_land))
+				textViewstyle.setAttribute("parent", "@android:style/TextAppearance.Medium");
+			else if(typeScreen.equals(large_port) || typeScreen.equals(large_land))
+				textViewstyle.setAttribute("parent", "@android:style/TextAppearance.Large");
+			else if(typeScreen.equals(xlarge_port) || typeScreen.equals(xlarge_land))
+				textViewstyle.setAttribute("parent", "@android:style/TextAppearance.Large");
+			
+			rootView.addContent(textViewstyle);
+			//TextView - end
+			
+			//EditText - start
+			Element edittextstyle = new Element("style");
+			edittextstyle.setAttribute("name", "default_edittext_style");
+			if(typeScreen.equals(normal_port) || typeScreen.equals(normal_land))
+				edittextstyle.setAttribute("parent", "@android:style/TextAppearance.Medium");
+			else if(typeScreen.equals(large_port) || typeScreen.equals(large_land))
+				edittextstyle.setAttribute("parent", "@android:style/TextAppearance.Large");
+			else if(typeScreen.equals(xlarge_port) || typeScreen.equals(xlarge_land))
+				edittextstyle.setAttribute("parent", "@android:style/TextAppearance.Large");
+			
+			rootView.addContent(edittextstyle);
+			//EditText - end
+			
+//			others components
+			Element datepicker = new Element("style");
+			datepicker.setAttribute("name", "default_datepicker_style");
+			rootView.addContent(datepicker);
+			
+			
+			XMLOutputter outputter = new XMLOutputter();
+			try {
+				outputter.setFormat(format);
+				outputter.output(new Document(rootView), new FileOutputStream (targetDirectory + XMLName + ".xml"));
+				statistics.addOneToGenerated();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	public void generateTypeComponentStyles(String typeScreen) {
+		String targetDirectory = rootDirectory + typeScreen + "/";
+		String XMLName;
+		String classId;
+		for (MClass cls : mModel.classes()){
+			if(cls.isAnnotated() && cls.getAnnotation("domain") != null){
+				XMLName = cls.name().toLowerCase() + "_component_styles";
+				if (FileUtilities.openOutputFile(targetDirectory, XMLName + ".xml")){					
+					Element rootView = new Resources();
+					classId = cls.name().toLowerCase();
+					
+					//detail - start
+					List<MAttribute> finalReadAttributeList;
+					if(cls.getAnnotation("display") != null)
+						finalReadAttributeList = ModelUtilities.annotationValuesToAttributeOrdered(cls.attributes(), cls.getAnnotation("display").getValues());
+					else
+						finalReadAttributeList = cls.attributes();
+					
+					for(MAttribute att : finalReadAttributeList){
+						Element style_descriptor = new Element("style");
+						Element style_read = new Element("style");
+						
+						
+						style_descriptor.setAttribute("name", classId + "_detail_" + att.name().toLowerCase() + "_descriptor_style");
+						style_descriptor.setAttribute("parent", "@style/default_textview_style");
+						style_read.setAttribute("name", classId + "_detail_" + att.name().toLowerCase() + "_value_style");
+						
+	//					if(att.type().isBoolean())
+						
+						if(att.type().isDate() || (att.type().isObjectType() && att.type().toString().equals("Date"))){
+							style_read.setAttribute("parent", "@style/default_datepicker_style");						
+						}
+						if(att.type().isEnum()){
+							style_read.setAttribute("parent", "@style/default_textview_style");			
+						}
+						if(att.type().isInteger() || att.type().isNumber() || att.type().isString()){
+							style_read.setAttribute("parent", "@style/default_textview_style");
+						}
+						
+						if(style_read.getAttributesSize() > 0 && style_read.getAttributesSize() > 0){
+							rootView.addContent(style_descriptor);
+							rootView.addContent(style_read);
+						}
+					}
+					//detail - end
+					
+					//insertupdate - start
+					List<MAttribute> finalWriteAttributeList;
+					if(cls.getAnnotation("creation") != null)
+						finalWriteAttributeList = ModelUtilities.annotationValuesToAttributeOrdered(cls.attributes(), cls.getAnnotation("creation").getValues());
+					else
+						finalWriteAttributeList = cls.attributes();
+					
+					for(MAttribute att : finalWriteAttributeList){
+						Element style_descriptor = new Element("style");
+						Element style_write = new Element("style");
+						
+						style_descriptor.setAttribute("name", classId + "_insertupdate_" + att.name().toLowerCase() + "_descriptor_style");
+						style_descriptor.setAttribute("parent", "@style/default_textview_style");
+						style_write.setAttribute("name", classId + "_insertupdate_" + att.name().toLowerCase() + "_value_style");
+						
+	//					if(att.type().isBoolean())
+						
+						if(att.type().isDate() || (att.type().isObjectType() && att.type().toString().equals("Date"))){
+							style_write.setAttribute("type", "@style/default_datepicker_style");						
+						}
+//						if(att.type().isEnum()){
+//							style_write.setAttribute("parent", "default_textview_style");			
+//						}
+						if(att.type().isInteger() || att.type().isNumber() || att.type().isString()){
+							style_write.setAttribute("parent", "@style/default_edittext_style");	
+						}
+						
+						if(style_write.getAttributesSize() > 0 && style_write.getAttributesSize() > 0){
+							rootView.addContent(style_descriptor);
+							rootView.addContent(style_write);
+						}
+					}
+					//insertupdate - end
+					
+					//list - start
+					List<MAttribute> finalListAttributeList;
+					if(cls.getAnnotation("list") != null)
+						finalListAttributeList = ModelUtilities.annotationValuesToAttributeOrdered(cls.attributes(), cls.getAnnotation("list").getValues());
+					else
+						finalListAttributeList = cls.attributes();
+					
+					for(MAttribute att : finalListAttributeList){
+						Element style_list = new Element("style");
+						
+						style_list.setAttribute("name", classId + "_list_" + att.name().toLowerCase() + "_value_style");
+						
+	//					if(att.type().isBoolean())
+						
+						if(att.type().isDate() || (att.type().isObjectType() && att.type().toString().equals("Date"))){
+							style_list.setAttribute("parent", "@style/default_datepicker_style");						
+						}
+						if(att.type().isEnum()){
+							style_list.setAttribute("parent", "@style/default_textview_style");			
+						}
+						if(att.type().isInteger() || att.type().isNumber() || att.type().isString()){
+							style_list.setAttribute("parent", "@style/default_textview_style");	
+						}
+						
+						if(style_list.getAttributesSize() > 0)
+							rootView.addContent(style_list);
+					}
+					//list - end
+					
+					//navigation bar - start
+					List<MClass> alreadyAdded = new ArrayList<MClass>();
+					Map<MClass, Integer> RepeteadNeighbors = new HashMap<MClass, Integer>();
+					for (AssociationInfo association : AssociationInfo.getAllAssociationsInfo(cls)){
+						if(!alreadyAdded.contains(association.getTargetAE().cls())){
+							RepeteadNeighbors.put(association.getTargetAE().cls(), 1);
+							alreadyAdded.add(association.getTargetAE().cls());
+						}
+						else
+							RepeteadNeighbors.put(association.getTargetAE().cls(), RepeteadNeighbors.get(association.getTargetAE().cls()) + 1);
+					}
+					
+					alreadyAdded.clear();
+					for (AssociationInfo association : AssociationInfo.getAllAssociationsInfo(cls)){
+						if(!alreadyAdded.contains(association.getTargetAE().cls())){
+							Element style_descriptor = new Element("style");
+							Element style_numberObjects = new Element("style");
+							
+							style_descriptor.setAttribute("name", classId + "_navigationbar_association_" + association.getTargetAE().name().toLowerCase() + "_descriptor_style");
+							style_descriptor.setAttribute("parent", "@style/default_textview_style");
+							style_numberObjects.setAttribute("name", classId + "_navigationbar_association_" + association.getTargetAE().name().toLowerCase() + "_numberobjects_style");
+							if(typeScreen.equals(normal_port) || typeScreen.equals(normal_land))
+								style_numberObjects.setAttribute("parent", "@android:style/TextAppearance.Small");
+							else if(typeScreen.equals(large_port) || typeScreen.equals(large_land))
+								style_numberObjects.setAttribute("parent", "@android:style/TextAppearance.Medium");
+							else if(typeScreen.equals(xlarge_port) || typeScreen.equals(xlarge_land))
+								style_numberObjects.setAttribute("parent", "@android:style/TextAppearance.Large");
+							else
+								style_numberObjects.setAttribute("parent", "@style/default_textview_style");
+							
+							if(style_descriptor.getAttributesSize() > 0 && style_numberObjects.getAttributesSize() > 0){
+								rootView.addContent(style_descriptor);
+								rootView.addContent(style_numberObjects);
+							}
+							
+							alreadyAdded.add(association.getTargetAE().cls());
+						}
+					}
+					if(isSuperClass(cls)){//navegacao sub -> super (ToONE)
+						for(MClass x : getAllSubClasses(Arrays.asList(cls))){
+							if(x.parents().iterator().next() == cls && !alreadyAdded.contains(cls)){//if is direct super
+								Element style_descriptor = new Element("style");
+								Element style_numberObjects = new Element("style");
+								
+								style_descriptor.setAttribute("name", classId + "_navigationbar_association_" + x.name().toLowerCase() + "_descriptor_style");
+								style_descriptor.setAttribute("parent", "@style/default_textview_style");
+								style_numberObjects.setAttribute("name", classId + "_navigationbar_association_" + x.name().toLowerCase() + "_numberobjects_style");
+								if(typeScreen.equals(normal_port) || typeScreen.equals(normal_land))
+									style_numberObjects.setAttribute("parent", "@android:style/TextAppearance.Small");
+								else if(typeScreen.equals(large_port) || typeScreen.equals(large_land))
+									style_numberObjects.setAttribute("parent", "@android:style/TextAppearance.Medium");
+								else if(typeScreen.equals(xlarge_port) || typeScreen.equals(xlarge_land))
+									style_numberObjects.setAttribute("parent", "@android:style/TextAppearance.Large");
+								else
+									style_numberObjects.setAttribute("parent", "@style/default_textview_style");
+								
+								if(style_descriptor.getAttributesSize() > 0 && style_numberObjects.getAttributesSize() > 0){
+									rootView.addContent(style_descriptor);
+									rootView.addContent(style_numberObjects);
+								}
+								alreadyAdded.add(cls);
+							}
+						}
+					}
+					if(isSubClass(cls)){//navegacao super -> sub (ToMany)
+						if(!alreadyAdded.contains(cls.parents().iterator().next())){
+							Element style_descriptor = new Element("style");
+							Element style_numberObjects = new Element("style");
+							
+							style_descriptor.setAttribute("name", classId + "_navigationbar_association_" + cls.parents().iterator().next().name().toLowerCase() + "_descriptor_style");
+							style_descriptor.setAttribute("parent", "@style/default_textview_style");
+							style_numberObjects.setAttribute("name", classId + "_navigationbar_association_" + cls.parents().iterator().next().name().toLowerCase() + "_numberobjects_style");
+							if(typeScreen.equals(normal_port) || typeScreen.equals(normal_land))
+								style_numberObjects.setAttribute("parent", "@android:style/TextAppearance.Small");
+							else if(typeScreen.equals(large_port) || typeScreen.equals(large_land))
+								style_numberObjects.setAttribute("parent", "@android:style/TextAppearance.Medium");
+							else if(typeScreen.equals(xlarge_port) || typeScreen.equals(xlarge_land))
+								style_numberObjects.setAttribute("parent", "@android:style/TextAppearance.Large");
+							else
+								style_numberObjects.setAttribute("parent", "@style/default_textview_style");
+							
+							if(style_descriptor.getAttributesSize() > 0 && style_numberObjects.getAttributesSize() > 0){
+								rootView.addContent(style_descriptor);
+								rootView.addContent(style_numberObjects);
+							}
+						}
+					}
+					//navigation bar - end
+					
+					XMLOutputter outputter = new XMLOutputter();
+					try {
+						outputter.setFormat(format);
+						outputter.output(new Document(rootView), new FileOutputStream (targetDirectory + XMLName + ".xml"));
+						statistics.addOneToGenerated();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}					
+		}
+	}
+	
 	public void generateRawStrings(){
 //		strings estaticas para cada tipo - titulos na navigation bar, titulos descritores para detail e insert views
 		String targetDirectory = rootDirectory + values + "/";
 		String XMLName;
 		String classId;
 		for (MClass cls : mModel.classes()){
-			if(cls.isAnnotated() && cls.getAnnotation("business") != null){
+			if(cls.isAnnotated() && cls.getAnnotation("domain") != null){
 				classId = cls.name().toLowerCase();
 				XMLName = classId + "_strings";
 				if (FileUtilities.openOutputFile(targetDirectory, XMLName + ".xml")){				
@@ -442,8 +726,8 @@ public class AndroidViewLayer extends ViewVisitor{
 					
 					for (MAttribute att : cls.attributes()){
 						String attributeName = att.name().toLowerCase();
-						Element strings_detail = new Strings(classId + "_detail_text_" + attributeName, att.name() + ": ");
-						Element strings_insert_update = new Strings(classId + "_insert_update_text_" + attributeName, "Choose a " + att.name() + ": ");
+						Element strings_detail = new Strings(classId + "_detail_" + attributeName + "_descriptor", att.name() + ": ");
+						Element strings_insert_update = new Strings(classId + "_insertupdate_" + attributeName + "_descriptor", "Choose a " + att.name() + ": ");
 						rootView.addContent(strings_detail);
 						rootView.addContent(strings_insert_update);
 					}
@@ -488,7 +772,7 @@ public class AndroidViewLayer extends ViewVisitor{
 			Element appName = new Strings("app_name", mModel.name());
 			rootView.addContent(appName);
 			for (MClass cls : mModel.classes()){
-				if(cls.isAnnotated() && cls.getAnnotation("business") != null){
+				if(cls.isAnnotated() && cls.getAnnotation("domain") != null){
 					classId = cls.name().toLowerCase();	
 					
 					Element master_view_tittle = new Strings("tittle_master_" + classId , cls.name());
@@ -509,7 +793,7 @@ public class AndroidViewLayer extends ViewVisitor{
 	
 	public void generateDefaultXML(){
 		String targetDirectory = rootDirectory + layout + "/";
-		String sourceDirectory = javaWorkspace + "/J-USE/src/org/quasar/usemodel2Android/defaultdata/XML/" + layout + "/";
+		String sourceDirectory = sourcePath + "/res/use2android/defaultdata/XML/" + layout + "/";
 		
 		FileUtilities.copyFile(sourceDirectory + "default_blank_fragment.xml",targetDirectory + "default_blank_fragment.xml");
 		FileUtilities.copyFile(sourceDirectory + "default_navigationbar.xml",targetDirectory + "default_navigationbar.xml");
@@ -520,7 +804,7 @@ public class AndroidViewLayer extends ViewVisitor{
 		FileUtilities.replaceStringInFile(targetDirectory + mModel.name().toLowerCase() + "_launcher_gridview_row.xml", "@drawable/launcher_gridview_selector", "@drawable/" + mModel.name().toLowerCase() + "_launcher_gridview_selector");
 		
 		targetDirectory = rootDirectory + drawable + "/";
-		sourceDirectory = javaWorkspace + "/J-USE/src/org/quasar/usemodel2Android/defaultdata/XML/" + drawable + "/";
+		sourceDirectory = sourcePath + "/res/use2android/defaultdata/XML/" + drawable + "/";
 		
 		FileUtilities.copyFile(sourceDirectory + "default_list_selector.xml",targetDirectory + "default_list_selector.xml");
 		FileUtilities.copyFile(sourceDirectory + "actionbar_compat_item_focused.xml",targetDirectory + "actionbar_compat_item_focused.xml");
@@ -535,9 +819,11 @@ public class AndroidViewLayer extends ViewVisitor{
 		FileUtilities.copyFile(sourceDirectory + "navigationbar_divider.xml",targetDirectory + "navigationbar_divider.xml");
 		FileUtilities.copyFile(sourceDirectory + "navigationbar_new_object_state.xml",targetDirectory + "navigationbar_new_object_state.xml");
 		FileUtilities.copyFile(sourceDirectory + "navigationbar_selector.xml",targetDirectory + "navigationbar_selector.xml");
+		FileUtilities.copyFile(sourceDirectory + "navigationbar_error_state.xml",targetDirectory + "navigationbar_error_state.xml");
+		FileUtilities.copyFile(sourceDirectory + "navigationbar_selector_error.xml",targetDirectory + "navigationbar_selector_error.xml");
 		
 		targetDirectory = rootDirectory + values + "/";
-		sourceDirectory = javaWorkspace + "/J-USE/src/org/quasar/usemodel2Android/defaultdata/XML/" + values + "/";
+		sourceDirectory = sourcePath + "/res/use2android/defaultdata/XML/" + values + "/";
 		
 		FileUtilities.copyFile(sourceDirectory + "colors.xml",targetDirectory + "colors.xml");
 		FileUtilities.copyFile(sourceDirectory + "default_layout_styles.xml",targetDirectory + "default_layout_styles.xml");
@@ -562,10 +848,10 @@ public class AndroidViewLayer extends ViewVisitor{
 		String targetDirectory;
 		String sourceDirectory;
 		if(resolution != null){
-			sourceDirectory = javaWorkspace + "/J-USE/src/org/quasar/usemodel2Android/defaultdata/Media/" + drawable + "/" + resolution + "/";
+			sourceDirectory = sourcePath + "/res/use2android/defaultdata/Media/" + drawable + "/" + resolution + "/";
 			targetDirectory = rootDirectory + drawable + separator + resolution + "/";
 		}else{
-			sourceDirectory = javaWorkspace + "/J-USE/src/org/quasar/usemodel2Android/defaultdata/Media/" + drawable + "/";
+			sourceDirectory = sourcePath + "/res/use2android/defaultdata/Media/" + drawable + "/";
 			targetDirectory = rootDirectory + drawable + "/";
 		}
 		
@@ -601,7 +887,7 @@ public class AndroidViewLayer extends ViewVisitor{
 		String XMLName;
 		String classId;
 		for (MClass cls : mModel.classes()){
-			if(cls.isAnnotated() && cls.getAnnotation("business") != null){
+			if(cls.isAnnotated() && cls.getAnnotation("domain") != null){
 				classId = cls.name().toLowerCase();
 				XMLName = classId + "_form_detail";
 				if (FileUtilities.openOutputFile(targetDirectory, XMLName + ".xml")){					
@@ -625,20 +911,20 @@ public class AndroidViewLayer extends ViewVisitor{
 						if(relativeLayout.getChildren().size() > 0){
 							linearLayout.setAttribute(new Below(relativeLayout.getChildren().get(relativeLayout.getChildren().size() - 1).getAttribute("id",namespace)));
 						}
-						Element dataDescriptor = new TextView(classId + "_detail_text_" + attributeName, "wrap_content", "wrap_content", classId + "_detail_text_" + attributeName , "?android:attr/textAppearanceLarge");
+						Element dataDescriptor = new TextView(classId + "_detail_" + attributeName + "_descriptor", "wrap_content", "wrap_content", classId + "_detail_" + attributeName + "_descriptor" , classId + classId + "_detail_" + attributeName + "_descriptor_style");
 						
 						Element dataValue = null;
 						
 	//					if(att.type().isBoolean())
 							
 						if(att.type().isDate() || (att.type().isObjectType() && att.type().toString().equals("Date")))
-							dataValue = new DatePicker(classId + "_detail_value_" + attributeName, "wrap_content", "wrap_content", false); 	
+							dataValue = new DatePicker(classId + "_detail_" + attributeName + "_value", "wrap_content", "wrap_content", false); 	
 						
 						if(att.type().isEnum())
-							dataValue = new TextView(classId + "_detail_value_" + attributeName, "wrap_content", "wrap_content", "?android:attr/textAppearanceLarge");
+							dataValue = new TextView(classId + "_detail_" + attributeName + "_value", "wrap_content", "wrap_content", classId + "_detail_" + attributeName + "_value_style");
 						
 						if(att.type().isInteger() || att.type().isNumber() || att.type().isString())
-							dataValue = new TextView(classId + "_detail_value_" + attributeName, "wrap_content", "wrap_content", "?android:attr/textAppearanceLarge"); 	
+							dataValue = new TextView(classId + "_detail_" + attributeName + "_value", "wrap_content", "wrap_content", classId + "_detail_" + attributeName + "_value_style"); 	
 						
 						
 						linearLayout.addContent(dataDescriptor);
@@ -668,7 +954,7 @@ public class AndroidViewLayer extends ViewVisitor{
 		String XMLName;
 		String classId;
 		for (MClass cls : mModel.classes()){
-			if(cls.isAnnotated() && cls.getAnnotation("business") != null){
+			if(cls.isAnnotated() && cls.getAnnotation("domain") != null){
 				classId = cls.name().toLowerCase();
 				XMLName = classId + "_form_insertupdate";
 				if (FileUtilities.openOutputFile(targetDirectory, XMLName + ".xml")){					
@@ -692,23 +978,23 @@ public class AndroidViewLayer extends ViewVisitor{
 						if(relativeLayout.getChildren().size() > 0){
 							linearLayout.setAttribute(new Below(relativeLayout.getChildren().get(relativeLayout.getChildren().size() - 1).getAttribute("id",namespace)));
 						}
-						Element dataDescriptor = new TextView(classId + "_insertupdate_text_" + attributeName, "wrap_content", "wrap_content", classId + "_insert_update_text_" + attributeName , "?android:attr/textAppearanceLarge");
+						Element dataDescriptor = new TextView(classId + "_insertupdate_" + attributeName + "_descriptor", "wrap_content", "wrap_content", classId + "_insertupdate_" + attributeName + "_descriptor" , classId + "_insertupdate_" + attributeName + "_descriptor_style");
 						
 						Element dataValue = null;
 						
 	//					if(att.type().isBoolean())
 							
 						if(att.type().isDate() || (att.type().isObjectType() && att.type().toString().equals("Date")))
-							dataValue = new DatePicker(classId + "_insertupdate_value_" + attributeName, "wrap_content", "wrap_content", true); 	
+							dataValue = new DatePicker(classId + "_insertupdate_" + attributeName + "_value", "wrap_content", "wrap_content", true); 	
 						
 //						if(att.type().isEnum())
 						
 						if(att.type().isString())
-							dataValue = new EditText(classId + "_insertupdate_value_" + attributeName, "match_parent", "wrap_content", null); 	
+							dataValue = new EditText(classId + "_insertupdate_" + attributeName + "_value", "match_parent", "wrap_content", null); 	
 						if(att.type().isNumber())
-							dataValue = new EditText(classId + "_insertupdate_value_" + attributeName, "match_parent", "wrap_content", "numberDecimal"); 	
+							dataValue = new EditText(classId + "_insertupdate_" + attributeName + "_value", "match_parent", "wrap_content", "numberDecimal"); 	
 						if(att.type().isInteger())
-							dataValue = new EditText(classId + "_insertupdate_value_" + attributeName, "match_parent", "wrap_content", "number"); 	
+							dataValue = new EditText(classId + "_insertupdate_" + attributeName + "_value", "match_parent", "wrap_content", "number"); 	
 						
 						
 						linearLayout.addContent(dataDescriptor);
@@ -738,7 +1024,7 @@ public class AndroidViewLayer extends ViewVisitor{
 		String XMLName;
 		String classId;
 		for (MClass cls : mModel.classes()){
-			if(cls.isAnnotated() && cls.getAnnotation("business") != null){
+			if(cls.isAnnotated() && cls.getAnnotation("domain") != null){
 				classId = cls.name().toLowerCase();
 				XMLName = classId + "_view_detail";
 				if (FileUtilities.openOutputFile(targetDirectory, XMLName + ".xml")){					
@@ -806,7 +1092,7 @@ public class AndroidViewLayer extends ViewVisitor{
 		String XMLName;
 		String classId;
 		for (MClass cls : mModel.classes()){
-			if(cls.isAnnotated() && cls.getAnnotation("business") != null && !cls.isAbstract()){
+			if(cls.isAnnotated() && cls.getAnnotation("domain") != null && !cls.isAbstract()){
 				classId = cls.name().toLowerCase();
 				XMLName = classId + "_view_insertupdate";
 				if (FileUtilities.openOutputFile(targetDirectory, XMLName + ".xml")){					
@@ -886,7 +1172,7 @@ public class AndroidViewLayer extends ViewVisitor{
 		String XMLName;
 		String classId;
 		for (MClass cls : mModel.classes()){
-			if(cls.isAnnotated() && cls.getAnnotation("business") != null){
+			if(cls.isAnnotated() && cls.getAnnotation("domain") != null){
 				classId = cls.name().toLowerCase();
 				XMLName = classId + "_view_list";
 				if (FileUtilities.openOutputFile(targetDirectory, XMLName + ".xml")){					
@@ -915,8 +1201,8 @@ public class AndroidViewLayer extends ViewVisitor{
 										
 									
 						if(att.type().isInteger() || att.type().isNumber() || att.type().isString() || att.type().isDate() || (att.type().isObjectType() && att.type().toString().equals("Date"))){
-							dataValue = new TextView(attributeBaseAncestor(cls, att).name().toLowerCase() + "_list_value_" + attributeName, "wrap_content", "wrap_content", null); 	
-							dataValue.setAttribute(new TextAppearance("?android:attr/textAppearanceLarge"));
+							dataValue = new TextView(attributeBaseAncestor(cls, att).name().toLowerCase() + "_list_" + attributeName + "_value", "wrap_content", "wrap_content", null); 	
+							dataValue.setAttribute(new Style(attributeBaseAncestor(cls, att).name().toLowerCase() + "_list_" + attributeName + "_value_style", "@style/"));
 						}
 						
 						if(form_relativeLayout.getChildren().size() > 0 && dataValue != null){
@@ -950,7 +1236,7 @@ public class AndroidViewLayer extends ViewVisitor{
 	private void generateNaviagtionBarLists() {
 		String targetDirectory = rootDirectory + layout + "/";
 		for (MClass cls : mModel.classes()){
-			if(cls.isAnnotated() && cls.getAnnotation("business") != null){
+			if(cls.isAnnotated() && cls.getAnnotation("domain") != null){
 //				just for super classes who have associations
 				if(!cls.allAssociations().isEmpty()){
 					String classId = cls.name().toLowerCase();
@@ -990,7 +1276,7 @@ public class AndroidViewLayer extends ViewVisitor{
 		String XMLName;
 		String classId;
 		for (MClass cls : mModel.classes()){
-			if(cls.isAnnotated() && cls.getAnnotation("business") != null){
+			if(cls.isAnnotated() && cls.getAnnotation("domain") != null){
 //				if class has any association or is an super ou sub class (generalization also permit navigation)
 				if(!cls.associations().isEmpty() || cls.children().size() > 0 || cls.parents().size() > 0){
 					classId = cls.name().toLowerCase();
@@ -1082,12 +1368,13 @@ public class AndroidViewLayer extends ViewVisitor{
 	// super -> sub : ToMANY
 	//sub -> super : ToONE
 	public void generateNavigationBarAssociations(Object association, String typeAssociation, String associationClassName, String classId, Element root_linearLayout){
+		//add if statement here to change name for super and subs ("_navigationbar_association_" -> "tosuper" or "tosub")
 		Element root_ass_linearLayout = new LinearLayout(classId + "_navigationbar_association_" + associationClassName ,"match_parent", "wrap_content", "horizontal");
 		root_ass_linearLayout.setAttribute(new Clickable(false));
 		root_ass_linearLayout.setAttribute(new LongClickable(true));
 		root_linearLayout.addContent(root_ass_linearLayout);
 		 
-		Element associationDescription = new TextView(classId + "_navigationbar_association_" + associationClassName + "_name","wrap_content","wrap_content","?android:attr/textAppearanceLarge");
+		Element associationDescription = new TextView(classId + "_navigationbar_association_" + associationClassName + "_descriptor","wrap_content","wrap_content",classId + "_navigationbar_association_" + associationClassName + "_descriptor_style");
 		associationDescription.setAttribute("layout_gravity", "center", namespace);
 									
 		Element associationImage = null;
@@ -1099,11 +1386,11 @@ public class AndroidViewLayer extends ViewVisitor{
 			associationDescription.setAttribute(new Text(classId + "_associationto_" + associationClassName));
 			if(((AssociationInfo) association).getKind() == AssociationKind.MANY2MANY || (((AssociationInfo) association).getKind() == AssociationKind.ONE2MANY && ((AssociationInfo) association).getTargetAE().isCollection())){
 				associationImage = new ImageView(classId + "_navigationbar_association_" + associationClassName + "_image","wrap_content","wrap_content","drawable","ic_light_association_many");
-				associationStateInfo = new TextView(classId + "_navigationbar_association_number_objects_text_" + associationClassName, "wrap_content", "wrap_content", "?android:attr/textAppearanceSmall");
+				associationStateInfo = new TextView(classId + "_navigationbar_association_" + associationClassName + "_numberobjects", "wrap_content", "wrap_content", classId + "_navigationbar_association_" + associationClassName + "_numberobjects");
 				associationStateInfo.setAttribute(new Attribute("text", "( 0 )", namespace));
 			}else{
 				associationImage = new ImageView(classId + "_navigationbar_association_" + associationClassName + "_image","wrap_content","wrap_content","drawable","ic_light_association_one");
-				associationStateInfo = new TextView(classId + "_navigationbar_association_number_objects_text_" + associationClassName, "wrap_content", "wrap_content", "?android:attr/textAppearanceSmall");
+				associationStateInfo = new TextView(classId + "_navigationbar_association_" + associationClassName + "_numberobjects", "wrap_content", "wrap_content", classId + "_navigationbar_association_" + associationClassName + "_numberobjects");
 				associationStateInfo.setAttribute(new Attribute("text", "( 0 )", namespace));
 			}
 		}
@@ -1112,13 +1399,13 @@ public class AndroidViewLayer extends ViewVisitor{
 			if(typeAssociation.equals("child")){
 				associationDescription.setAttribute(new Text(classId + "_tosub_" + associationClassName));
 				associationImage = new ImageView(classId + "_navigationbar_association_" + associationClassName + "_image","wrap_content","wrap_content","drawable","ic_light_association_inheritance_sub");
-				associationStateInfo = new TextView(classId + "_navigationbar_association_number_objects_text_" + associationClassName, "wrap_content", "wrap_content", "?android:attr/textAppearanceSmall");
+				associationStateInfo = new TextView(classId + "_navigationbar_association_" + associationClassName + "_numberobjects", "wrap_content", "wrap_content", classId + "_navigationbar_association_" + associationClassName + "_numberobjects");
 				associationStateInfo.setAttribute(new Attribute("text", "( 0 )", namespace));
 			}
 			if(typeAssociation.equals("super")){
 				associationDescription.setAttribute(new Text(classId + "_tosuper_" + associationClassName));
 				associationImage = new ImageView(classId + "_navigationbar_association_" + associationClassName + "_image","wrap_content","wrap_content","drawable","ic_light_association_inheritance_super");				
-				associationStateInfo = new TextView(classId + "_navigationbar_association_number_objects_text_" + associationClassName, "wrap_content", "wrap_content", "?android:attr/textAppearanceSmall");
+				associationStateInfo = new TextView(classId + "_navigationbar_association_" + associationClassName + "_numberobjects", "wrap_content", "wrap_content", classId + "_navigationbar_association_" + associationClassName + "_numberobjects");
 				associationStateInfo.setAttribute(new Attribute("text", "( 1 )", namespace));
 			}
 		}
@@ -1137,7 +1424,7 @@ public class AndroidViewLayer extends ViewVisitor{
 	
 	public void generateMenuViews(){
 		String targetDirectory = rootDirectory + menu + "/";
-		String sourceDirectory = javaWorkspace + "/J-USE/src/org/quasar/usemodel2Android/defaultdata/XML/" + menu + "/";
+		String sourceDirectory = sourcePath + "/res/use2android/defaultdata/XML/" + menu + "/";
 		
 		FileUtilities.copyFile(sourceDirectory + "menu_launcher.xml",targetDirectory + "menu_launcher.xml");
 		FileUtilities.copyFile(sourceDirectory + "menu_read.xml",targetDirectory + "menu_read.xml");
@@ -1152,7 +1439,7 @@ public class AndroidViewLayer extends ViewVisitor{
 		String classId;
 		String targetId;
 		for (MClass cls : mModel.classes()){
-			if(cls.isAnnotated() && cls.getAnnotation("business") != null){
+			if(cls.isAnnotated() && cls.getAnnotation("domain") != null){
 				
 				for (AssociationInfo association : AssociationInfo.getAssociationsInfo(cls)){
 //					if the target class is a super class (generalization)
@@ -1193,7 +1480,7 @@ public class AndroidViewLayer extends ViewVisitor{
 	public void generateAssociationsToGeneralizationOptions(){
 		String targetDirectory = rootDirectory + layout + "/";
 		for (MClass cls : mModel.classes()){
-			if(cls.isAnnotated() && cls.getAnnotation("business") != null){
+			if(cls.isAnnotated() && cls.getAnnotation("domain") != null){
 //				just for super classes who have associations
 				if(!cls.allAssociations().isEmpty() && (isSuperClass(cls) || isSubClass(cls))){
 					String classId = cls.name().toLowerCase();
@@ -1257,7 +1544,7 @@ public class AndroidViewLayer extends ViewVisitor{
 		Element root_ass_linearLayout = new LinearLayout(classId + "_generalizationoptions_" + associationClassName ,"match_parent", "wrap_content", "horizontal");
 		root_linearLayout.addContent(root_ass_linearLayout);
     
-		Element associationDescription = new TextView(classId + "_generalizationoptions_" + associationClassName + "_name","wrap_content","wrap_content","?android:attr/textAppearanceLarge");
+		Element associationDescription = new TextView(classId + "_generalizationoptions_" + associationClassName + "_descriptor","wrap_content","wrap_content",null);
 		associationDescription.setAttribute("layout_gravity", "center", namespace);
 									
 		Element associationImage = null;

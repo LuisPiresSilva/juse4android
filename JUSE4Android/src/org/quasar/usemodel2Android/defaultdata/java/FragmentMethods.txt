@@ -1,8 +1,0 @@
-package org.quasar.usemodel2Android.defaultdata.java;
-
-public interface FragmentMethods {
-
-	public boolean isGone();
-	public void hide();
-	public void show();
-}

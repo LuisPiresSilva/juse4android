@@ -1,5 +1,0 @@
-package org.quasar.usemodel2Android.defaultdata.java;
-
-public enum CommandType {
-	INSERT,UPDATE,DELETE,INSERT_ASSOCIATION,DELETE_ASSOCIATION
-}

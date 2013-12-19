@@ -1,5 +1,0 @@
-package org.quasar.usemodel2Android.defaultdata.java;
-
-public interface DetailFragment extends FragmentMethods{
-
-}

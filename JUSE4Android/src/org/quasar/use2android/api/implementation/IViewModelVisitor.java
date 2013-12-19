@@ -76,6 +76,8 @@ public interface IViewModelVisitor {
 	
 	public void printDetailFragment_onCreate(MClass theClass);
 	
+	public void printDetailFragment_onSaveInstanceState(MClass cls);
+	
 	public void printDetailFragment_onDestroy(MClass theClass);
 	
 	public void printDetailFragment_onActivityCreated(MClass theClass);
@@ -88,11 +90,11 @@ public interface IViewModelVisitor {
 	
 	public void printDetailFragment_SetInputMethod(MClass theClass);
 	
-	public void printDetailFragment_getViewDetail(MClass theClass);
+	public void printDetailFragment_setViewDetailData(MClass theClass);
 	
 	public void printDetailFragment_ActionViewDetail(MClass theClass);
 	
-	public void printDetailFragment_getViewNewOrEdit(MClass theClass);
+	public void printDetailFragment_setViewNewOrEditData(MClass theClass);
 
 	public void printDetailFragment_ActionViewNew(MClass theClass);
 	
@@ -103,6 +105,8 @@ public interface IViewModelVisitor {
 	public void printDetailFragment_CallBackDeclaration(MClass theClass);
 	
 	public void printDetailFragment_ScreenClickListeners(MClass theClass);
+	
+	public void printDetailFragment_BusinessListeners(MClass theClass);
 
 //	******************** --- Fragment - Detail - End --- *****************************
 
@@ -116,6 +120,8 @@ public interface IViewModelVisitor {
 	public void printNavigationBarFragment_DefaultConstructor(MClass theClass);
 	
 	public void printNavigationBarFragment_onCreate(MClass theClass);
+	
+	public void printNavigationBarFragment_onSaveInstanceState(MClass theClass);
 	
 	public void printNavigationBarFragment_onDestroy(MClass theClass);
 	
@@ -155,7 +161,6 @@ public interface IViewModelVisitor {
 
 	public void printListViewHolder_RequiredMethods(MClass theClass);
 //	******************** --- ListViewHolder - End --- *****************************
-
 
 
 
