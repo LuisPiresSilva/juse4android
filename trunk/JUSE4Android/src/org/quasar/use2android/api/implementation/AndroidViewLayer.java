@@ -202,7 +202,7 @@ public class AndroidViewLayer extends ViewVisitor{
 		generateTwoPaneLayout();
 		
 		generateMultiPaneRef(normal_port, "onepane");
-		generateMultiPaneRef(normal_land, "twopane");
+		generateMultiPaneRef(normal_land, "onepane");
 		generateMultiPaneRef(large_port, "twopane");
 		generateMultiPaneRef(large_land, "twopane");
 		generateMultiPaneRef(xlarge_port, "twopane");
