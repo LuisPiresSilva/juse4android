@@ -1807,10 +1807,21 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 		Set<Type> javaClassTypes = new HashSet<Type>();
 		
 //		--------------*************** CODIGO NOVO - START  ******************* ------------------
-		List<MAttribute> finalAttributes = getDetailViewAttributes(theClass, true, true);
+//		List<MAttribute> finalAttributes = getDetailViewAttributes(theClass, true, true);
 //		--------------*************** CODIGO NOVO - END  ******************* ------------------
 		
-		for (MAttribute att : finalAttributes){
+		List<MAttribute> inheritedUniqueAttributes = new ArrayList<MAttribute>();
+		for (MClass theParentClass : theClass.allParents()){
+			List<MAttribute> inheritedAttributes_temp = new ArrayList<MAttribute>();
+			for(MAttribute attribute : theParentClass.attributes())
+				inheritedAttributes_temp.add(attribute);
+			inheritedUniqueAttributes.addAll(0, inheritedAttributes_temp);
+		}
+		List<MAttribute> AllAttributes = new ArrayList<MAttribute>();
+		AllAttributes.addAll(inheritedUniqueAttributes);
+		AllAttributes.addAll(theClass.attributes());
+		
+		for (MAttribute att : AllAttributes){
 			String type = AndroidTypes.androidPrimitiveTypeToReadWidget(att.type());
 			androidClassTypes.add(type);
 			if(!type.equals(AndroidTypes.androidPrimitiveTypeToWriteWidget(att.type())))
@@ -1838,7 +1849,7 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 		
 		imports.addAll(AndroidTypes.javaInAndroidImportDeclarations(javaClassTypes));
 		imports.addAll(AndroidTypes.androidImportDeclarations(androidClassTypes));
-//		System.out.println(imports.toString());
+//		System.out.println(theClass.name() + " - " + imports.toString());
 		for (String importDeclaration : imports)
 			println(importDeclaration);
 		println();
@@ -2353,8 +2364,8 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 		 		println("if(v.getId() == R.id.okButton)");
 		 		println("{");
 		 		FileUtilities.incIndent();
-//		 			println("InputMethodManager inputManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);");
-//		 			println("inputManager.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);");
+		 			println("InputMethodManager inputManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);");
+		 			println("inputManager.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);");
 		 			println("if(getArguments().containsKey(ARG_VIEW_NEW))");
 		 			println("{");
 		 			FileUtilities.incIndent();
@@ -2381,8 +2392,8 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 				println("if(v.getId() == R.id.cancelButton)");
 	 			println("{");
 	 			FileUtilities.incIndent();
-//	 				println("InputMethodManager inputManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);");
-//	 				println("inputManager.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);");
+	 				println("InputMethodManager inputManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);");
+	 				println("inputManager.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);");
 	 				println("mCallbacks.onDetailCancel();");
 	 			FileUtilities.decIndent();
 	 			println("}");

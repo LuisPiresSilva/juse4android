@@ -18,7 +18,7 @@ public final class Prototype_CodeGeneration
 {
 	//note: change the RUN_JAR boolean to false if working in a java environment (i.e. this class is the main class)
 	//change it to true before exporting/creating the executable jar file
-	private static boolean	RUN_JAR = true;
+	private static boolean	RUN_JAR = false;
 	
 	private static String	USE_PROJECT = "USE3.0.6";
 	private static String	JUSE4ANDROIDPROJECT = "JUSE4Android";
@@ -78,10 +78,6 @@ public final class Prototype_CodeGeneration
 	public static void main(String[] args) throws InterruptedException
 	{	
 		
-		
-		
-		
-		PrototypeGeneratorFacade api = new PrototypeGeneratorFacade();
 		if(RUN_JAR){
 			try {
 				USE_BASE_DIRECTORY = URLDecoder.decode(getJarFolder() + USE_PROJECT, "utf-8");
@@ -90,27 +86,9 @@ public final class Prototype_CodeGeneration
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			
 			USE_BASE_DIRECTORY = new File(USE_BASE_DIRECTORY).getPath();
-
-			if(args.length > 0 && !args[0].isEmpty() && !args[1].isEmpty()){
-				TARGET_WORKSPACE		= args[0];
-				MODEL_DIRECTORY = args[1].substring(0 ,args[1].lastIndexOf("\\"));
-				MODEL_FILE = args[1].substring(args[1].lastIndexOf("\\") + 1, args[1].length());
-				if(args.length > 2 && !args[2].equals("empty"))
-					AndroidProjectName = args[2];
-				if(args.length > 3 && !args[3].equals("empty"))
-					ServerProjectName = args[3];
-				if(args.length > 4 && !args[4].equals("empty"))
-					USER = args[4];
-				if(args.length > 5 && !args[5].equals("empty"))
-					PASS = args[5];
-				if(args.length > 6 && !args[6].equals("empty"))
-					PORT = args[6];
-				if(args.length > 7 && !args[7].equals("empty"))
-					IP = args[7];
-				
-				api.initialize(new String[0], USE_BASE_DIRECTORY, MODEL_DIRECTORY);
-			}
+//			System.out.println(USE_BASE_DIRECTORY);
 		}else{
 			try {
 				USE_BASE_DIRECTORY = URLDecoder.decode(getSourceFolder() + USE_PROJECT, "utf-8");
@@ -121,11 +99,36 @@ public final class Prototype_CodeGeneration
 				e.printStackTrace();
 			}
 			USE_BASE_DIRECTORY = new File(USE_BASE_DIRECTORY).getPath();
-
+		}
+		
+		
+		PrototypeGeneratorFacade api = new PrototypeGeneratorFacade();
+		
+		if(args.length > 0 && !args[0].isEmpty() && !args[1].isEmpty()){
+			try {
+				TARGET_WORKSPACE		= URLDecoder.decode(args[0], "utf-8");
+				MODEL_DIRECTORY = URLDecoder.decode(args[1].substring(0 ,args[1].lastIndexOf("\\")), "utf-8");
+				MODEL_FILE = URLDecoder.decode(args[1].substring(args[1].lastIndexOf("\\") + 1, args[1].length()), "utf-8");
+			} catch (UnsupportedEncodingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			
-			
-			
-			
+			if(args.length > 2 && !args[2].equals("empty"))
+				AndroidProjectName = args[2];
+			if(args.length > 3 && !args[3].equals("empty"))
+				ServerProjectName = args[3];
+			if(args.length > 4 && !args[4].equals("empty"))
+				USER = args[4];
+			if(args.length > 5 && !args[5].equals("empty"))
+				PASS = args[5];
+			if(args.length > 6 && !args[6].equals("empty"))
+				PORT = args[6];
+			if(args.length > 7 && !args[7].equals("empty"))
+				IP = args[7];
+				
+			api.initialize(new String[0], USE_BASE_DIRECTORY, MODEL_DIRECTORY);
+		}else{
 			api.initialize(args, USE_BASE_DIRECTORY, MODEL_DIRECTORY);
 		}
 		
