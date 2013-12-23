@@ -729,7 +729,7 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 				case ONE2MANY:
 					// // Already performed in one direction by the collection attribute. This call generates two operations
 					// (one getter and one setter) in the other direction
-					// System.out.println(ai);
+//					 System.out.println(ai);
 					if (theClass == ai.getSourceAE().cls() && (ai.getTargetAE().isCollection() || ai.getTargetAE().isOrdered()))
 						printONE2MANY(ai);
 					if (theClass == ai.getTargetAE().cls() && (ai.getSourceAE().isCollection() || ai.getSourceAE().isOrdered())
@@ -739,7 +739,7 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 				case MANY2MANY:
 					// Already performed in one direction by the collection attribute getter. This call generates an operation
 					// in the other direction
-					// System.out.println(ai);
+//					 System.out.println(ai);
 					if(ai.getSourceAE().getAnnotation("holder") != null || ai.getTargetAE().getAnnotation("holder") != null){
 						if(theClass == ai.getSourceAE().cls() && ai.getTargetAE().getAnnotation("holder") != null)
 							printMANY2MANY(ai);
@@ -747,12 +747,23 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 								&& ai.getSourceAE().getAnnotation("holder") != null)
 							printMANY2MANY(ai.swapped());
 					}else{
+//						System.out.println("test - " + ai);
+//						System.out.println("theClass - " + theClass.name());
+//						System.out.println("ai.getSourceAE().cls() - " + ai.getSourceAE().cls().name());
+//						System.out.println("ai.getTargetAE().cls() - " + ai.getTargetAE().cls().name());
+//						System.out.println("more complex - " + util.moreComplexClass(ai.getSourceAE().cls(), ai.getTargetAE().cls()).name());
 						if (theClass == ai.getSourceAE().cls()
-										&&  theClass == util.moreComplexClass(ai.getSourceAE().cls(), ai.getTargetAE().cls()))
+										&&  theClass == util.moreComplexClass(ai.getSourceAE().cls(), ai.getTargetAE().cls())){
+//							System.out.println("test2.1");
 							printMANY2MANY(ai);
+						}
+							
 						if (theClass == ai.getTargetAE().cls() && ai.getSourceAE().cls() != ai.getTargetAE().cls()
-										&& theClass == util.moreComplexClass(ai.getSourceAE().cls(), ai.getTargetAE().cls()))
+										&& theClass == util.moreComplexClass(ai.getSourceAE().cls(), ai.getTargetAE().cls())){
+//							System.out.println("test2.2");
 							printMANY2MANY(ai.swapped());
+						}
+							
 					}
 					break;
 				default:
