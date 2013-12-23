@@ -107,17 +107,21 @@ public class UtilNavigate {
 		return arguments;
 	}
 
-	public static View showWarning(Activity activity, String title, String message) {
+	public static View showWarning(final Activity activity, String title, String message) {
 		// Create and show the dialog.
-		DialogFragment newFragment = WarningDialogFragment.newInstance(title, message);
-		newFragment.show(activity.getFragmentManager(), "dialog");
-		activity.getFragmentManager().executePendingTransactions();
+		final DialogFragment newFragment = WarningDialogFragment.newInstance(title, message);
+		activity.runOnUiThread(new Runnable() {
+		    public void run() {
+				newFragment.show(activity.getFragmentManager(), "dialog");
+				activity.getFragmentManager().executePendingTransactions();	
+		    }
+		});
 		return newFragment.getView();
 	}
 
-	public static View showInheritanceList(Activity activity, int contentSource) {
-		DialogFragment newFragment = InheritanceListFragment.newInstance(contentSource);
-		newFragment.show(activity.getFragmentManager(), "dialog");
+	public static View showInheritanceList(final Activity activity, int contentSource) {
+		final DialogFragment newFragment = InheritanceListFragment.newInstance(contentSource);
+		//newFragment.show(activity.getFragmentManager(), "dialog");
 		//this next line is used to force the finalization of the fragment creation
 		//example, if this line is not here the view returned will be null (the oncreateView is still not called)
 		//this is because we will execute every piece of code until we pass to this step
@@ -125,7 +129,13 @@ public class UtilNavigate {
 		//will set the listeners for this dialog fragment
 		//in the beginning this line was not needed because we had the fragment tag in the xml
 		//therefor it was static therefore it was compiled at buildtime and not runtime
-		activity.getFragmentManager().executePendingTransactions();
+		//activity.getFragmentManager().executePendingTransactions();
+		activity.runOnUiThread(new Runnable() {
+		    public void run() {
+				newFragment.show(activity.getFragmentManager(), "dialog");
+				activity.getFragmentManager().executePendingTransactions();	
+		    }
+		});
 		return newFragment.getView();
 	}
 
