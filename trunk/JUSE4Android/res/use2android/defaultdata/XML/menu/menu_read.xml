@@ -25,7 +25,7 @@
         android:orderInCategory="3"
         android:showAsAction="always"
         android:title="delete"/>
-    <item
+ <!--   <item
         android:id="@+id/menu_cloud"
         android:icon="@drawable/ic_dark_menu_cloud"
         android:orderInCategory="4"
@@ -49,5 +49,6 @@
         android:orderInCategory="5"
         android:showAsAction="always"
         android:title="synchronize"/>
+	-->
 
 </menu>

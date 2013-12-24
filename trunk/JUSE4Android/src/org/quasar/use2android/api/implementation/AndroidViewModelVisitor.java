@@ -594,7 +594,7 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 		    						if(x.getValue().equals(""))
 		    							println("listImages.add(0);");
 		    						else
-		    							println("listImages.add(\"" + x.getValue() + "\");");
+		    							println("listImages.add(R.drawable." + x.getValue() + ");");
 	    				}else
 	    					println("listImages.add(R.drawable.ic_launcher);");
 	    			}
@@ -2687,9 +2687,9 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 			println();
 			for (AssociationInfo association : AssociationInfo.getAllAssociationsInfo(theClass)){
 				if(association.getSourceAE().cls() == theClass)
-					println(association.getTargetAE().name() + "View = (View) getActivity().findViewById(R.id." + theClass.name().toLowerCase() + "_navigationbar_association_" + association.getTargetAE().cls().name().toLowerCase() + ");");
+					println(association.getTargetAE().name() + "View = (View) getActivity().findViewById(R.id." + theClass.name().toLowerCase() + "_navigationbar_association_" + association.getTargetAE().name().toLowerCase() + ");");
 				else
-					println(association.getTargetAE().name() + "View = (View) getActivity().findViewById(R.id." + associationTargetBaseAncestor(theClass, association).name().toLowerCase() + "_navigationbar_association_" + association.getTargetAE().cls().name().toLowerCase() + ");");
+					println(association.getTargetAE().name() + "View = (View) getActivity().findViewById(R.id." + associationTargetBaseAncestor(theClass, association).name().toLowerCase() + "_navigationbar_association_" + association.getTargetAE().name().toLowerCase() + ");");
 				println(association.getTargetAE().name() + "View.setOnClickListener(ClickListener);");
 				println(association.getTargetAE().name() + "View.setOnLongClickListener(LongClickListener);");
 				println();
@@ -2816,9 +2816,9 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 			FileUtilities.incIndent();
 				for (AssociationInfo association : AssociationInfo.getAllAssociationsInfo(theClass)){
 					if(association.getSourceAE().cls() == theClass)
-						println("number_objects = (TextView) rootView.findViewById(R.id." + theClass.name().toLowerCase() + "_navigationbar_association_" + association.getTargetAE().cls().name().toLowerCase() + "_numberobjects);");
+						println("number_objects = (TextView) rootView.findViewById(R.id." + theClass.name().toLowerCase() + "_navigationbar_association_" + association.getTargetAE().name().toLowerCase() + "_numberobjects);");
 					else
-						println("number_objects = (TextView) rootView.findViewById(R.id." + associationTargetBaseAncestor(theClass, association).name().toLowerCase() + "_navigationbar_association_" + association.getTargetAE().cls().name().toLowerCase() + "_numberobjects);");
+						println("number_objects = (TextView) rootView.findViewById(R.id." + associationTargetBaseAncestor(theClass, association).name().toLowerCase() + "_navigationbar_association_" + association.getTargetAE().name().toLowerCase() + "_numberobjects);");
 					
 					if(association.getTargetAE().isCollection()){
 						println("if(" + theClass.name().toLowerCase() + "." + association.getTargetAE().name() + "().isEmpty())");
@@ -2985,9 +2985,9 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 					FileUtilities.incIndent();
 						for (AssociationInfo association : AssociationInfo.getAllAssociationsInfo(theClass)){
 							if(association.getSourceAE().cls() == theClass)
-								println("if(view.getId() == R.id." + theClass.name().toLowerCase() + "_navigationbar_association_" + association.getTargetAE().cls().name().toLowerCase() + ")");
+								println("if(view.getId() == R.id." + theClass.name().toLowerCase() + "_navigationbar_association_" + association.getTargetAE().name().toLowerCase() + ")");
 							else
-								println("if(view.getId() == R.id." + associationTargetBaseAncestor(theClass, association).name().toLowerCase() + "_navigationbar_association_" + association.getTargetAE().cls().name().toLowerCase() + ")");
+								println("if(view.getId() == R.id." + associationTargetBaseAncestor(theClass, association).name().toLowerCase() + "_navigationbar_association_" + association.getTargetAE().name().toLowerCase() + ")");
 							println("{");
 							FileUtilities.incIndent();
 								MMultiplicity targetMultiplicity = association.getTargetAE().multiplicity();
@@ -3065,9 +3065,9 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 					FileUtilities.incIndent();
 						for (AssociationInfo association : AssociationInfo.getAllAssociationsInfo(theClass)){
 							if(association.getSourceAE().cls() == theClass)
-								println("if(view.getId() == R.id." + theClass.name().toLowerCase() + "_navigationbar_association_" + association.getTargetAE().cls().name().toLowerCase() + ")");
+								println("if(view.getId() == R.id." + theClass.name().toLowerCase() + "_navigationbar_association_" + association.getTargetAE().name().toLowerCase() + ")");
 							else
-								println("if(view.getId() == R.id." + associationTargetBaseAncestor(theClass, association).name().toLowerCase() + "_navigationbar_association_" + association.getTargetAE().cls().name().toLowerCase() + ")");
+								println("if(view.getId() == R.id." + associationTargetBaseAncestor(theClass, association).name().toLowerCase() + "_navigationbar_association_" + association.getTargetAE().name().toLowerCase() + ")");
 							println("{");
 							FileUtilities.incIndent();
 							if(isSuperClass(association.getTargetAE().cls())){
@@ -3139,10 +3139,10 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 			println("{");
 			FileUtilities.incIndent();
 			for(AssociationInfo x : supers){
-				println("if(view.findViewById(R.id." + theClass.name().toLowerCase() + "_generalizationoptions_" + x.getTargetAE().cls().name().toLowerCase() + ") != null)");
+				println("if(view.findViewById(R.id." + theClass.name().toLowerCase() + "_generalizationoptions_" + x.getTargetAE().name().toLowerCase() + ") != null)");
 				println("{");
 				FileUtilities.incIndent();
-					println("view.findViewById(R.id." + theClass.name().toLowerCase() + "_generalizationoptions_" + x.getTargetAE().cls().name().toLowerCase() + ").setOnClickListener(new OnClickListener()");
+					println("view.findViewById(R.id." + theClass.name().toLowerCase() + "_generalizationoptions_" + x.getTargetAE().name().toLowerCase() + ").setOnClickListener(new OnClickListener()");
 					println("{");
 					FileUtilities.incIndent();
 						println("@Override");

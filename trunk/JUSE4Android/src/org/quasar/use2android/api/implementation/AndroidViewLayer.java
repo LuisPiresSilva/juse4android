@@ -611,20 +611,20 @@ public class AndroidViewLayer extends ViewVisitor{
 					//list - end
 					
 					//navigation bar - start
-					List<MClass> alreadyAdded = new ArrayList<MClass>();
-					Map<MClass, Integer> RepeteadNeighbors = new HashMap<MClass, Integer>();
-					for (AssociationInfo association : AssociationInfo.getAllAssociationsInfo(cls)){
-						if(!alreadyAdded.contains(association.getTargetAE().cls())){
-							RepeteadNeighbors.put(association.getTargetAE().cls(), 1);
-							alreadyAdded.add(association.getTargetAE().cls());
-						}
-						else
-							RepeteadNeighbors.put(association.getTargetAE().cls(), RepeteadNeighbors.get(association.getTargetAE().cls()) + 1);
-					}
+//					List<MClass> alreadyAdded = new ArrayList<MClass>();
+//					Map<MClass, Integer> RepeteadNeighbors = new HashMap<MClass, Integer>();
+//					for (AssociationInfo association : AssociationInfo.getAllAssociationsInfo(cls)){
+//						if(!alreadyAdded.contains(association.getTargetAE().cls())){
+//							RepeteadNeighbors.put(association.getTargetAE().cls(), 1);
+//							alreadyAdded.add(association.getTargetAE().cls());
+//						}
+//						else
+//							RepeteadNeighbors.put(association.getTargetAE().cls(), RepeteadNeighbors.get(association.getTargetAE().cls()) + 1);
+//					}
 					
-					alreadyAdded.clear();
+//					alreadyAdded.clear();
 					for (AssociationInfo association : AssociationInfo.getAllAssociationsInfo(cls)){
-						if(!alreadyAdded.contains(association.getTargetAE().cls())){
+//						if(!alreadyAdded.contains(association.getTargetAE().cls())){
 							Element style_descriptor = new Element("style");
 							Element style_numberObjects = new Element("style");
 							
@@ -645,12 +645,12 @@ public class AndroidViewLayer extends ViewVisitor{
 								rootView.addContent(style_numberObjects);
 							}
 							
-							alreadyAdded.add(association.getTargetAE().cls());
-						}
+//							alreadyAdded.add(association.getTargetAE().cls());
+//						}
 					}
 					if(isSuperClass(cls)){//navegacao sub -> super (ToONE)
-						for(MClass x : getAllSubClasses(Arrays.asList(cls))){
-							if(x.parents().iterator().next() == cls && !alreadyAdded.contains(cls)){//if is direct super
+						for(MClass x : cls.children()){
+//							if(x.parents().iterator().next() == cls && !alreadyAdded.contains(cls)){//if is direct super
 								Element style_descriptor = new Element("style");
 								Element style_numberObjects = new Element("style");
 								
@@ -670,12 +670,12 @@ public class AndroidViewLayer extends ViewVisitor{
 									rootView.addContent(style_descriptor);
 									rootView.addContent(style_numberObjects);
 								}
-								alreadyAdded.add(cls);
-							}
+//								alreadyAdded.add(cls);
+//							}
 						}
 					}
 					if(isSubClass(cls)){//navegacao super -> sub (ToMany)
-						if(!alreadyAdded.contains(cls.parents().iterator().next())){
+//						if(!alreadyAdded.contains(cls.parents().iterator().next())){
 							Element style_descriptor = new Element("style");
 							Element style_numberObjects = new Element("style");
 							
@@ -695,7 +695,7 @@ public class AndroidViewLayer extends ViewVisitor{
 								rootView.addContent(style_descriptor);
 								rootView.addContent(style_numberObjects);
 							}
-						}
+//						}
 					}
 					//navigation bar - end
 					
@@ -732,7 +732,7 @@ public class AndroidViewLayer extends ViewVisitor{
 						rootView.addContent(strings_insert_update);
 					}
 					for(AssociationInfo ass : AssociationInfo.getAssociationsInfo(cls)){
-						String associationName = ass.getTargetAE().cls().name().toLowerCase();
+						String associationName = ass.getTargetAE().name().toLowerCase();
 						Element strings_associations = new Strings(classId + "_associationto_" + associationName, ass.getTargetAE().name());
 						rootView.addContent(strings_associations);
 					}
@@ -911,7 +911,7 @@ public class AndroidViewLayer extends ViewVisitor{
 						if(relativeLayout.getChildren().size() > 0){
 							linearLayout.setAttribute(new Below(relativeLayout.getChildren().get(relativeLayout.getChildren().size() - 1).getAttribute("id",namespace)));
 						}
-						Element dataDescriptor = new TextView(classId + "_detail_" + attributeName + "_descriptor", "wrap_content", "wrap_content", classId + "_detail_" + attributeName + "_descriptor" , classId + classId + "_detail_" + attributeName + "_descriptor_style");
+						Element dataDescriptor = new TextView(classId + "_detail_" + attributeName + "_descriptor", "wrap_content", "wrap_content", classId + "_detail_" + attributeName + "_descriptor" , "@style/" + classId + "_detail_" + attributeName + "_descriptor_style");
 						
 						Element dataValue = null;
 						
@@ -921,10 +921,10 @@ public class AndroidViewLayer extends ViewVisitor{
 							dataValue = new DatePicker(classId + "_detail_" + attributeName + "_value", "wrap_content", "wrap_content", false); 	
 						
 						if(att.type().isEnum())
-							dataValue = new TextView(classId + "_detail_" + attributeName + "_value", "wrap_content", "wrap_content", classId + "_detail_" + attributeName + "_value_style");
+							dataValue = new TextView(classId + "_detail_" + attributeName + "_value", "wrap_content", "wrap_content", "@style/" + classId + "_detail_" + attributeName + "_value_style");
 						
 						if(att.type().isInteger() || att.type().isNumber() || att.type().isString())
-							dataValue = new TextView(classId + "_detail_" + attributeName + "_value", "wrap_content", "wrap_content", classId + "_detail_" + attributeName + "_value_style"); 	
+							dataValue = new TextView(classId + "_detail_" + attributeName + "_value", "wrap_content", "wrap_content", "@style/" + classId + "_detail_" + attributeName + "_value_style"); 	
 						
 						
 						linearLayout.addContent(dataDescriptor);
@@ -978,7 +978,7 @@ public class AndroidViewLayer extends ViewVisitor{
 						if(relativeLayout.getChildren().size() > 0){
 							linearLayout.setAttribute(new Below(relativeLayout.getChildren().get(relativeLayout.getChildren().size() - 1).getAttribute("id",namespace)));
 						}
-						Element dataDescriptor = new TextView(classId + "_insertupdate_" + attributeName + "_descriptor", "wrap_content", "wrap_content", classId + "_insertupdate_" + attributeName + "_descriptor" , classId + "_insertupdate_" + attributeName + "_descriptor_style");
+						Element dataDescriptor = new TextView(classId + "_insertupdate_" + attributeName + "_descriptor", "wrap_content", "wrap_content", classId + "_insertupdate_" + attributeName + "_descriptor" , "@style/" + classId + "_insertupdate_" + attributeName + "_descriptor_style");
 						
 						Element dataValue = null;
 						
@@ -1248,7 +1248,7 @@ public class AndroidViewLayer extends ViewVisitor{
 						
 						String associationName;
 						for (AssociationInfo association : AssociationInfo.getAssociationsInfo(cls)){
-							associationName = association.getTargetAE().cls().name().toLowerCase();
+							associationName = association.getTargetAE().name().toLowerCase();
 							generateNavigationBarAssociations(association, "association", associationName, classId, rootView);
 						}
 						
@@ -1374,7 +1374,7 @@ public class AndroidViewLayer extends ViewVisitor{
 		root_ass_linearLayout.setAttribute(new LongClickable(true));
 		root_linearLayout.addContent(root_ass_linearLayout);
 		 
-		Element associationDescription = new TextView(classId + "_navigationbar_association_" + associationClassName + "_descriptor","wrap_content","wrap_content",classId + "_navigationbar_association_" + associationClassName + "_descriptor_style");
+		Element associationDescription = new TextView(classId + "_navigationbar_association_" + associationClassName + "_descriptor","wrap_content","wrap_content", "@style/" + classId + "_navigationbar_association_" + associationClassName + "_descriptor_style");
 		associationDescription.setAttribute("layout_gravity", "center", namespace);
 									
 		Element associationImage = null;
@@ -1386,11 +1386,11 @@ public class AndroidViewLayer extends ViewVisitor{
 			associationDescription.setAttribute(new Text(classId + "_associationto_" + associationClassName));
 			if(((AssociationInfo) association).getKind() == AssociationKind.MANY2MANY || (((AssociationInfo) association).getKind() == AssociationKind.ONE2MANY && ((AssociationInfo) association).getTargetAE().isCollection())){
 				associationImage = new ImageView(classId + "_navigationbar_association_" + associationClassName + "_image","wrap_content","wrap_content","drawable","ic_light_association_many");
-				associationStateInfo = new TextView(classId + "_navigationbar_association_" + associationClassName + "_numberobjects", "wrap_content", "wrap_content", classId + "_navigationbar_association_" + associationClassName + "_numberobjects");
+				associationStateInfo = new TextView(classId + "_navigationbar_association_" + associationClassName + "_numberobjects", "wrap_content", "wrap_content", "@style/" + classId + "_navigationbar_association_" + associationClassName + "_numberobjects_style");
 				associationStateInfo.setAttribute(new Attribute("text", "( 0 )", namespace));
 			}else{
 				associationImage = new ImageView(classId + "_navigationbar_association_" + associationClassName + "_image","wrap_content","wrap_content","drawable","ic_light_association_one");
-				associationStateInfo = new TextView(classId + "_navigationbar_association_" + associationClassName + "_numberobjects", "wrap_content", "wrap_content", classId + "_navigationbar_association_" + associationClassName + "_numberobjects");
+				associationStateInfo = new TextView(classId + "_navigationbar_association_" + associationClassName + "_numberobjects", "wrap_content", "wrap_content", "@style/" + classId + "_navigationbar_association_" + associationClassName + "_numberobjects_style");
 				associationStateInfo.setAttribute(new Attribute("text", "( 0 )", namespace));
 			}
 		}
@@ -1399,13 +1399,13 @@ public class AndroidViewLayer extends ViewVisitor{
 			if(typeAssociation.equals("child")){
 				associationDescription.setAttribute(new Text(classId + "_tosub_" + associationClassName));
 				associationImage = new ImageView(classId + "_navigationbar_association_" + associationClassName + "_image","wrap_content","wrap_content","drawable","ic_light_association_inheritance_sub");
-				associationStateInfo = new TextView(classId + "_navigationbar_association_" + associationClassName + "_numberobjects", "wrap_content", "wrap_content", classId + "_navigationbar_association_" + associationClassName + "_numberobjects");
+				associationStateInfo = new TextView(classId + "_navigationbar_association_" + associationClassName + "_numberobjects", "wrap_content", "wrap_content", "@style/" + classId + "_navigationbar_association_" + associationClassName + "_numberobjects_style");
 				associationStateInfo.setAttribute(new Attribute("text", "( 0 )", namespace));
 			}
 			if(typeAssociation.equals("super")){
 				associationDescription.setAttribute(new Text(classId + "_tosuper_" + associationClassName));
 				associationImage = new ImageView(classId + "_navigationbar_association_" + associationClassName + "_image","wrap_content","wrap_content","drawable","ic_light_association_inheritance_super");				
-				associationStateInfo = new TextView(classId + "_navigationbar_association_" + associationClassName + "_numberobjects", "wrap_content", "wrap_content", classId + "_navigationbar_association_" + associationClassName + "_numberobjects");
+				associationStateInfo = new TextView(classId + "_navigationbar_association_" + associationClassName + "_numberobjects", "wrap_content", "wrap_content", "@style/" + classId + "_navigationbar_association_" + associationClassName + "_numberobjects_style");
 				associationStateInfo.setAttribute(new Attribute("text", "( 1 )", namespace));
 			}
 		}
@@ -1452,7 +1452,7 @@ public class AndroidViewLayer extends ViewVisitor{
 							
 							String associationName;
 							if(!association.getTargetAE().cls().isAbstract()){
-								associationName = association.getTargetAE().cls().name().toLowerCase();
+								associationName = association.getTargetAE().name().toLowerCase();
 								generateGeneralizationOptionsElements(association, "association", associationName, classId, rootView);
 //								generateDividerView(rootView, new Attribute("layout_width","match_parent"), new Attribute("layout_height","2dp"));
 
