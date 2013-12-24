@@ -167,7 +167,7 @@ public class ServerActions {
 		get_task = new AsyncTask<Void, String, Boolean>() {
 			@Override
 			protected Boolean doInBackground(Void... params) {
-//				ObjectContainer client = Db4oClientServer.openClient(ServerInfo.HOST, ServerInfo.PORT, ServerInfo.USER,	ServerInfo.PASS);
+//				ObjectContainer client = Db4oClientServer.openClient(Database.dbServerConfig(), ServerInfo.HOST, ServerInfo.PORT, ServerInfo.USER,	ServerInfo.PASS);
 //				ObjectSet<Object> allObjects = client.query(Object.class);
 //				for (Object objectToUpdate : allObjects) {
 //				   Log.i("objects in server", "" + objectToUpdate.toString());
