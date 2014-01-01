@@ -20,7 +20,7 @@ public class DatePicker extends Element{
 	 * @param style
 	 *            The reference to the XML containing the style
 	 ***********************************************************/
-	public DatePicker(String id, String width, String height, boolean allowInput){
+	public DatePicker(String id, String width, String height, String style, boolean allowInput){
 		super(tag);
 		if(id != null)
 			super.setAttribute(new Id(id));
@@ -28,6 +28,8 @@ public class DatePicker extends Element{
 			super.setAttribute(new Width(width));
 		if(height != null)
 			super.setAttribute(new Height(height));
+		if(style != null)
+			super.setAttribute(new Style(style, ""));
 		
 		super.setAttribute(new Clickable(allowInput));	
 	}

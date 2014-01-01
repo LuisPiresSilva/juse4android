@@ -36,8 +36,6 @@ public class Transactions {
 	public synchronized static boolean StopTransaction(){
 		if(Opened && !isCanceled()){
 			try{
-				Opened = false;
-	
 				session.store(transaction);
 				session.commit();
 				
@@ -50,7 +48,8 @@ public class Transactions {
 			for(Command c : transaction.getCommands())
 				if(c.getTargetLayer().toString().equals(CommandTargetLayer.VIEW.toString()))
 					((ModelMusts) c.getSource()).notifyObjectListener(c.getSource(), c.getType(), c.getoldObjectID(), c.getoldObject(), c.getObject(), c.getoldNeiborID(), c.getOldNeibor(), c.getNeibor());
-
+			
+			Opened = false;
 			return true;
 			
 		}else

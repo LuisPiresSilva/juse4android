@@ -487,6 +487,16 @@ public class AndroidViewLayer extends ViewVisitor{
 //			others components
 			Element datepicker = new Element("style");
 			datepicker.setAttribute("name", "default_datepicker_style");
+			
+			Element calendarshown = new Element("item");
+			calendarshown.setAttribute("name", "android:calendarViewShown");
+			if(typeScreen.equals(normal_port) || typeScreen.equals(normal_land))
+				calendarshown.addContent("false");
+			else if(typeScreen.equals(large_port) || typeScreen.equals(large_land))
+				calendarshown.addContent("true");
+			else if(typeScreen.equals(xlarge_port) || typeScreen.equals(xlarge_land))
+				calendarshown.addContent("true");
+			datepicker.addContent(calendarshown);
 			rootView.addContent(datepicker);
 			
 			
@@ -596,7 +606,7 @@ public class AndroidViewLayer extends ViewVisitor{
 	//					if(att.type().isBoolean())
 						
 						if(att.type().isDate() || (att.type().isObjectType() && att.type().toString().equals("Date"))){
-							style_list.setAttribute("parent", "@style/default_datepicker_style");						
+							style_list.setAttribute("parent", "@style/default_textview_style");						
 						}
 						if(att.type().isEnum()){
 							style_list.setAttribute("parent", "@style/default_textview_style");			
@@ -918,7 +928,7 @@ public class AndroidViewLayer extends ViewVisitor{
 	//					if(att.type().isBoolean())
 							
 						if(att.type().isDate() || (att.type().isObjectType() && att.type().toString().equals("Date")))
-							dataValue = new DatePicker(classId + "_detail_" + attributeName + "_value", "wrap_content", "wrap_content", false); 	
+							dataValue = new DatePicker(classId + "_detail_" + attributeName + "_value", "wrap_content", "wrap_content", "@style/" + classId + "_detail_" + attributeName + "_value_style", false); 	
 						
 						if(att.type().isEnum())
 							dataValue = new TextView(classId + "_detail_" + attributeName + "_value", "wrap_content", "wrap_content", "@style/" + classId + "_detail_" + attributeName + "_value_style");
@@ -985,7 +995,7 @@ public class AndroidViewLayer extends ViewVisitor{
 	//					if(att.type().isBoolean())
 							
 						if(att.type().isDate() || (att.type().isObjectType() && att.type().toString().equals("Date")))
-							dataValue = new DatePicker(classId + "_insertupdate_" + attributeName + "_value", "wrap_content", "wrap_content", true); 	
+							dataValue = new DatePicker(classId + "_insertupdate_" + attributeName + "_value", "wrap_content", "wrap_content", "@style/" + classId + "_insertupdate_" + attributeName + "_descriptor_style", true); 	
 						
 //						if(att.type().isEnum())
 						

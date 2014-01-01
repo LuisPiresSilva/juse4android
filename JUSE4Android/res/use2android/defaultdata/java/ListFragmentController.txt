@@ -287,10 +287,14 @@ public class ListFragmentController extends ListFragment implements PropertyChan
 					case INSERT:
 						mCallbacks.addToList(((ModelMusts) event.getSource()).getType(), event.getNewObject(), event.getNewNeibor());
 						break;
+					case DELETE_ASSOCIATION:
+						((ArrayAdapter<Object>) getListAdapter()).notifyDataSetChanged();
+						break;
+					case INSERT_ASSOCIATION:
+						((ArrayAdapter<Object>) getListAdapter()).notifyDataSetChanged();
+						break;
 					default:
 						break;
-//				else if(event.getPropertyName().equals("insert association"))
-//					mCallbacks.addToList(event.getSource(), event.getOldValue(), event.getNewValue());
 				}
 			}
 		});
