@@ -995,7 +995,7 @@ public class AndroidViewLayer extends ViewVisitor{
 	//					if(att.type().isBoolean())
 							
 						if(att.type().isDate() || (att.type().isObjectType() && att.type().toString().equals("Date")))
-							dataValue = new DatePicker(classId + "_insertupdate_" + attributeName + "_value", "wrap_content", "wrap_content", "@style/" + classId + "_insertupdate_" + attributeName + "_descriptor_style", true); 	
+							dataValue = new DatePicker(classId + "_insertupdate_" + attributeName + "_value", "wrap_content", "wrap_content", "@style/" + classId + "_insertupdate_" + attributeName + "_value_style", true); 	
 						
 //						if(att.type().isEnum())
 						
