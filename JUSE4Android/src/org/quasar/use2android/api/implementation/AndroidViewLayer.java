@@ -575,7 +575,7 @@ public class AndroidViewLayer extends ViewVisitor{
 	//					if(att.type().isBoolean())
 						
 						if(att.type().isDate() || (att.type().isObjectType() && att.type().toString().equals("Date"))){
-							style_write.setAttribute("type", "@style/default_datepicker_style");						
+							style_write.setAttribute("parent", "@style/default_datepicker_style");						
 						}
 //						if(att.type().isEnum()){
 //							style_write.setAttribute("parent", "default_textview_style");			
