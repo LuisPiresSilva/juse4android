@@ -724,6 +724,7 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 		androidClassTypes.add("Intent");
 		androidClassTypes.add("Bundle");
 		androidClassTypes.add("MenuItem");
+		androidClassTypes.add("Menu");
 		androidClassTypes.add("ListView");
 //		androidClassTypes.add("Toast");
 		
