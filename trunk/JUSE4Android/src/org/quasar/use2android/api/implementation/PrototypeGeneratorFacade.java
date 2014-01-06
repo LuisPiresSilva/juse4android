@@ -322,6 +322,8 @@ public class PrototypeGeneratorFacade extends BasicFacade
 					
 					VMvisitor.printActivity_onItemSelected(cls);
 					
+					VMvisitor.printActivity_onPrepareOptionsMenu(cls);
+					
 					VMvisitor.printActivity_onOptionsItemSelected(cls);
 					
 					VMvisitor.printActivity_onActivityResult(cls);

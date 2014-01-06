@@ -49,6 +49,8 @@ public interface IViewModelVisitor {
 	
 	public void printActivity_onItemSelected(MClass theClass);
 	
+	public void printActivity_onPrepareOptionsMenu(MClass theClass);
+	
 	public void printActivity_onOptionsItemSelected(MClass theClass);
 	
 	public void printActivity_onActivityResult(MClass theClass);

@@ -59,6 +59,9 @@ public abstract class ViewModelVisitor extends FileUtilities implements IViewMod
 	public abstract void printActivity_onItemSelected(MClass theClass);
 	
 	@Override
+	public abstract void printActivity_onPrepareOptionsMenu(MClass theClass);
+	
+	@Override
 	public abstract void printActivity_onOptionsItemSelected(MClass theClass);
 	
 	@Override

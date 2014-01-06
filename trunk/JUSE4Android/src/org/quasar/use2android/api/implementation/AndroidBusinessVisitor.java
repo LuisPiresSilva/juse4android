@@ -813,7 +813,8 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 		{
 			println(associativeInterfaceType + " result = new " + associativeImplementationType + "();");
 			print("for (" + associativeClass + " x : " + associativeClass);
-			println(associationClass.isAbstract() ? ".allInstancesAbstract())" : ".allInstances())");
+//			println(associationClass.isAbstract() ? ".allInstancesAbstract())" : ".allInstances())");
+			println(".allInstances())");
 			incIndent();
 			println("if (x." + sourceRole + "()  ==  this)");
 			incIndent();
@@ -825,7 +826,8 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 		else
 		{
 			print("for (" + associativeClass + " x : " + associativeClass);
-			println(associationClass.isAbstract() ? ".allInstancesAbstract())" : ".allInstances())");
+//			println(associationClass.isAbstract() ? ".allInstancesAbstract())" : ".allInstances())");
+			println(".allInstances())");
 			incIndent();
 			println("if (x." + sourceRole + "()  ==  this)");
 			incIndent();
@@ -898,7 +900,8 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 		{
 			println(targetInterfaceType + " result = new " + targetImplementationType + "();");
 			print("for (" + associativeClass + " x : " + associativeClass);
-			println(associationClass.isAbstract() ? ".allInstancesAbstract())" : ".allInstances())");
+//			println(associationClass.isAbstract() ? ".allInstancesAbstract())" : ".allInstances())");
+			println(".allInstances())");
 			incIndent();
 			println("if (x." + sourceRole + "()  ==  this)");
 			incIndent();
@@ -910,7 +913,8 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 		else
 		{
 			print("for (" + associativeClass + " x : " + associativeClass);
-			println(associationClass.isAbstract() ? ".allInstancesAbstract())" : ".allInstances())");
+//			println(associationClass.isAbstract() ? ".allInstancesAbstract())" : ".allInstances())");
+			println(".allInstances())");
 			incIndent();
 			println("if (x." + sourceRole + "()  ==  this)");
 			incIndent();
@@ -936,7 +940,8 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 			println("for (" + targetClass + " t : " + targetRole + ")");
 			incIndent();
 			print("for (" + associativeClass + " x : " + associativeClass);
-			println(associationClass.isAbstract() ? ".allInstancesAbstract())" : ".allInstances())");
+//			println(associationClass.isAbstract() ? ".allInstancesAbstract())" : ".allInstances())");
+			println(".allInstances())");
 			incIndent();
 			println("if (x." + sourceRole + "() == this)");
 			incIndent();
@@ -948,7 +953,8 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 		else
 		{
 			print("for (" + associativeClass + " x : " + associativeClass);
-			println(associationClass.isAbstract() ? ".allInstancesAbstract())" : ".allInstances())");
+//			println(associationClass.isAbstract() ? ".allInstancesAbstract())" : ".allInstances())");
+			println(".allInstances())");
 			incIndent();
 			println("if (x." + sourceRole + "() == this)");
 			incIndent();
@@ -1000,7 +1006,8 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 		incIndent();
 		// println("for (" + targetInterfaceType + " x : " + targetInterfaceType + "." + allInstances + ")");
 		print("for (" + targetInterfaceType + " x : " + targetInterfaceType);
-		println(targetAE.cls().isAbstract() ? ".allInstancesAbstract())" : ".allInstances())");
+//		println(targetAE.cls().isAbstract() ? ".allInstancesAbstract())" : ".allInstances())");
+		println(".allInstances())");
 		incIndent();
 		println("if (x." + sourceRole + "() == this)");
 		incIndent();
@@ -1148,7 +1155,8 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 		incIndent();
 		println(targetInterfaceType + " result = new " + targetImplementationType + "();");
 		print("for (" + targetClass + " x : " + targetClass);
-		println(targetAE.cls().isAbstract() ? ".allInstancesAbstract())" : ".allInstances())");
+//		println(targetAE.cls().isAbstract() ? ".allInstancesAbstract())" : ".allInstances())");
+		println(".allInstances())");
 		incIndent();
 		println("if (x." + sourceRole + "() != null && x." + sourceRole + "().contains(this))");
 		incIndent();
@@ -1351,13 +1359,16 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 				
 				String upperRange = targetMultiplicity.toString();
 				String lowerRange = targetMultiplicity.toString();
+				System.out.println("association: " + targetRole + "   - teste 1 - " + targetMultiplicity.toString());
 				if(targetMultiplicity.toString().contains("..")){
 					upperRange = targetMultiplicity.toString().split("\\.\\.")[1];
 					lowerRange = targetMultiplicity.toString().split("\\.\\.")[0];
+					System.out.println("teste 2 - " + lowerRange + " and " + upperRange);
 				}
 				if(upperRange.equals("*")){
 					upperRange = "-1";
-					lowerRange = "0";
+					if(lowerRange.equals("*"))
+						lowerRange = "0";
 				}
 				switch (ai.getKind())
 				{
@@ -2798,10 +2809,9 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 	public void printAccessServerPersistenceMethods(MClass theClass)
 	{
 		println("//Server specific methods - Start");
-		if(!theClass.isAbstract()){
-			printAccessServerInsert(theClass);
-			printAccessServerUpdate(theClass);
-		}
+		printAccessServerInsert(theClass);
+		printAccessServerUpdate(theClass);
+		
 		if(!theClass.associations().isEmpty()){
 			printAccessServerInsertAssociation(theClass);
 			printAccessServerDeleteAssociation(theClass);
@@ -2827,6 +2837,7 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 		println("public Object serverInsert(Object object)");
 		println("{");
 		incIndent();
+		if(!theClass.isAbstract()){
 			println("if(object instanceof " + theClass.name() + "){");
 			incIndent();
 				print(theClass.name() + " x = new " + theClass.name() + "(");
@@ -2858,6 +2869,8 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 			incIndent();
 				println("return null;");
 			decIndent();
+		}else
+			println("return object;");
 		decIndent();
 		println("}");
 		println();
@@ -2880,26 +2893,28 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 		println("@Override");
 		println("public void serverUpdate(Object oldObject, Object newObject)");
 		println("{");
-		incIndent();
-			println("if(oldObject instanceof " + theClass.name() + " && newObject instanceof " + theClass.name() + "){");
+		if(!theClass.isAbstract()){
 			incIndent();
-				for (int i = 0; i < inheritedAttributes.size(); i++)
-				{
-					if(inheritedAttributes.get(i).getKind().toString().equals(AssociationKind.NONE.toString()) && !inheritedAttributes.get(i).getName().equals("ID")){
-						println("((" + theClass.name() + ") oldObject).set" + capitalize(inheritedAttributes.get(i).getName()) + "(((" + theClass.name() + ") newObject)." + inheritedAttributes.get(i).getName() + "());");
+				println("if(oldObject instanceof " + theClass.name() + " && newObject instanceof " + theClass.name() + "){");
+				incIndent();
+					for (int i = 0; i < inheritedAttributes.size(); i++)
+					{
+						if(inheritedAttributes.get(i).getKind().toString().equals(AssociationKind.NONE.toString()) && !inheritedAttributes.get(i).getName().equals("ID")){
+							println("((" + theClass.name() + ") oldObject).set" + capitalize(inheritedAttributes.get(i).getName()) + "(((" + theClass.name() + ") newObject)." + inheritedAttributes.get(i).getName() + "());");
+						}
 					}
-				}
-				List<AttributeInfo> attributes = AttributeInfo.getAttributesInfo(theClass);
-				for (int i = 0; i < attributes.size(); i++)
-				{
-					if(attributes.get(i).getKind().toString().equals(AssociationKind.NONE.toString()) && !attributes.get(i).getName().equals("ID")){
-						println("((" + theClass.name() + ") oldObject).set" + capitalize(attributes.get(i).getName()) + "(((" + theClass.name() + ") newObject)." + attributes.get(i).getName() + "());");
+					List<AttributeInfo> attributes = AttributeInfo.getAttributesInfo(theClass);
+					for (int i = 0; i < attributes.size(); i++)
+					{
+						if(attributes.get(i).getKind().toString().equals(AssociationKind.NONE.toString()) && !attributes.get(i).getName().equals("ID")){
+							println("((" + theClass.name() + ") oldObject).set" + capitalize(attributes.get(i).getName()) + "(((" + theClass.name() + ") newObject)." + attributes.get(i).getName() + "());");
+						}
 					}
-				}
-				println("((" + theClass.name() + ") oldObject).setID();");
+					println("((" + theClass.name() + ") oldObject).setID();");
+				decIndent();
+				println("}");
 			decIndent();
-			println("}");
-		decIndent();
+		}
 		println("}");
 		println();
 		
