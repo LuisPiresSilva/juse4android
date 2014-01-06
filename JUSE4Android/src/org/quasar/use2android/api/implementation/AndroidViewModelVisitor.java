@@ -885,14 +885,17 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 			println("if(!restarted)");
 			println("{");
 			FileUtilities.incIndent();
-				println("if(ONCREATION)");
-				FileUtilities.incIndent();
-					println("setDetailFragment(" + theClass.name() + "DetailFragment.ARG_VIEW_NEW, null);");
-				FileUtilities.decIndent();
-				println("else");
-				FileUtilities.incIndent();
+				if(!theClass.isAbstract()){
+					println("if(ONCREATION)");
+					FileUtilities.incIndent();
+						println("setDetailFragment(" + theClass.name() + "DetailFragment.ARG_VIEW_NEW, null);");
+					FileUtilities.decIndent();
+					println("else");
+					FileUtilities.incIndent();
+				}
 					println("setDetailFragment(" + theClass.name() + "DetailFragment.ARG_VIEW_DETAIL, " + theClass.name().toLowerCase() + ");");
-				FileUtilities.decIndent();
+				if(!theClass.isAbstract())
+					FileUtilities.decIndent();
 			FileUtilities.decIndent();
 			println("}");
 		FileUtilities.decIndent();
@@ -1431,6 +1434,27 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 	}
 	
 	@Override
+	public void printActivity_onPrepareOptionsMenu(MClass theClass){
+		println("@Override");
+		println("public boolean onPrepareOptionsMenu(Menu menu)");
+		println("{");
+		FileUtilities.incIndent();
+			println("super.onPrepareOptionsMenu(menu);");
+			if(theClass.isAbstract()){
+				println("menu.findItem(R.id.menu_new).setEnabled(false);");
+				println("menu.findItem(R.id.menu_new).setEnabled(false);");
+				println("menu.findItem(R.id.menu_edit).setEnabled(false);");
+				println("menu.findItem(R.id.menu_edit).setEnabled(false);");
+				println("menu.findItem(R.id.menu_delete).setEnabled(false);");
+				println("menu.findItem(R.id.menu_delete).setEnabled(false);");
+			}
+			println("return true;");
+		FileUtilities.decIndent();
+		println("}");
+		println();
+	}
+	
+	@Override
 	public void printActivity_onOptionsItemSelected(MClass theClass){
 		println("@Override");
 		println("public boolean onOptionsItemSelected(MenuItem item)");
@@ -1439,13 +1463,15 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 			println("switch (item.getItemId())");
 			println("{");
 			FileUtilities.incIndent();
-				println("case R.id.menu_new:");
-				FileUtilities.incIndent();
-//					println("((NavigationBarFragment) navigation_bar).hide();");
-					println("setDetailFragment(" + theClass.name() + "DetailFragment.ARG_VIEW_NEW, null);");
-//					println("showingDetail = true;");
-					println("break;");
-				FileUtilities.decIndent();
+				if(!theClass.isAbstract()){
+					println("case R.id.menu_new:");
+					FileUtilities.incIndent();
+	//					println("((NavigationBarFragment) navigation_bar).hide();");
+						println("setDetailFragment(" + theClass.name() + "DetailFragment.ARG_VIEW_NEW, null);");
+	//					println("showingDetail = true;");
+						println("break;");
+					FileUtilities.decIndent();
+				}
 				println("case R.id.menu_confirm_oncreation:");
 				FileUtilities.incIndent();
 					println("if(ONCREATION)");
@@ -1457,45 +1483,47 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 					println("}");
 					println("break;");
 				FileUtilities.decIndent();
-				println("case R.id.menu_edit:");
-				FileUtilities.incIndent();
-					println("if (AssociationEnd == ToONE || list_fragment.getSelectedPosition() != ListView.INVALID_POSITION)");
-					println("{");
+				if(!theClass.isAbstract()){
+					println("case R.id.menu_edit:");
 					FileUtilities.incIndent();
-//						println("((NavigationBarFragment) navigation_bar).hide();");
-						println("setDetailFragment(" + theClass.name() + "DetailFragment.ARG_VIEW_EDIT,	clicked" + theClass.name() + ");");
-//						println("showingDetail = true;");
-					FileUtilities.decIndent();
-					println("}");
-					println("break;");
-				FileUtilities.decIndent();
-				println("case R.id.menu_delete:");
-				FileUtilities.incIndent();
-					println("if(Transactions.StartTransaction())");
-					println("{");
-					FileUtilities.incIndent();
-						println("if (AssociationEnd == ToMANY && list_fragment.getSelectedPosition() != ListView.INVALID_POSITION)");
+						println("if (AssociationEnd == ToONE || list_fragment.getSelectedPosition() != ListView.INVALID_POSITION)");
 						println("{");
 						FileUtilities.incIndent();
-							println("clicked" + theClass.name() + ".delete();");
-							println("list_fragment.show();");
-//							println("list_fragment.setActivatedPosition(ListView.INVALID_POSITION);");
-//							println("list_fragment.setSelection(ListView.INVALID_POSITION);");
-//							println("getFragmentManager().beginTransaction().detach(detail_fragment).commit();");
+	//						println("((NavigationBarFragment) navigation_bar).hide();");
+							println("setDetailFragment(" + theClass.name() + "DetailFragment.ARG_VIEW_EDIT,	clicked" + theClass.name() + ");");
+	//						println("showingDetail = true;");
 						FileUtilities.decIndent();
 						println("}");
-						println("else");
+						println("break;");
+					FileUtilities.decIndent();
+					println("case R.id.menu_delete:");
+					FileUtilities.incIndent();
+						println("if(Transactions.StartTransaction())");
 						println("{");
 						FileUtilities.incIndent();
-							println("clicked" + theClass.name() + ".delete();");
-							println("finish();");
+							println("if (AssociationEnd == ToMANY && list_fragment.getSelectedPosition() != ListView.INVALID_POSITION)");
+							println("{");
+							FileUtilities.incIndent();
+								println("clicked" + theClass.name() + ".delete();");
+								println("list_fragment.show();");
+	//							println("list_fragment.setActivatedPosition(ListView.INVALID_POSITION);");
+	//							println("list_fragment.setSelection(ListView.INVALID_POSITION);");
+	//							println("getFragmentManager().beginTransaction().detach(detail_fragment).commit();");
+							FileUtilities.decIndent();
+							println("}");
+							println("else");
+							println("{");
+							FileUtilities.incIndent();
+								println("clicked" + theClass.name() + ".delete();");
+								println("finish();");
+							FileUtilities.decIndent();
+							println("}");
+							println("Transactions.StopTransaction();");
 						FileUtilities.decIndent();
 						println("}");
-						println("Transactions.StopTransaction();");
+						println("break;");
 					FileUtilities.decIndent();
-					println("}");
-					println("break;");
-				FileUtilities.decIndent();
+				}
 			FileUtilities.decIndent();
 			println("}");
 			println("return super.onOptionsItemSelected(item);");
@@ -1566,125 +1594,129 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 	
 	@Override
 	public void printActivity_onDetailOK(MClass theClass){
-		println("@Override");
-		println("public void onDetailOK(boolean isNew, " + theClass.name() + " new" + theClass.name() + ")");
-		println("{");
-//		println("Log.i(\"carreguei no ok\", \"carreguei no ok\");");
-		FileUtilities.incIndent();
-			println("if(Transactions.StartTransaction())");
+		if(!theClass.isAbstract()){
+			println("@Override");
+			println("public void onDetailOK(boolean isNew, " + theClass.name() + " new" + theClass.name() + ")");
 			println("{");
+	//		println("Log.i(\"carreguei no ok\", \"carreguei no ok\");");
 			FileUtilities.incIndent();
-				println("if(isNew)");
+				println("if(Transactions.StartTransaction())");
 				println("{");
 				FileUtilities.incIndent();
-					println(" new" + theClass.name() + ".insert();");
-					println();
-					for (AssociationInfo association : AssociationInfo.getAllAssociationsInfo(theClass)){
-						println("if(" + association.getTargetAE().cls().name().toLowerCase() + " != null && !Transactions.isCanceled())");
-						FileUtilities.incIndent();
-							println("" + association.getTargetAE().cls().name().toLowerCase() + ".insertAssociation(new" + theClass.name() + ");");
-						FileUtilities.decIndent();
-					}
-				FileUtilities.decIndent();
-				println("}");
-				println("else");
-				println("{");
-				FileUtilities.incIndent();
-					println(" new" + theClass.name() + ".update();");
-				FileUtilities.decIndent();
-				println("}");
-				println();
-				println("if(!Transactions.StopTransaction())");
-				FileUtilities.incIndent();
-					println("Transactions.ShowErrorMessage(this);");
-				FileUtilities.decIndent();
-				println("else");
-				println("{");
-				FileUtilities.incIndent();
-					println("clicked" + theClass.name() + " = new" + theClass.name() + ";");
-//					println("((NavigationBarFragment) navigation_bar).show();");
-					println("if (mTwoPane)");
+					println("if(isNew)");
+					println("{");
 					FileUtilities.incIndent();
-						println("setDetailFragment(" + theClass.name() + "DetailFragment.ARG_VIEW_DETAIL,clicked" + theClass.name() + ");");
+						println(" new" + theClass.name() + ".insert();");
+						println();
+						for (AssociationInfo association : AssociationInfo.getAllAssociationsInfo(theClass)){
+							println("if(" + association.getTargetAE().cls().name().toLowerCase() + " != null && !Transactions.isCanceled())");
+							FileUtilities.incIndent();
+								println("" + association.getTargetAE().cls().name().toLowerCase() + ".insertAssociation(new" + theClass.name() + ");");
+							FileUtilities.decIndent();
+						}
+					FileUtilities.decIndent();
+					println("}");
+					println("else");
+					println("{");
+					FileUtilities.incIndent();
+						println(" new" + theClass.name() + ".update();");
+					FileUtilities.decIndent();
+					println("}");
+					println();
+					println("if(!Transactions.StopTransaction())");
+					FileUtilities.incIndent();
+						println("Transactions.ShowErrorMessage(this);");
 					FileUtilities.decIndent();
 					println("else");
 					println("{");
 					FileUtilities.incIndent();
-						println("((DetailFragment) detail_fragment).hide();");
-						println("list_fragment.show();");
-						println("showingDetail = false;");
+						println("clicked" + theClass.name() + " = new" + theClass.name() + ";");
+	//					println("((NavigationBarFragment) navigation_bar).show();");
+						println("if (mTwoPane)");
+						FileUtilities.incIndent();
+							println("setDetailFragment(" + theClass.name() + "DetailFragment.ARG_VIEW_DETAIL,clicked" + theClass.name() + ");");
+						FileUtilities.decIndent();
+						println("else");
+						println("{");
+						FileUtilities.incIndent();
+							println("((DetailFragment) detail_fragment).hide();");
+							println("list_fragment.show();");
+							println("showingDetail = false;");
+						FileUtilities.decIndent();
+						println("}");
+						println("if(AssociationEnd == ToMANY)");
+						println("{");
+						FileUtilities.incIndent();
+							println("list_fragment.setActivatedPosition(clicked" + theClass.name() + ");");
+							println("list_fragment.setSelection(clicked" + theClass.name() + ");");
+						FileUtilities.decIndent();
+						println("}");
+						
 					FileUtilities.decIndent();
 					println("}");
-					println("if(AssociationEnd == ToMANY)");
-					println("{");
-					FileUtilities.incIndent();
-						println("list_fragment.setActivatedPosition(clicked" + theClass.name() + ");");
-						println("list_fragment.setSelection(clicked" + theClass.name() + ");");
-					FileUtilities.decIndent();
-					println("}");
-					
-				FileUtilities.decIndent();
-				println("}");
-			FileUtilities.decIndent();
-			println("}");
-			println("else");
-			println("{");
-			FileUtilities.incIndent();
-				println("if(ONCREATION)");
-				println("{");
-				FileUtilities.incIndent();
-					println("clicked" + theClass.name() + " = new" + theClass.name() + ";");
-					println("clicked" + theClass.name() + ".insert();");
-					
-					setActivityResult(theClass);
-					
-					println("finish();");
 				FileUtilities.decIndent();
 				println("}");
 				println("else");
 				println("{");
 				FileUtilities.incIndent();
-					println("//concurrency error");
+					println("if(ONCREATION)");
+					println("{");
+					FileUtilities.incIndent();
+						println("clicked" + theClass.name() + " = new" + theClass.name() + ";");
+						println("clicked" + theClass.name() + ".insert();");
+						
+						setActivityResult(theClass);
+						
+						println("finish();");
+					FileUtilities.decIndent();
+					println("}");
+					println("else");
+					println("{");
+					FileUtilities.incIndent();
+						println("//concurrency error");
+					FileUtilities.decIndent();
+					println("}");
 				FileUtilities.decIndent();
 				println("}");
 			FileUtilities.decIndent();
 			println("}");
-		FileUtilities.decIndent();
-		println("}");
-		println();
+			println();
+		}
 	}
 	
 	@Override
 	public void printActivity_onDetailCancel(MClass theClass){
-		println("@Override");
-		println("public void onDetailCancel()");
-		println("{");
-		println("((NavigationBarFragment) navigation_bar).show();");
-		FileUtilities.incIndent();
-			println("if (mTwoPane)");
+		if(!theClass.isAbstract()){
+			println("@Override");
+			println("public void onDetailCancel()");
 			println("{");
+			println("((NavigationBarFragment) navigation_bar).show();");
 			FileUtilities.incIndent();
-				println("if (clicked" + theClass.name() + " != null)");
+				println("if (mTwoPane)");
+				println("{");
 				FileUtilities.incIndent();
-					println("setDetailFragment(" + theClass.name() + "DetailFragment.ARG_VIEW_DETAIL,clicked" + theClass.name() + ");");
+					println("if (clicked" + theClass.name() + " != null)");
+					FileUtilities.incIndent();
+						println("setDetailFragment(" + theClass.name() + "DetailFragment.ARG_VIEW_DETAIL,clicked" + theClass.name() + ");");
+					FileUtilities.decIndent();
+					println("else");
+					FileUtilities.incIndent();
+						println("getFragmentManager().beginTransaction().detach(detail_fragment).commit();");
+					FileUtilities.decIndent();
 				FileUtilities.decIndent();
+				println("}");
 				println("else");
+				println("{");
 				FileUtilities.incIndent();
-					println("getFragmentManager().beginTransaction().detach(detail_fragment).commit();");
+					println("((DetailFragment) detail_fragment).hide();");
+					println("list_fragment.show();");
+					println("showingDetail = false;");
 				FileUtilities.decIndent();
+				println("}");
 			FileUtilities.decIndent();
 			println("}");
-			println("else");
-			println("{");
-			FileUtilities.incIndent();
-				println("((DetailFragment) detail_fragment).hide();");
-				println("list_fragment.show();");
-				println("showingDetail = false;");
-			FileUtilities.decIndent();
-			println("}");
-		FileUtilities.decIndent();
-		println("}");
-		println();
+			println();
+		}
 	}
 	
 	@Override
@@ -1859,22 +1891,25 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 	public void printDetailFragment_Attributes(MClass theClass) {
 
 		println("public static final String ARG_VIEW_DETAIL = \"detail\";");
-		println("public static final String ARG_VIEW_NEW = \"new\";");
-		println("public static final String ARG_VIEW_EDIT = \"edit\";");
+		if(!theClass.isAbstract())
+			println("public static final String ARG_VIEW_NEW = \"new\";");
+		if(!theClass.isAbstract())
+			println("public static final String ARG_VIEW_EDIT = \"edit\";");
 		println("private Fragment fragment;");
 		println("private View rootView = null;");
 		println("private " + theClass.name() + " " + theClass.name().toLowerCase() + " = null;");
 		println("private int " + theClass.name().toLowerCase() + "ID = 0;");
 		println("private final String " + theClass.name().toUpperCase() + "ID = \"" + theClass.name().toUpperCase() + "ID\";");
 
-//		--------------*************** CODIGO NOVO - START  ******************* ------------------
-		List<MAttribute> finalAttributes = getDetailViewAttributes(theClass, true, true);
-//		--------------*************** CODIGO NOVO - END  ******************* ------------------
-		
-		for (MAttribute att : finalAttributes)
-//			if(att.name() != "ID")
-				println("private " + AndroidTypes.androidPrimitiveTypeToWriteWidget(att.type()) + " " + att.name().toLowerCase() + "View;");
-		
+		if(!theClass.isAbstract()){
+	//		--------------*************** CODIGO NOVO - START  ******************* ------------------
+			List<MAttribute> finalAttributes = getDetailViewAttributes(theClass, true, true);
+	//		--------------*************** CODIGO NOVO - END  ******************* ------------------
+			
+			for (MAttribute att : finalAttributes)
+	//			if(att.name() != "ID")
+					println("private " + AndroidTypes.androidPrimitiveTypeToWriteWidget(att.type()) + " " + att.name().toLowerCase() + "View;");
+		}
 		println();
 	}
 
@@ -1916,20 +1951,22 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 			 			println(theClass.name() + ".getAccess().setChangeListener(this);");
 			 		FileUtilities.decIndent();
 			 		println("}");
-			 		println("if(getArguments().containsKey(ARG_VIEW_EDIT))");
-			 		println("{");
-					FileUtilities.incIndent();
-			 			println(theClass.name().toLowerCase() + " = (" + theClass.name() + ") getArguments().getSerializable(ARG_VIEW_EDIT);");
-			 			println(theClass.name().toLowerCase() + "ID = " + theClass.name().toLowerCase() + ".ID();");
-			 			println(theClass.name() + ".getAccess().setChangeListener(this);");
-			 		FileUtilities.decIndent();
-			 		println("}");
-			 		println("if(getArguments().containsKey(ARG_VIEW_NEW))");
-			 		println("{");
-			 		FileUtilities.incIndent();
-			 			println("");
-			 		FileUtilities.decIndent();
-			 		println("}");
+			 		if(!theClass.isAbstract()){
+				 		println("if(getArguments().containsKey(ARG_VIEW_EDIT))");
+				 		println("{");
+						FileUtilities.incIndent();
+				 			println(theClass.name().toLowerCase() + " = (" + theClass.name() + ") getArguments().getSerializable(ARG_VIEW_EDIT);");
+				 			println(theClass.name().toLowerCase() + "ID = " + theClass.name().toLowerCase() + ".ID();");
+				 			println(theClass.name() + ".getAccess().setChangeListener(this);");
+				 		FileUtilities.decIndent();
+				 		println("}");
+				 		println("if(getArguments().containsKey(ARG_VIEW_NEW))");
+				 		println("{");
+				 		FileUtilities.incIndent();
+				 			println("");
+				 		FileUtilities.decIndent();
+				 		println("}");
+			 		}
 			 	FileUtilities.decIndent();
 				println("}");
 		 	FileUtilities.decIndent();
@@ -2049,27 +2086,29 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 		 			println("setViewDetailData();");
 		 		FileUtilities.decIndent();
 		 		println("}");
-		 		println("if(getArguments().containsKey(ARG_VIEW_NEW) || getArguments().containsKey(ARG_VIEW_EDIT))");
-		 		println("{");
-				FileUtilities.incIndent();
-					println("rootView = inflater.inflate(R.layout." + theClass.name().toLowerCase() + "_view_insertupdate, container, false);");
-		 			println("setViewNewOrEditData();");
-		 			println("rootView.findViewById(R.id.okButton).setOnClickListener(ClickListener);");
-		 			println("rootView.findViewById(R.id.cancelButton).setOnClickListener(ClickListener);");
-		 			println("if(getArguments().containsKey(ARG_VIEW_NEW))");
-		 			println("{");
-		 			FileUtilities.incIndent();
-		 				println("((TextView) rootView.findViewById(R.id.okButton)).setText(\"Create\");");
-		 			FileUtilities.decIndent();
-		 			println("}");
-		 			println("else");
-		 			println("{");
-		 			FileUtilities.incIndent();
-		 				println("((TextView) rootView.findViewById(R.id.okButton)).setText(\"Update\");");
-		 			FileUtilities.decIndent();
-		 			println("}");
-		 		FileUtilities.decIndent();
-		 		println("}");
+		 		if(!theClass.isAbstract()){
+			 		println("if(getArguments().containsKey(ARG_VIEW_NEW) || getArguments().containsKey(ARG_VIEW_EDIT))");
+			 		println("{");
+					FileUtilities.incIndent();
+						println("rootView = inflater.inflate(R.layout." + theClass.name().toLowerCase() + "_view_insertupdate, container, false);");
+			 			println("setViewNewOrEditData();");
+			 			println("rootView.findViewById(R.id.okButton).setOnClickListener(ClickListener);");
+			 			println("rootView.findViewById(R.id.cancelButton).setOnClickListener(ClickListener);");
+			 			println("if(getArguments().containsKey(ARG_VIEW_NEW))");
+			 			println("{");
+			 			FileUtilities.incIndent();
+			 				println("((TextView) rootView.findViewById(R.id.okButton)).setText(\"Create\");");
+			 			FileUtilities.decIndent();
+			 			println("}");
+			 			println("else");
+			 			println("{");
+			 			FileUtilities.incIndent();
+			 				println("((TextView) rootView.findViewById(R.id.okButton)).setText(\"Update\");");
+			 			FileUtilities.decIndent();
+			 			println("}");
+			 		FileUtilities.decIndent();
+			 		println("}");
+		 		}
 		 	FileUtilities.decIndent();
 		 	println("}");
 		println("return rootView;");
@@ -2123,18 +2162,20 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 	
 	@Override
 	public void printDetailFragment_SetInputMethod(MClass theClass) {
-		println("public void setInput()");
-		println("{");
-		FileUtilities.incIndent();
-//		--------------*************** CODIGO NOVO - START  ******************* ------------------
-		List<MAttribute> finalAttributes = getDetailViewAttributes(theClass, true, false);
-//		--------------*************** CODIGO NOVO - END  ******************* ------------------
-			for (MAttribute att : finalAttributes)
-//				if(att.name() != "ID")
-					println(att.name().toLowerCase() + "View = (" + AndroidTypes.androidPrimitiveTypeToWriteWidget(att.type()) + ") rootView.findViewById(R.id." + attributeBaseAncestor(theClass, att).name().toLowerCase() + "_insertupdate_" + att.name().toLowerCase() + "_value);");
-		FileUtilities.decIndent();
-		println("}");
-		println();
+		if(!theClass.isAbstract()){
+			println("public void setInput()");
+			println("{");
+			FileUtilities.incIndent();
+	//		--------------*************** CODIGO NOVO - START  ******************* ------------------
+			List<MAttribute> finalAttributes = getDetailViewAttributes(theClass, true, false);
+	//		--------------*************** CODIGO NOVO - END  ******************* ------------------
+				for (MAttribute att : finalAttributes)
+	//				if(att.name() != "ID")
+						println(att.name().toLowerCase() + "View = (" + AndroidTypes.androidPrimitiveTypeToWriteWidget(att.type()) + ") rootView.findViewById(R.id." + attributeBaseAncestor(theClass, att).name().toLowerCase() + "_insertupdate_" + att.name().toLowerCase() + "_value);");
+			FileUtilities.decIndent();
+			println("}");
+			println();
+		}
 	}
 	
 	@Override
@@ -2161,111 +2202,117 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 	
 	@Override
 	public void printDetailFragment_ActionViewDetail(MClass theClass) {
-		println("public void ActionViewDetail()");
-		println("{");
-		FileUtilities.incIndent();
-			println("if(" + theClass.name().toLowerCase() + " != null)");
+		if(!theClass.isAbstract()){
+			println("public void ActionViewDetail()");
 			println("{");
 			FileUtilities.incIndent();
-				println("");
+				println("if(" + theClass.name().toLowerCase() + " != null)");
+				println("{");
+				FileUtilities.incIndent();
+					println("");
+				FileUtilities.decIndent();
+				println("}");
 			FileUtilities.decIndent();
 			println("}");
-		FileUtilities.decIndent();
-		println("}");
-		println();
+			println();
+		}
 	}
 	
 	@Override
 	public void printDetailFragment_setViewNewOrEditData(MClass theClass) {
-		println("public View setViewNewOrEditData()");
-		println("{");
-		FileUtilities.incIndent();
-			println("if (" + theClass.name().toLowerCase() + " != null)");
+		if(!theClass.isAbstract()){
+			println("public View setViewNewOrEditData()");
 			println("{");
 			FileUtilities.incIndent();
-				println("setInput();");
-//				--------------*************** CODIGO NOVO - START  ******************* ------------------
-				List<MAttribute> finalAttributes = getDetailViewAttributes(theClass, true, false);
-//				--------------*************** CODIGO NOVO - END  ******************* ------------------
-				for (MAttribute att : finalAttributes)
-//					if(att.name() != "ID")
-						println(att.name().toLowerCase() + "View." + AndroidTypes.androidWidgetContentSetter(att.type(), theClass.name().toLowerCase() + "." + att.name() + "()") + ";");
+				println("if (" + theClass.name().toLowerCase() + " != null)");
+				println("{");
+				FileUtilities.incIndent();
+					println("setInput();");
+	//				--------------*************** CODIGO NOVO - START  ******************* ------------------
+					List<MAttribute> finalAttributes = getDetailViewAttributes(theClass, true, false);
+	//				--------------*************** CODIGO NOVO - END  ******************* ------------------
+					for (MAttribute att : finalAttributes)
+	//					if(att.name() != "ID")
+							println(att.name().toLowerCase() + "View." + AndroidTypes.androidWidgetContentSetter(att.type(), theClass.name().toLowerCase() + "." + att.name() + "()") + ";");
+				FileUtilities.decIndent();
+				println("}");
+				println("return rootView;");
 			FileUtilities.decIndent();
 			println("}");
-			println("return rootView;");
-		FileUtilities.decIndent();
-		println("}");
-		println();
+			println();
+		}
 	}
 
 	@Override
 	public void printDetailFragment_ActionViewNew(MClass theClass) {
-		println("public " + theClass.name() + " ActionViewNew()");
-		println("{");
-		FileUtilities.incIndent();
-			println("rootView = this.getView();");
-			println("setInput();");
-			
-//			--------------*************** CODIGO NOVO - START  ******************* ------------------
-			List<MAttribute> finalAttributes = getDetailViewAttributes(theClass, true, false);
-//			--------------*************** CODIGO NOVO - END  ******************* ------------------
-			
-			List<MAttribute> inheritedUniqueAttributes = new ArrayList<MAttribute>();
-			for (MClass theParentClass : theClass.allParents()){
-				List<MAttribute> inheritedAttributes_temp = new ArrayList<MAttribute>();
-				for(MAttribute attribute : theParentClass.attributes())
-					inheritedAttributes_temp.add(attribute);
-				inheritedUniqueAttributes.addAll(0, inheritedAttributes_temp);
-			}
-			List<MAttribute> AllAttributes = new ArrayList<MAttribute>();
-			AllAttributes.addAll(inheritedUniqueAttributes);
-			AllAttributes.addAll(theClass.attributes());
-			
-			for (MAttribute att : AllAttributes)
-//				if(att.name() != "ID")
-				if(finalAttributes.contains(att)){
-					println(JavaInputValidation.inputValidation(att.type(), "temp_" + att.name(), att.name(), AndroidTypes.androidInputWidgetContentGetter(att.type(), att.name().toLowerCase() + "View"), "UtilNavigate.showWarning(getActivity(), ", true , getIndentSpace(), false));
-					println();
-				}else if(!att.name().equals("ID")){
-					println(JavaInputValidation.inputValidation(att.type(), "temp_" + att.name(), att.name(), defaultValueType(att.type()), "UtilNavigate.showWarning(getActivity(), ", true , getIndentSpace(), true));
-					println();
+		if(!theClass.isAbstract()){
+			println("public " + theClass.name() + " ActionViewNew()");
+			println("{");
+			FileUtilities.incIndent();
+				println("rootView = this.getView();");
+				println("setInput();");
+				
+	//			--------------*************** CODIGO NOVO - START  ******************* ------------------
+				List<MAttribute> finalAttributes = getDetailViewAttributes(theClass, true, false);
+	//			--------------*************** CODIGO NOVO - END  ******************* ------------------
+				
+				List<MAttribute> inheritedUniqueAttributes = new ArrayList<MAttribute>();
+				for (MClass theParentClass : theClass.allParents()){
+					List<MAttribute> inheritedAttributes_temp = new ArrayList<MAttribute>();
+					for(MAttribute attribute : theParentClass.attributes())
+						inheritedAttributes_temp.add(attribute);
+					inheritedUniqueAttributes.addAll(0, inheritedAttributes_temp);
 				}
-//			List<AttributeInfo> inheritedAttributes = new ArrayList<AttributeInfo>();
-//			for (MClass theParentClass : theClass.allParents())
-//				for(AttributeInfo attribute : AttributeInfo.getAttributesInfo(theParentClass))
-//					inheritedAttributes.add(attribute);
-			
-			print("return new " + theClass.name() + "(");
-			
-			for (int i = 0; i < AllAttributes.size(); i++)
-			{
-//				if(inheritedAttributes.get(i).getKind().toString().equals(AssociationKind.NONE.toString()) && !inheritedAttributes.get(i).getName().equals("ID")){
-//					.contains na da :/ ???
-//					if(finalAttributes.contains(AllAttributes.get(i)))~
-				if(AllAttributes.get(i).name() != "ID")
-						print("temp_" + AllAttributes.get(i).name());
-//					else if(AllAttributes.get(i).name() != "ID")
-//						print(defaultValueType(AllAttributes.get(i).type()));
-					
-					if (i < AllAttributes.size() - 1 && AllAttributes.get(i).name() != "ID")
-						print(", ");
-//				}
-			}
-//			List<AttributeInfo> attributes = AttributeInfo.getAttributesInfo(theClass);
-//			if (inheritedAttributes.size() > 0 && attributes.size() > 0)
-//				print(", ");
-//			for (int i = 0; i < attributes.size(); i++)
-//			{
-//				if(attributes.get(i).getKind().toString().equals(AssociationKind.NONE.toString()) && !attributes.get(i).getName().equals("ID")){
-//					print("temp_" + attributes.get(i).getName());
-//					if (i < attributes.size() - 1)
-//						print(", ");
-//				}
-//			}
-			println(");");
-		FileUtilities.decIndent();
-		println("}");
-		println();
+				List<MAttribute> AllAttributes = new ArrayList<MAttribute>();
+				AllAttributes.addAll(inheritedUniqueAttributes);
+				AllAttributes.addAll(theClass.attributes());
+				
+				for (MAttribute att : AllAttributes)
+	//				if(att.name() != "ID")
+					if(finalAttributes.contains(att)){
+						println(JavaInputValidation.inputValidation(att.type(), "temp_" + att.name(), att.name(), AndroidTypes.androidInputWidgetContentGetter(att.type(), att.name().toLowerCase() + "View"), "UtilNavigate.showWarning(getActivity(), ", true , getIndentSpace(), false));
+						println();
+					}else if(!att.name().equals("ID")){
+						println(JavaInputValidation.inputValidation(att.type(), "temp_" + att.name(), att.name(), defaultValueType(att.type()), "UtilNavigate.showWarning(getActivity(), ", true , getIndentSpace(), true));
+						println();
+					}
+	//			List<AttributeInfo> inheritedAttributes = new ArrayList<AttributeInfo>();
+	//			for (MClass theParentClass : theClass.allParents())
+	//				for(AttributeInfo attribute : AttributeInfo.getAttributesInfo(theParentClass))
+	//					inheritedAttributes.add(attribute);
+				
+				print("return new " + theClass.name() + "(");
+				
+				for (int i = 0; i < AllAttributes.size(); i++)
+				{
+	//				if(inheritedAttributes.get(i).getKind().toString().equals(AssociationKind.NONE.toString()) && !inheritedAttributes.get(i).getName().equals("ID")){
+	//					.contains na da :/ ???
+	//					if(finalAttributes.contains(AllAttributes.get(i)))~
+					if(AllAttributes.get(i).name() != "ID")
+							print("temp_" + AllAttributes.get(i).name());
+	//					else if(AllAttributes.get(i).name() != "ID")
+	//						print(defaultValueType(AllAttributes.get(i).type()));
+						
+						if (i < AllAttributes.size() - 1 && AllAttributes.get(i).name() != "ID")
+							print(", ");
+	//				}
+				}
+	//			List<AttributeInfo> attributes = AttributeInfo.getAttributesInfo(theClass);
+	//			if (inheritedAttributes.size() > 0 && attributes.size() > 0)
+	//				print(", ");
+	//			for (int i = 0; i < attributes.size(); i++)
+	//			{
+	//				if(attributes.get(i).getKind().toString().equals(AssociationKind.NONE.toString()) && !attributes.get(i).getName().equals("ID")){
+	//					print("temp_" + attributes.get(i).getName());
+	//					if (i < attributes.size() - 1)
+	//						print(", ");
+	//				}
+	//			}
+				println(");");
+			FileUtilities.decIndent();
+			println("}");
+			println();
+		}
 	}
 	
 	private String defaultValueType(Type oclType){
@@ -2300,54 +2347,61 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 	
 	@Override
 	public void printDetailFragment_ActionViewEdit(MClass theClass) {
-		println("public boolean ActionViewEdit()");
-		println("{");
-		FileUtilities.incIndent();
-			println("if (" + theClass.name().toLowerCase() + " != null)");
+		if(!theClass.isAbstract()){
+			println("public boolean ActionViewEdit()");
 			println("{");
 			FileUtilities.incIndent();
-				println("rootView = this.getView();");
-//				--------------*************** CODIGO NOVO - START  ******************* ------------------
-				List<MAttribute> finalAttributes = getDetailViewAttributes(theClass, true, false);
-//				--------------*************** CODIGO NOVO - END  ******************* ------------------
-				for (MAttribute att : finalAttributes)
-//					if(att.name() != "ID")
-						println(JavaInputValidation.inputComparatorConditionSetter(att.type(), "temp_" + att.name(), theClass.name().toLowerCase() + "." + att.name() + "()", theClass.name().toLowerCase() + ".set" + capitalize(att.name()), AndroidTypes.androidInputWidgetContentGetter(att.type(), att.name().toLowerCase() + "View"), getIndentSpace()));
-			
-				println("return true;");
+				println("if (" + theClass.name().toLowerCase() + " != null)");
+				println("{");
+				FileUtilities.incIndent();
+					println("rootView = this.getView();");
+	//				--------------*************** CODIGO NOVO - START  ******************* ------------------
+					List<MAttribute> finalAttributes = getDetailViewAttributes(theClass, true, false);
+	//				--------------*************** CODIGO NOVO - END  ******************* ------------------
+					for (MAttribute att : finalAttributes)
+	//					if(att.name() != "ID")
+							println(JavaInputValidation.inputComparatorConditionSetter(att.type(), "temp_" + att.name(), theClass.name().toLowerCase() + "." + att.name() + "()", theClass.name().toLowerCase() + ".set" + capitalize(att.name()), AndroidTypes.androidInputWidgetContentGetter(att.type(), att.name().toLowerCase() + "View"), getIndentSpace()));
+				
+					println("return true;");
+				FileUtilities.decIndent();
+				println("}");
+				println("else");
+				println("{");
+				FileUtilities.incIndent();
+					println("return false;");
+				FileUtilities.decIndent();
+				println("}");
 			FileUtilities.decIndent();
 			println("}");
-			println("else");
-			println("{");
-			FileUtilities.incIndent();
-				println("return false;");
-			FileUtilities.decIndent();
-			println("}");
-		FileUtilities.decIndent();
-		println("}");
-		println();
+			println();
+		}
 	}
 	
 	@Override
 	public void printDetailFragment_InnerCallBackInterface(MClass theClass) {
 		println("public interface Callbacks");
 		println("{");
-		FileUtilities.incIndent();
-			println("public void onDetailOK(boolean isNew, " + theClass.name() + " new" + theClass.name() + ");");
-			println("public void onDetailCancel();");
-		FileUtilities.decIndent();
+		if(!theClass.isAbstract()){
+			FileUtilities.incIndent();
+				println("public void onDetailOK(boolean isNew, " + theClass.name() + " new" + theClass.name() + ");");
+				println("public void onDetailCancel();");
+			FileUtilities.decIndent();
+		}
 		println("}");
 		println();
+		
 	}
 
 	@Override
 	public void printDetailFragment_CallBackDeclaration(MClass theClass) {
 		println("private Callbacks mCallbacks = new Callbacks()");
 		println("{");
-		FileUtilities.incIndent();
-			println("public void onDetailOK(boolean isNew, " + theClass.name() + " new" + theClass.name() + ") {\t}");
-			println("public void onDetailCancel() {\t}");
-		FileUtilities.decIndent();
+		if(!theClass.isAbstract()){
+			FileUtilities.incIndent();
+				println("public void onDetailOK(boolean isNew, " + theClass.name() + " new" + theClass.name() + ") {\t}");
+				println("public void onDetailCancel() {\t}");
+			FileUtilities.decIndent();
+		}
 		println("};");
 		println();
 	}
@@ -2361,42 +2415,44 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 			println("public void onClick(View v)");
 		 	println("{");
 		 	FileUtilities.incIndent();
-		 		println("if(v.getId() == R.id.okButton)");
+			if(!theClass.isAbstract()){
+				println("if(v.getId() == R.id.okButton)");
+				println("{");
+				FileUtilities.incIndent();
+					println("InputMethodManager inputManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);");
+					println("inputManager.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);");
+					println("if(getArguments().containsKey(ARG_VIEW_NEW))");
+					println("{");
+					FileUtilities.incIndent();
+						println(theClass.name().toLowerCase() + " = ActionViewNew();");
+						println("if(" + theClass.name().toLowerCase() + " != null)");
+						println("{");
+						FileUtilities.incIndent();
+							println("mCallbacks.onDetailOK(true, " + theClass.name().toLowerCase() + ");");
+			 			FileUtilities.decIndent();
+			 			println("}");
+					FileUtilities.decIndent();
+					println("}");
+					println("if(getArguments().containsKey(ARG_VIEW_EDIT))");
+					println("{");
+					FileUtilities.incIndent();
+						println("if(ActionViewEdit())");
+		 				FileUtilities.incIndent();
+		 					println("mCallbacks.onDetailOK(false, " + theClass.name().toLowerCase() + ");");
+		 				FileUtilities.decIndent();
+		 			FileUtilities.decIndent();
+		 			println("}");		 			
+				FileUtilities.decIndent();
+				println("}");
+				println("if(v.getId() == R.id.cancelButton)");
 		 		println("{");
 		 		FileUtilities.incIndent();
 		 			println("InputMethodManager inputManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);");
 		 			println("inputManager.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);");
-		 			println("if(getArguments().containsKey(ARG_VIEW_NEW))");
-		 			println("{");
-		 			FileUtilities.incIndent();
-		 				println(theClass.name().toLowerCase() + " = ActionViewNew();");
-		 				println("if(" + theClass.name().toLowerCase() + " != null)");
-		 				println("{");
-			 			FileUtilities.incIndent();
-			 				println("mCallbacks.onDetailOK(true, " + theClass.name().toLowerCase() + ");");
-			 			FileUtilities.decIndent();
-			 			println("}");
-		 			FileUtilities.decIndent();
-		 			println("}");
-		 			println("if(getArguments().containsKey(ARG_VIEW_EDIT))");
-		 			println("{");
-		 			FileUtilities.incIndent();
-	 					println("if(ActionViewEdit())");
-	 					FileUtilities.incIndent();
-	 						println("mCallbacks.onDetailOK(false, " + theClass.name().toLowerCase() + ");");
-	 					FileUtilities.decIndent();
-	 				FileUtilities.decIndent();
-	 				println("}");		 			
+		 			println("mCallbacks.onDetailCancel();");
 		 		FileUtilities.decIndent();
-				println("}");
-				println("if(v.getId() == R.id.cancelButton)");
-	 			println("{");
-	 			FileUtilities.incIndent();
-	 				println("InputMethodManager inputManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);");
-	 				println("inputManager.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);");
-	 				println("mCallbacks.onDetailCancel();");
-	 			FileUtilities.decIndent();
-	 			println("}");
+		 		println("}");
+			}
 		 	FileUtilities.decIndent();
 		 	println("}");
 		FileUtilities.decIndent();
@@ -2442,10 +2498,12 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 								FileUtilities.incIndent();
 									println("setViewDetailData();");
 								FileUtilities.decIndent();
-								println("else if(getArguments().containsKey(ARG_VIEW_EDIT))");
-								FileUtilities.incIndent();
-									println("setViewNewOrEditData();");
-								FileUtilities.decIndent();
+								if(!theClass.isAbstract()){
+									println("else if(getArguments().containsKey(ARG_VIEW_EDIT))");
+									FileUtilities.incIndent();
+										println("setViewNewOrEditData();");
+									FileUtilities.decIndent();
+								}
 							FileUtilities.decIndent();
 						FileUtilities.decIndent();
 						println("break;");
@@ -3139,46 +3197,50 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 			println("{");
 			FileUtilities.incIndent();
 			for(AssociationInfo x : supers){
-				println("if(view.findViewById(R.id." + theClass.name().toLowerCase() + "_generalizationoptions_" + x.getTargetAE().name().toLowerCase() + ") != null)");
-				println("{");
-				FileUtilities.incIndent();
-					println("view.findViewById(R.id." + theClass.name().toLowerCase() + "_generalizationoptions_" + x.getTargetAE().name().toLowerCase() + ").setOnClickListener(new OnClickListener()");
+				if(!x.getTargetAE().cls().isAbstract()){
+					println("if(view.findViewById(R.id." + theClass.name().toLowerCase() + "_generalizationoptions_" + x.getTargetAE().name().toLowerCase() + ") != null)");
 					println("{");
 					FileUtilities.incIndent();
-						println("@Override");
-						println("public void onClick(View v)");
+						println("view.findViewById(R.id." + theClass.name().toLowerCase() + "_generalizationoptions_" + x.getTargetAE().name().toLowerCase() + ").setOnClickListener(new OnClickListener()");
 						println("{");
 						FileUtilities.incIndent();
-							println("UtilNavigate.toActivityForResult(getActivity(), " + x.getTargetAE().cls().name() + "Activity.class, MasterActivity.ACTION_MODE_WRITE, MasterActivity.CREATION_CODE);");
+							println("@Override");
+							println("public void onClick(View v)");
+							println("{");
+							FileUtilities.incIndent();
+								println("UtilNavigate.toActivityForResult(getActivity(), " + x.getTargetAE().cls().name() + "Activity.class, MasterActivity.ACTION_MODE_WRITE, MasterActivity.CREATION_CODE);");
+							FileUtilities.decIndent();
+							println("}");
 						FileUtilities.decIndent();
-						println("}");
+						println("});");
+					println("}");
 					FileUtilities.decIndent();
-					println("});");
-				println("}");
-				FileUtilities.decIndent();
+				}
 			}
 			
 			for(MClass subs : AllNotDirectNeighbors){
-				println("if(view.findViewById(R.id." + subs.parents().iterator().next().name().toLowerCase() + "_generalizationoptions_" + subs.name().toLowerCase() + ") != null)");
-				println("{");
-				FileUtilities.incIndent();
-					println("view.findViewById(R.id." + subs.parents().iterator().next().name().toLowerCase() + "_generalizationoptions_" + subs.name().toLowerCase() + ").setOnClickListener(new OnClickListener()");
+				if(!subs.isAbstract()){
+					println("if(view.findViewById(R.id." + subs.parents().iterator().next().name().toLowerCase() + "_generalizationoptions_" + subs.name().toLowerCase() + ") != null)");
 					println("{");
 					FileUtilities.incIndent();
-						println("@Override");
-						println("public void onClick(View v)");
+						println("view.findViewById(R.id." + subs.parents().iterator().next().name().toLowerCase() + "_generalizationoptions_" + subs.name().toLowerCase() + ").setOnClickListener(new OnClickListener()");
 						println("{");
 						FileUtilities.incIndent();
-						if(isRepeteadNeighbor)
-							println("UtilNavigate.toActivityForResult(getActivity(), " + subs.name() + "Activity.class, MasterActivity.ACTION_MODE_WRITE, UtilNavigate.setBundles(UtilNavigate.setActivityBundleArguments(\"" + theClass.name().toUpperCase() + "Object\", clicked" + theClass.name() + ".ID(), \"" + theClass.name().toUpperCase() + "Association\", -1),UtilNavigate.setAssociationBundleArguments(\"" + theClass.name().toUpperCase() + "END\", AssociationSource)), MasterActivity.CREATION_CODE);");
-						else
-							println("UtilNavigate.toActivityForResult(getActivity(), " + subs.name() + "Activity.class, MasterActivity.ACTION_MODE_WRITE, UtilNavigate.setActivityBundleArguments(\"" + theClass.name().toUpperCase() + "Object\", clicked" + theClass.name() + ".ID(), \"" + theClass.name().toUpperCase() + "Association\", -1), MasterActivity.CREATION_CODE);");
+							println("@Override");
+							println("public void onClick(View v)");
+							println("{");
+							FileUtilities.incIndent();
+							if(isRepeteadNeighbor)
+								println("UtilNavigate.toActivityForResult(getActivity(), " + subs.name() + "Activity.class, MasterActivity.ACTION_MODE_WRITE, UtilNavigate.setBundles(UtilNavigate.setActivityBundleArguments(\"" + theClass.name().toUpperCase() + "Object\", clicked" + theClass.name() + ".ID(), \"" + theClass.name().toUpperCase() + "Association\", -1),UtilNavigate.setAssociationBundleArguments(\"" + theClass.name().toUpperCase() + "END\", AssociationSource)), MasterActivity.CREATION_CODE);");
+							else
+								println("UtilNavigate.toActivityForResult(getActivity(), " + subs.name() + "Activity.class, MasterActivity.ACTION_MODE_WRITE, UtilNavigate.setActivityBundleArguments(\"" + theClass.name().toUpperCase() + "Object\", clicked" + theClass.name() + ".ID(), \"" + theClass.name().toUpperCase() + "Association\", -1), MasterActivity.CREATION_CODE);");
+							FileUtilities.decIndent();
+							println("}");
 						FileUtilities.decIndent();
-						println("}");
+						println("});");
 					FileUtilities.decIndent();
-					println("});");
-				FileUtilities.decIndent();
-				println("}");
+					println("}");
+				}
 			}
 			FileUtilities.decIndent();
 			println("}");
