@@ -25,13 +25,15 @@ public class Utils {
 			oos = new ObjectOutputStream(baos);
 			
 			for(Object x : object){
-				if(x instanceof Integer)
+				if(x == null)
+					oos.writeChars("null");
+				else if(x instanceof Integer)
 					oos.writeInt((Integer) x);
-				if(x instanceof String)
+				else if(x instanceof String)
 					oos.writeChars((String) x);
-				if(x instanceof Double)
+				else if(x instanceof Double)
 					oos.writeDouble((Double) x);
-				if(x instanceof Class)
+				else if(x instanceof Class)
 					oos.writeChars(((Class<?>) x).getName());
 			}
 			

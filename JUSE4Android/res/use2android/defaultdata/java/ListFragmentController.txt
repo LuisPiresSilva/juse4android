@@ -7,7 +7,7 @@ import UTILS_PACKAGE.PropertyChangeListener;
 import BUSINESS_PACKAGE.ModelMusts;
 
 import android.app.Activity;
-import android.app.ListFragment;
+import android.support.v4.app.ListFragment;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -100,6 +100,7 @@ public class ListFragmentController extends ListFragment implements PropertyChan
 			getListView().smoothScrollToPosition(mActivatedPosition);
 		else
 			getListView().smoothScrollToPosition(ListView.INVALID_POSITION);
+		((ArrayAdapter<Object>) getListAdapter()).notifyDataSetChanged();
 		
 	}
 	
@@ -165,7 +166,7 @@ public class ListFragmentController extends ListFragment implements PropertyChan
 //			}	
 //		});
 	}
-
+	
 	@Override
 	public void onAttach(Activity activity) {
 		super.onAttach(activity);
@@ -186,6 +187,9 @@ public class ListFragmentController extends ListFragment implements PropertyChan
 	@Override
 	public void onListItemClick(ListView listView, View view, int position, long id) {
 		super.onListItemClick(listView, view, position, id);
+		if (mActivatedPosition != ListView.INVALID_POSITION)
+			getListView().getAdapter().getView(mActivatedPosition, view, listView).setActivated(false);
+		getListView().getAdapter().getView(position, view, listView).setActivated(true);
 		mActivatedPosition = position;
 		setActivatedPosition(position);
 		mCallbacks.onItemSelected(position, getListAdapter().getItem(position), false);

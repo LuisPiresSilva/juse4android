@@ -30,7 +30,9 @@ import org.quasar.juse.api.implementation.FileUtilities;
 import org.quasar.juse.api.implementation.ModelUtilities;
 
 import org.tzi.use.uml.mm.MAssociationClass;
+import org.tzi.use.uml.mm.MAttribute;
 import org.tzi.use.uml.mm.MClass;
+import org.tzi.use.uml.mm.MElementAnnotation;
 import org.tzi.use.uml.mm.MOperation;
 import org.tzi.use.uml.ocl.type.EnumType;
 
@@ -56,7 +58,7 @@ public class PrototypeGeneratorFacade extends BasicFacade
 	public void androidGeneration(final String author, final String projectName, final String sourcePath, final String targetWorkspace, final String basePackageName, final String businessLayerName,
 			final String presentationLayerName, final String persistenceLayerName,
 			final String libraryDirectory, final String db4oCoreJar, final String db4oCsJar, final String db4oOptionalJar,
-			final String user, final String pass, final String port, final String ip)
+			final String database, final String user, final String pass, final String port, final String ip)
 	{
 		if (getSystem().model() == null)
 		{
@@ -73,12 +75,94 @@ public class PrototypeGeneratorFacade extends BasicFacade
 		String BASEPACKAGENAME = basePackageName + PROJECTNAME;
 		
 		System.out.println("\n\t - USE to Android Model Validation - Validating...");
-		DomainModelRestrictions secondValidator = new DomainModelRestrictions();
+		DomainModelRestrictions validator = new DomainModelRestrictions();
 		for (MClass cls : getSystem().model().classes()){
-			secondValidator.checkAttributes(cls);
+			validator.checkAttributes(cls);
 			for(AssociationInfo association : AssociationInfo.getAssociationsInfo(cls))
-				secondValidator.checkAssociations(association);
+				validator.checkAssociations(association);
+			
+			ModelUtilities util = new ModelUtilities(getSystem().model());
+			for(AssociationInfo association : AssociationInfo.getAssociationsInfo(cls))
+				validator.rectifyHolders(association, util);
 		}
+		
+		//temporario - adiciona anotacoes as classes associativas
+		for (MClass cls : getSystem().model().getAssociationClassesOnly()){
+			cls.addAnnotation(new MElementAnnotation("domain"));
+			
+			Map<String,String> StartingPoint = new HashMap<String,String>();
+			StartingPoint.put("NameToDisplay", cls.name());
+			StartingPoint.put("ImageToDisplay", "");
+			cls.addAnnotation(new MElementAnnotation("StartingPoint", StartingPoint));
+			
+			Map<String,String> creation = new HashMap<String,String>();
+			int i = 0;
+			for(MAttribute att : cls.allAttributes()){
+				creation.put(att.name(), i++ + "");
+			}
+			cls.addAnnotation(new MElementAnnotation("creation", creation));
+			
+			Map<String,String> display = new HashMap<String,String>();
+			i = 0;
+			for(MAttribute att : cls.allAttributes()){
+				display.put(att.name(), i++ + "");
+			}
+			cls.addAnnotation(new MElementAnnotation("display", display));
+			
+//			System.out.println("Classe: " + cls.name());
+//			System.out.println("Type: " + cls.type());
+//			System.out.println("annotations: " + cls.getAllAnnotations().toString());
+//			System.out.println("isAnnotatable: " + cls.isAnnotatable());
+		}
+		
+		//code to add anotations for scalability test
+//		for (MClass cls : getSystem().model().classes()){
+//			if(!cls.isAnnotated() && !cls.name().equals("Date")){
+//				
+//				//domain
+//				MElementAnnotation annot_domain = new MElementAnnotation("domain");
+//				cls.addAnnotation(annot_domain);
+//				
+//				//list
+//				Map<String,String> values_list = new HashMap<String,String>();
+//				if(!values_list.isEmpty())
+//					values_list.put(cls.allAttributes().get(0).name(), "1");
+//				MElementAnnotation annot_list = new MElementAnnotation("list",values_list);
+//				cls.addAnnotation(annot_list);
+//				
+//				//display
+//				Map<String,String> values_display = new HashMap<String,String>();
+//				for(int i = 1;i < cls.allAttributes().size() + 1;++i){
+//					values_display.put(cls.allAttributes().get(i - 1).name(), i + "");
+//				}
+//				MElementAnnotation annot_display = new MElementAnnotation("display",values_display);
+//				cls.addAnnotation(annot_display);
+//				
+//				//creation
+//				Map<String,String> values_creation = new HashMap<String,String>();
+//				for(int i = 1;i < cls.allAttributes().size() + 1;++i){
+//					values_creation.put(cls.allAttributes().get(i - 1).name(), i + "");
+//				}
+//				MElementAnnotation annot_creation = new MElementAnnotation("creation",values_creation);
+//				cls.addAnnotation(annot_creation);
+//				
+//				//unique
+//				Map<String,String> values_unique = new HashMap<String,String>();
+//				for(int i = 1;i < cls.allAttributes().size() + 1;++i){
+//					values_unique.put(cls.allAttributes().get(i - 1).name(), i + "");
+//				}
+//				MElementAnnotation annot_unique = new MElementAnnotation("unique",values_unique);
+//				cls.addAnnotation(annot_unique);
+//				
+////				StartingPoint
+//				Map<String,String> values_StartingPoint = new HashMap<String,String>();
+//				values_StartingPoint.put("NameToDisplay", cls.name());
+//				values_StartingPoint.put("ImageToDisplay", "");
+//				MElementAnnotation annot_StartingPoint = new MElementAnnotation("StartingPoint",values_StartingPoint);
+//				cls.addAnnotation(annot_StartingPoint);
+//			}
+//		}
+		
 		System.out.println("\n\t - USE to Android Model Validation - Model passed");
 		
 		System.out.println("\n\t - generating Code for " + getSystem().model().name() + "...\n");
@@ -90,6 +174,11 @@ public class PrototypeGeneratorFacade extends BasicFacade
 		String utilsDirectory = targetDirectory + "/" + "utils";
 		String utilsLayerName = "utils";
 		String libraryPath = targetWorkspace + "/" + PROJECTNAME + "/libs";
+		String DATABASE;
+		if(database.equals(""))
+			DATABASE = "database";
+		else
+			DATABASE = database;
 		String USER = user;
 		String PASS = pass;
 		String PORT = port;
@@ -281,7 +370,7 @@ public class PrototypeGeneratorFacade extends BasicFacade
 		generateAndroidTemplates(sourcePath + "/res/use2android/defaultdata/java", BASEPACKAGENAME, targetDirectory,
 				businessDirectory, businessLayerName, persistenceDirectory, persistenceLayerName, presentationDirectory,
 				presentationLayerName, utilsDirectory, utilsLayerName,
-				USER, PASS, PORT, IP);
+				DATABASE, USER, PASS, PORT, IP);
 		
 		ViewModelVisitor VMvisitor = new AndroidViewModelVisitor(getSystem().model(), author, BASEPACKAGENAME, businessLayerName, persistenceLayerName, presentationLayerName, utilsLayerName);
 		if (FileUtilities.openOutputFile(targetDirectory + "/", "/MasterActivity.java"))
@@ -364,6 +453,10 @@ public class PrototypeGeneratorFacade extends BasicFacade
 					
 					VMvisitor.printDetailFragment_onCreateView(cls);
 					
+					VMvisitor.printDetailFragment_onViewCreated(cls);
+					
+					VMvisitor.printDetailFragment_replaceObject(cls);
+					
 					VMvisitor.printDetailFragment_VisibilityState(cls);
 					
 					VMvisitor.printDetailFragment_SetInputMethod(cls);
@@ -413,6 +506,8 @@ public class PrototypeGeneratorFacade extends BasicFacade
 					VMvisitor.printNavigationBarFragment_onAttach(cls);
 					
 					VMvisitor.printNavigationBarFragment_onCreateView(cls);
+					
+					VMvisitor.printNavigationBarFragment_onViewCreated(cls);
 					
 					VMvisitor.printNavigationBarFragment_VisibilityState(cls);
 					
@@ -474,7 +569,7 @@ public class PrototypeGeneratorFacade extends BasicFacade
 			String businessLayerName, String persistenceDirectory, String persistenceLayerName,
 			String presentationDirectory, String presentationLayerName, String utilsDirectory,
 			String utilsLayerName,
-			String USER, String PASS, String PORT, String IP){	
+			String DATABASE, String USER, String PASS, String PORT, String IP){	
 		
 		//file e localização
 		Map<String,String> files = new HashMap<String,String>();
@@ -531,6 +626,7 @@ public class PrototypeGeneratorFacade extends BasicFacade
 				FileUtilities.replaceStringInFile(currentFile, "MAIN_APPLICATION_LOWERCASE", getSystem().model().name().toLowerCase());
 				FileUtilities.replaceStringInFile(currentFile, "MAIN_APPLICATION", getSystem().model().name() + "Memory");
 				
+				FileUtilities.replaceStringInFile(currentFile, "GENERATION-DATABASE", DATABASE);
 				FileUtilities.replaceStringInFile(currentFile, "GENERATION-IP", IP);
 				FileUtilities.replaceStringInFile(currentFile, "GENERATION-PORT", PORT);
 				FileUtilities.replaceStringInFile(currentFile, "GENERATION-USER", USER);
@@ -591,7 +687,7 @@ public class PrototypeGeneratorFacade extends BasicFacade
 		}
 	}
 	
-	private void generateServerTemplates(String sourceDirectory, String basePackageName, String baseDirectory,
+	private void generateServerTemplates(String sourceDirectory, String basePackageName, String baseDirectory, String DATABASE,
 			String USER, String PASS, String PORT, String IP){	
 		
 		//file e localização
@@ -607,7 +703,8 @@ public class PrototypeGeneratorFacade extends BasicFacade
 				currentFile = baseDirectory + "/" + file + ".java";
 			}
 
-			if(!currentFile.equals("")){				
+			if(!currentFile.equals("")){
+				FileUtilities.replaceStringInFile(currentFile, "GENERATION-DATABASE", DATABASE);
 				FileUtilities.replaceStringInFile(currentFile, "GENERATION-IP", IP);
 				FileUtilities.replaceStringInFile(currentFile, "GENERATION-PORT", PORT);
 				FileUtilities.replaceStringInFile(currentFile, "GENERATION-USER", USER);
@@ -617,7 +714,7 @@ public class PrototypeGeneratorFacade extends BasicFacade
 	}
 	
 	public void serverGeneration(final String author, final String projectName, final String sourcePath, final String targetWorkspace, final String basePackageName,
-			final String libraryDirectory, final String db4oCoreJar, final String db4oCsJar, final String db4oOptionalJar,
+			final String libraryDirectory, final String db4oCoreJar, final String db4oCsJar, final String db4oOptionalJar, final String database,
 			final String user, final String pass, final String port, final String ip) {
 		
 		String PROJECTNAME;
@@ -630,6 +727,7 @@ public class PrototypeGeneratorFacade extends BasicFacade
 		
 		String targetDirectory = targetWorkspace + "/" + PROJECTNAME + "/src/" + BASEPACKAGENAME.replace('.', '/');
 		String libraryPath = targetWorkspace + "/" + PROJECTNAME + "/libs";
+		String DATABASE = database;
 		String USER = user;
 		String PASS = pass;
 		String PORT = port;
@@ -650,8 +748,7 @@ public class PrototypeGeneratorFacade extends BasicFacade
 		System.out.println("Server Generation Started:\n");
 		
 		FileUtilities.createDirectory(targetDirectory);
-		generateServerTemplates(sourcePath + "/res/use2android/defaultdata/java", BASEPACKAGENAME, targetDirectory,
-				USER, PASS, PORT, IP);
+		generateServerTemplates(sourcePath + "/res/use2android/defaultdata/java", BASEPACKAGENAME, targetDirectory, DATABASE, USER, PASS, PORT, IP);
 		
 		FileUtilities.copyFile(sourcePath + "/res/use2android/defaultdata/java/StartServer.txt", targetDirectory + "/" + "StartServer.java");
 		FileUtilities.replaceStringInFile(targetDirectory + "/" + "StartServer.java", "org.quasar.use2android.defaultdata.java", BASEPACKAGENAME);

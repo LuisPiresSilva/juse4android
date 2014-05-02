@@ -126,7 +126,7 @@ public abstract class JavaTypes
 		if (oclType.isString())
 			return "String";
 		if (oclType.isEnum())
-			return oclType.toString();
+			return oclType.toString(); // --> DB4O Enum problem
 		if (oclType.isObjectType())
 			if((oclType.toString().equals("Date")))
 				return "Date";
@@ -200,6 +200,36 @@ public abstract class JavaTypes
 		return "ERROR!";
 	}
 
+	private String defaultValueType(Type oclType){
+		
+		if (oclType.isInteger())
+			return "0";
+		else if (oclType.isReal())
+			return "0.0";
+		else if (oclType.isBoolean())
+			return "false";
+		else if (oclType.isString())
+			return "\"\"";
+		else if (oclType.isEnum()){
+			return oclType.toString() + ".valueOf(" + oclType.toString() + ".values()[0].toString())";
+		}
+		else if (oclType.isObjectType())
+			if((oclType.toString().equals("Date")))
+				return "";
+			else
+				return oclType.toString();
+		else if (oclType.isTrueObjectType())
+			return oclType.toString();
+		else if (oclType.isTrueOclAny())
+			return "null";
+		else if (oclType.isVoidType())
+			return "null";
+		else if (oclType.isDate())
+			return "";
+		else
+			return "null";
+	}
+	
 	/***********************************************************
 	 * @param oclTypes
 	 * @return

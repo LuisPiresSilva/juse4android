@@ -113,6 +113,12 @@ public abstract class ViewModelVisitor extends FileUtilities implements IViewMod
 	public abstract void printDetailFragment_onCreateView(MClass theClass);
 	
 	@Override
+	public abstract void printDetailFragment_onViewCreated(MClass theClass);
+	
+	@Override
+	public abstract void printDetailFragment_replaceObject(MClass theClass);
+	
+	@Override
 	public abstract void printDetailFragment_VisibilityState(MClass theClass);
 	
 	@Override
@@ -176,6 +182,9 @@ public abstract class ViewModelVisitor extends FileUtilities implements IViewMod
 	
 	@Override
 	public abstract void printNavigationBarFragment_onCreateView(MClass theClass);
+	
+	@Override
+	public abstract void printNavigationBarFragment_onViewCreated(MClass theClass);
 	
 	@Override
 	public abstract void printNavigationBarFragment_VisibilityState(MClass theClass);

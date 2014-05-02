@@ -1,6 +1,6 @@
 package org.quasar.use2android.api.implementation;
 
-import java.io.FileOutputStream;
+import java.io.FileOutputStream; 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,6 +23,7 @@ import org.quasar.juse.api.implementation.FileUtilities;
 import org.quasar.juse.api.implementation.ModelUtilities;
 import org.quasar.use2android.jdom.android.XML.widgets.Background;
 import org.quasar.use2android.jdom.android.XML.widgets.Below;
+import org.quasar.use2android.jdom.android.XML.widgets.CheckBox;
 import org.quasar.use2android.jdom.android.XML.widgets.Clickable;
 import org.quasar.use2android.jdom.android.XML.widgets.DatePicker;
 import org.quasar.use2android.jdom.android.XML.widgets.EditText;
@@ -31,11 +32,14 @@ import org.quasar.use2android.jdom.android.XML.widgets.Height;
 import org.quasar.use2android.jdom.android.XML.widgets.Id;
 import org.quasar.use2android.jdom.android.XML.widgets.ImageView;
 import org.quasar.use2android.jdom.android.XML.widgets.Include;
+import org.quasar.use2android.jdom.android.XML.widgets.Item;
 import org.quasar.use2android.jdom.android.XML.widgets.LinearLayout;
 import org.quasar.use2android.jdom.android.XML.widgets.LongClickable;
 import org.quasar.use2android.jdom.android.XML.widgets.RelativeLayout;
 import org.quasar.use2android.jdom.android.XML.widgets.Resources;
 import org.quasar.use2android.jdom.android.XML.widgets.ScrollView;
+import org.quasar.use2android.jdom.android.XML.widgets.Spinner;
+import org.quasar.use2android.jdom.android.XML.widgets.StringArray;
 import org.quasar.use2android.jdom.android.XML.widgets.Strings;
 import org.quasar.use2android.jdom.android.XML.widgets.Style;
 import org.quasar.use2android.jdom.android.XML.widgets.Text;
@@ -44,6 +48,7 @@ import org.quasar.use2android.jdom.android.XML.widgets.Width;
 import org.tzi.use.uml.mm.MAttribute;
 import org.tzi.use.uml.mm.MClass;
 import org.tzi.use.uml.mm.MModel;
+import org.tzi.use.uml.ocl.type.EnumType;
 
 public class AndroidViewLayer extends ViewVisitor{
 
@@ -232,6 +237,7 @@ public class AndroidViewLayer extends ViewVisitor{
 		generateDetailForm();
 		generateInsertUpdateForm();
 		generateNaviagtionBarLists();
+		generateListForm();
 		
 		generateDetailViews();
 		generateInsertUpdateViews();
@@ -291,7 +297,7 @@ public class AndroidViewLayer extends ViewVisitor{
 				if(cls.isAnnotated() && cls.getAnnotation("domain") != null){
 					classId = cls.name().toLowerCase();
 					Element activity = new Element("activity");
-					activity.setAttribute("configChanges","orientation");
+					activity.setAttribute("configChanges","orientation",namespace);
 					activity.setAttribute("name", targetPackage + "." + presentationLayerName + "." + cls.name() + "." + cls.name() + "Activity",namespace);
 					activity.setAttribute("label","@string/tittle_master_" + classId,namespace);
 					
@@ -484,7 +490,7 @@ public class AndroidViewLayer extends ViewVisitor{
 			rootView.addContent(edittextstyle);
 			//EditText - end
 			
-//			others components
+			//Datepicker - start
 			Element datepicker = new Element("style");
 			datepicker.setAttribute("name", "default_datepicker_style");
 			
@@ -498,8 +504,19 @@ public class AndroidViewLayer extends ViewVisitor{
 				calendarshown.addContent("true");
 			datepicker.addContent(calendarshown);
 			rootView.addContent(datepicker);
+			//Datepicker - end
 			
+			//Spinner - start
+			Element spinnerstyle = new Element("style");
+			spinnerstyle.setAttribute("name", "default_spinner_style");
+			rootView.addContent(spinnerstyle);
+			//Spinner - end
 			
+			//CheckBox - start
+			Element CheckBoxstyle = new Element("style");
+			CheckBoxstyle.setAttribute("name", "default_CheckBox_style");
+			rootView.addContent(CheckBoxstyle);
+			//CheckBox - end
 			XMLOutputter outputter = new XMLOutputter();
 			try {
 				outputter.setFormat(format);
@@ -538,11 +555,13 @@ public class AndroidViewLayer extends ViewVisitor{
 						style_descriptor.setAttribute("parent", "@style/default_textview_style");
 						style_read.setAttribute("name", classId + "_detail_" + att.name().toLowerCase() + "_value_style");
 						
-	//					if(att.type().isBoolean())
+						if(att.type().isBoolean())
+							style_read.setAttribute("parent", "@style/default_CheckBox_style");
 						
 						if(att.type().isDate() || (att.type().isObjectType() && att.type().toString().equals("Date"))){
 							style_read.setAttribute("parent", "@style/default_datepicker_style");						
 						}
+
 						if(att.type().isEnum()){
 							style_read.setAttribute("parent", "@style/default_textview_style");			
 						}
@@ -572,17 +591,17 @@ public class AndroidViewLayer extends ViewVisitor{
 						style_descriptor.setAttribute("parent", "@style/default_textview_style");
 						style_write.setAttribute("name", classId + "_insertupdate_" + att.name().toLowerCase() + "_value_style");
 						
-	//					if(att.type().isBoolean())
+						if(att.type().isBoolean())
+							style_write.setAttribute("parent", "@style/default_CheckBox_style");
 						
-						if(att.type().isDate() || (att.type().isObjectType() && att.type().toString().equals("Date"))){
+						if(att.type().isDate() || (att.type().isObjectType() && att.type().toString().equals("Date")))
 							style_write.setAttribute("parent", "@style/default_datepicker_style");						
-						}
-//						if(att.type().isEnum()){
-//							style_write.setAttribute("parent", "default_textview_style");			
-//						}
-						if(att.type().isInteger() || att.type().isNumber() || att.type().isString()){
+
+						if(att.type().isEnum())
+							style_write.setAttribute("parent", "default_spinner_style");			
+						
+						if(att.type().isInteger() || att.type().isNumber() || att.type().isString())
 							style_write.setAttribute("parent", "@style/default_edittext_style");	
-						}
 						
 						if(style_write.getAttributesSize() > 0 && style_write.getAttributesSize() > 0){
 							rootView.addContent(style_descriptor);
@@ -603,17 +622,18 @@ public class AndroidViewLayer extends ViewVisitor{
 						
 						style_list.setAttribute("name", classId + "_list_" + att.name().toLowerCase() + "_value_style");
 						
-	//					if(att.type().isBoolean())
+						if(att.type().isBoolean())
+							style_list.setAttribute("parent", "@style/default_CheckBox_style");
 						
-						if(att.type().isDate() || (att.type().isObjectType() && att.type().toString().equals("Date"))){
+						if(att.type().isDate() || (att.type().isObjectType() && att.type().toString().equals("Date")))
 							style_list.setAttribute("parent", "@style/default_textview_style");						
-						}
-						if(att.type().isEnum()){
+						
+						if(att.type().isEnum())
 							style_list.setAttribute("parent", "@style/default_textview_style");			
-						}
-						if(att.type().isInteger() || att.type().isNumber() || att.type().isString()){
+						
+						if(att.type().isInteger() || att.type().isNumber() || att.type().isString())
 							style_list.setAttribute("parent", "@style/default_textview_style");	
-						}
+						
 						
 						if(style_list.getAttributesSize() > 0)
 							rootView.addContent(style_list);
@@ -638,9 +658,14 @@ public class AndroidViewLayer extends ViewVisitor{
 							Element style_descriptor = new Element("style");
 							Element style_numberObjects = new Element("style");
 							
-							style_descriptor.setAttribute("name", classId + "_navigationbar_association_" + association.getTargetAE().name().toLowerCase() + "_descriptor_style");
+							if(association.getKind() == AssociationKind.MEMBER2ASSOCIATIVE){
+								style_descriptor.setAttribute("name", classId + "_navigationbar_association_" + association.getTargetAEClass().nameAsRolename().toLowerCase() + "_descriptor_style");
+								style_numberObjects.setAttribute("name", classId + "_navigationbar_association_" + association.getTargetAEClass().nameAsRolename().toLowerCase() + "_numberobjects_style");
+							}else{
+								style_descriptor.setAttribute("name", classId + "_navigationbar_association_" + association.getTargetAE().name().toLowerCase() + "_descriptor_style");
+								style_numberObjects.setAttribute("name", classId + "_navigationbar_association_" + association.getTargetAE().name().toLowerCase() + "_numberobjects_style");
+							}
 							style_descriptor.setAttribute("parent", "@style/default_textview_style");
-							style_numberObjects.setAttribute("name", classId + "_navigationbar_association_" + association.getTargetAE().name().toLowerCase() + "_numberobjects_style");
 							if(typeScreen.equals(normal_port) || typeScreen.equals(normal_land))
 								style_numberObjects.setAttribute("parent", "@android:style/TextAppearance.Small");
 							else if(typeScreen.equals(large_port) || typeScreen.equals(large_land))
@@ -722,12 +747,14 @@ public class AndroidViewLayer extends ViewVisitor{
 		}
 	}
 	
+//	AKI -------------------------------------------------------------------------------------------------------------------------------------
+//	VER SE ACRESCENTO - INDA NAO SEI
 	public void generateRawStrings(){
 //		strings estaticas para cada tipo - titulos na navigation bar, titulos descritores para detail e insert views
 		String targetDirectory = rootDirectory + values + "/";
 		String XMLName;
 		String classId;
-		for (MClass cls : mModel.classes()){
+		for (MClass cls : mModel.classes()){			
 			if(cls.isAnnotated() && cls.getAnnotation("domain") != null){
 				classId = cls.name().toLowerCase();
 				XMLName = classId + "_strings";
@@ -741,9 +768,12 @@ public class AndroidViewLayer extends ViewVisitor{
 						rootView.addContent(strings_detail);
 						rootView.addContent(strings_insert_update);
 					}
+
 					for(AssociationInfo ass : AssociationInfo.getAssociationsInfo(cls)){
 						String associationName = ass.getTargetAE().name().toLowerCase();
-						Element strings_associations = new Strings(classId + "_associationto_" + associationName, ass.getTargetAE().name());
+						if(ass.getKind() == AssociationKind.MEMBER2ASSOCIATIVE)
+							associationName = ass.getTargetAEClass().nameAsRolename().toLowerCase();
+						Element strings_associations = new Strings(classId + "_associationto_" + associationName, associationName);
 						rootView.addContent(strings_associations);
 					}
 					
@@ -775,7 +805,30 @@ public class AndroidViewLayer extends ViewVisitor{
 		}
 		//volto a repetir ciclo desnecessariamente depois melhora-se quando se decidir melhor como sera esta geracao
 		
-		//titulos - da app e de cada activity
+		//enums - generates the arrays in enums.xml
+		if(!mModel.enumTypes().isEmpty()){
+			XMLName = "enums";
+			if (FileUtilities.openOutputFile(targetDirectory, XMLName + ".xml")){
+				Element rootView = new Resources();
+				for (EnumType cls : mModel.enumTypes()){
+					Element string_array = new StringArray(cls.name().toLowerCase(), null);
+					for(String value : cls.getLiterals()){
+						Element item = new Item(null,value);
+						string_array.addContent(item);
+					}
+					rootView.addContent(string_array);
+				}
+				XMLOutputter outputter = new XMLOutputter();
+				try {
+					outputter.setFormat(format);
+					outputter.output(new Document(rootView), new FileOutputStream (targetDirectory + XMLName + ".xml"));
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
+		//titles - generates the strings.xml which holds the titles of the app and all the activities
 		XMLName = "strings";
 		if (FileUtilities.openOutputFile(targetDirectory, XMLName + ".xml")){
 			Element rootView = new Resources();
@@ -872,6 +925,7 @@ public class AndroidViewLayer extends ViewVisitor{
 		FileUtilities.copyFile(sourceDirectory + "ic_dark_menu_content_edit.png", targetDirectory + "ic_dark_menu_content_edit.png");
 		FileUtilities.copyFile(sourceDirectory + "ic_dark_menu_content_new.png", targetDirectory + "ic_dark_menu_content_new.png");
 		FileUtilities.copyFile(sourceDirectory + "ic_launcher.png", targetDirectory + "ic_launcher.png");
+		FileUtilities.copyFile(sourceDirectory + "ic_light_association_associative_class_list_divider.png", targetDirectory + "ic_light_association_associative_class_list_divider.png");
 		FileUtilities.copyFile(sourceDirectory + "ic_light_association_associative_class.png", targetDirectory + "ic_light_association_associative_class.png");
 		FileUtilities.copyFile(sourceDirectory + "ic_light_association_inheritance_sub.png", targetDirectory + "ic_light_association_inheritance_sub.png");
 		FileUtilities.copyFile(sourceDirectory + "ic_light_association_inheritance_super.png", targetDirectory + "ic_light_association_inheritance_super.png");
@@ -925,11 +979,12 @@ public class AndroidViewLayer extends ViewVisitor{
 						
 						Element dataValue = null;
 						
-	//					if(att.type().isBoolean())
-							
+						if(att.type().isBoolean())
+							dataValue = new CheckBox(classId + "_detail_" + attributeName + "_value", "wrap_content", "wrap_content", "@style/" + classId + "_detail_" + attributeName + "_value_style", false); 	
+
 						if(att.type().isDate() || (att.type().isObjectType() && att.type().toString().equals("Date")))
 							dataValue = new DatePicker(classId + "_detail_" + attributeName + "_value", "wrap_content", "wrap_content", "@style/" + classId + "_detail_" + attributeName + "_value_style", false); 	
-						
+
 						if(att.type().isEnum())
 							dataValue = new TextView(classId + "_detail_" + attributeName + "_value", "wrap_content", "wrap_content", "@style/" + classId + "_detail_" + attributeName + "_value_style");
 						
@@ -992,12 +1047,14 @@ public class AndroidViewLayer extends ViewVisitor{
 						
 						Element dataValue = null;
 						
-	//					if(att.type().isBoolean())
-							
+						if(att.type().isBoolean())
+							dataValue = new CheckBox(classId + "_insertupdate_" + attributeName + "_value", "match_parent", "wrap_content", "@style/" + classId + "_detail_" + attributeName + "_value_style", true); 
+						
 						if(att.type().isDate() || (att.type().isObjectType() && att.type().toString().equals("Date")))
 							dataValue = new DatePicker(classId + "_insertupdate_" + attributeName + "_value", "wrap_content", "wrap_content", "@style/" + classId + "_insertupdate_" + attributeName + "_value_style", true); 	
-						
-//						if(att.type().isEnum())
+
+						if(att.type().isEnum())
+							dataValue = new Spinner(classId + "_insertupdate_" + attributeName + "_value", "match_parent", "wrap_content", att.type().shortName().toLowerCase(), classId + "_insertupdate_" + attributeName + "_descriptor"); 
 						
 						if(att.type().isString())
 							dataValue = new EditText(classId + "_insertupdate_" + attributeName + "_value", "match_parent", "wrap_content", null); 	
@@ -1014,6 +1071,76 @@ public class AndroidViewLayer extends ViewVisitor{
 						relativeLayout.addContent(linearLayout);
 					}
 									
+					rootView.addContent(relativeLayout);
+					
+					XMLOutputter outputter = new XMLOutputter();
+					try {
+						outputter.setFormat(format);
+						outputter.output(new Document(rootView), new FileOutputStream (targetDirectory + XMLName + ".xml"));
+						statistics.addOneToGenerated();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+	}
+	
+	public void generateListForm() {
+		String targetDirectory = rootDirectory + layout + "/";
+		String XMLName;
+		String classId;
+		for (MClass cls : mModel.classes()){
+			if(cls.isAnnotated() && cls.getAnnotation("domain") != null && !ModelUtilities.isAssociativeClass(cls)){
+				classId = cls.name().toLowerCase();
+				XMLName = classId + "_form_list";
+				if (FileUtilities.openOutputFile(targetDirectory, XMLName + ".xml")){
+					Element rootView = new Element("merge");
+					rootView.addNamespaceDeclaration(namespace);
+					
+					Element relativeLayout = new RelativeLayout("wrap_content","?android:attr/listPreferredItemHeight");
+					relativeLayout.setAttribute(new Gravity("center_vertical"));
+					relativeLayout.setAttribute(new Background("drawable", "default_list_selector"));
+					
+					Element form_relativeLayout = new RelativeLayout("wrap_content","wrap_content");
+//					--------------*************** CODIGO NOVO - START  ******************* ------------------
+					List<MAttribute> finalAttributeList;
+					if(cls.getAnnotation("list") != null){
+						finalAttributeList = ModelUtilities.annotationValuesToAttributeOrdered(cls.allAttributes(), cls.getAnnotation("list").getValues());
+					}else
+						finalAttributeList = cls.attributes();
+//					--------------*************** CODIGO NOVO - END  ******************* ------------------
+					for (MAttribute att : finalAttributeList){
+							
+						String attributeName = att.name().toLowerCase();
+											
+						Element dataValue = null;
+						
+						if(att.type().isBoolean()){
+							dataValue = new LinearLayout(classId + "_list_" + attributeName,"match_parent","wrap_content","horizontal");
+							Element dataDescriptor = new TextView(classId + "_list_" + attributeName + "_descriptor", "wrap_content", "wrap_content", classId + "_list_" + attributeName + "_descriptor" , "@style/" + classId + "_list_" + attributeName + "_descriptor_style");
+														
+							Element dataval = new CheckBox(attributeBaseAncestor(cls, att).name().toLowerCase() + "_list_" + attributeName + "_value", "wrap_content", "wrap_content" ,null, false); 	
+							dataval.setAttribute(new Style(attributeBaseAncestor(cls, att).name().toLowerCase() + "_list_" + attributeName + "_value_style", "@style/"));
+							dataValue.addContent(dataDescriptor);
+							dataValue.addContent(dataval);
+						}			
+									
+						if(att.type().isEnum() || att.type().isInteger() || att.type().isNumber() || att.type().isString() || att.type().isDate() || (att.type().isObjectType() && att.type().toString().equals("Date"))){
+							dataValue = new TextView(attributeBaseAncestor(cls, att).name().toLowerCase() + "_list_" + attributeName + "_value", "wrap_content", "wrap_content", null); 	
+							dataValue.setAttribute(new Style(attributeBaseAncestor(cls, att).name().toLowerCase() + "_list_" + attributeName + "_value_style", "@style/"));
+						}
+						
+						if(form_relativeLayout.getChildren().size() > 0 && dataValue != null){
+							dataValue.setAttribute(new Below(form_relativeLayout.getChildren().get(form_relativeLayout.getChildren().size() - 1).getAttribute("id",namespace)));
+						}
+						if(dataValue != null)
+							form_relativeLayout.addContent(dataValue);
+					
+					}
+
+					relativeLayout.addContent(form_relativeLayout);
+					
 					rootView.addContent(relativeLayout);
 					
 					XMLOutputter outputter = new XMLOutputter();
@@ -1051,6 +1178,24 @@ public class AndroidViewLayer extends ViewVisitor{
 //						form.setAttribute(new Id(classId + "_view_detail"));
 						form_relativeLayout.addContent(form);
 						relativeLayout.addContent(form_relativeLayout);
+						
+						if(ModelUtilities.isAssociativeClass(cls)){
+							Element linearLayout = new LinearLayout(cls.name().toLowerCase() + "_associatives", "match_parent", "wrap_content", "vertical");
+							if(relativeLayout.getChildren().size() > 0)
+								linearLayout.setAttribute(new Below(relativeLayout.getChildren().get(relativeLayout.getChildren().size() - 1).getAttribute("id",namespace)));
+							
+							for(AssociationInfo ass : AssociationInfo.getAssociationsInfo(cls)){
+								if(ass.getKind() == AssociationKind.ASSOCIATIVE2MEMBER){
+									Element assToMember = new Element("FrameLayout");
+									assToMember.setAttribute(new Id(ass.getTargetAEClass().name().toLowerCase() + "_detail_container"));
+									assToMember.setAttribute(new Width("match_parent"));
+									assToMember.setAttribute(new Height("wrap_content"));
+									linearLayout.addContent(assToMember);
+								}
+							}
+															
+							relativeLayout.addContent(linearLayout);
+						}
 					}else{
 						LinkedList<MClass> parents = new LinkedList<MClass>();
 						
@@ -1177,6 +1322,45 @@ public class AndroidViewLayer extends ViewVisitor{
 		}
 	}
 	
+	public List<AssociationInfo> getAssociativeGetter(MClass caller, MClass target, List<AssociationInfo> list){
+		for(AssociationInfo ass : AssociationInfo.getAssociationsInfo(caller)){
+			if(ModelUtilities.isAssociativeClass(ass.getTargetAEClass()) && ass.getKind() == AssociationKind.ASSOCIATIVE2MEMBER){
+				getAssociativeGetter(ass.getTargetAEClass(), target, list);
+				if(list.size() > 0 && list.get(0).getTargetAEClass() == target)
+					list.add(ass);
+			}
+			if(ass.getTargetAEClass() == target && ass.getKind() == AssociationKind.ASSOCIATIVE2MEMBER){
+//				if(list.size() > 0)
+//					list.add(list.get(list.size() - 1) + "." + ass.getTargetAE().name().toLowerCase() + "()");
+//				else
+					list.add(ass);
+				return list;
+			}
+			
+		}
+		return list;
+	}
+	
+	public List<MClass> getAssociativeTree_Associatives(MClass caller, List<MClass> list){
+		for(AssociationInfo ass : AssociationInfo.getAssociationsInfo(caller)){
+			if(ModelUtilities.isAssociativeClass(ass.getTargetAEClass()) && ass.getKind() == AssociationKind.ASSOCIATIVE2MEMBER){
+				getAssociativeTree_Associatives(ass.getTargetAEClass(), list);
+				
+			}
+//			if(ass.getTargetAEClass() == target && ass.getKind() == AssociationKind.ASSOCIATIVE2MEMBER){
+////				if(list.size() > 0)
+////					list.add(list.get(list.size() - 1) + "." + ass.getTargetAE().name().toLowerCase() + "()");
+////				else
+//					list.add(ass);
+//				return list;
+//			}
+			
+		}
+		if(ModelUtilities.isAssociativeClass(caller))
+			list.add(caller);
+		return list;
+	}
+	
 	public void generateListView() {
 		String targetDirectory = rootDirectory + layout + "/";
 		String XMLName;
@@ -1190,44 +1374,133 @@ public class AndroidViewLayer extends ViewVisitor{
 					rootView.setAttribute(new Gravity("center_vertical"));
 					rootView.setAttribute(new Background("drawable", "default_list_selector"));
 					
-					Element form_relativeLayout = new RelativeLayout("wrap_content","wrap_content");
-//					--------------*************** CODIGO NOVO - START  ******************* ------------------
-					List<MAttribute> finalAttributeList;
-					if(cls.getAnnotation("list") != null){
-						finalAttributeList = ModelUtilities.annotationValuesToAttributeOrdered(cls.allAttributes(), cls.getAnnotation("list").getValues());
-					}else
-						finalAttributeList = cls.attributes();
-//					--------------*************** CODIGO NOVO - END  ******************* ------------------
-					for (MAttribute att : finalAttributeList){
-							
-						String attributeName = att.name().toLowerCase();
-											
-						Element dataValue = null;
-						
-//						if(att.type().isBoolean())
-															
-							
-//						if(att.type().isEnum())
-										
-									
-						if(att.type().isInteger() || att.type().isNumber() || att.type().isString() || att.type().isDate() || (att.type().isObjectType() && att.type().toString().equals("Date"))){
-							dataValue = new TextView(attributeBaseAncestor(cls, att).name().toLowerCase() + "_list_" + attributeName + "_value", "wrap_content", "wrap_content", null); 	
-							dataValue.setAttribute(new Style(attributeBaseAncestor(cls, att).name().toLowerCase() + "_list_" + attributeName + "_value_style", "@style/"));
-						}
-						
-						if(form_relativeLayout.getChildren().size() > 0 && dataValue != null){
-							dataValue.setAttribute(new Below(form_relativeLayout.getChildren().get(form_relativeLayout.getChildren().size() - 1).getAttribute("id",namespace)));
-						}
-						if(dataValue != null)
-							form_relativeLayout.addContent(dataValue);
+					Element form_relativeLayout = null;
 					
+					if(ModelUtilities.isAssociativeClass(cls)){
+						
+						System.out.println(getAssociativeTree_Associatives(cls, new ArrayList<MClass>()).toString());
+						List<MClass> targets = ModelUtilities.getAssociativeClassTree_WithOutAssociativeClasses(cls);
+						boolean firts = true;
+						int it = 0;
+						int i = 0;
+						for(MClass theClass : getAssociativeTree_Associatives(cls, new ArrayList<MClass>())){
+							System.out.println(getAssociativeGetter(cls, theClass, new ArrayList<AssociationInfo>()).toString());
+							Element associativedivider_view = null;
+							
+							for(AssociationInfo ass: AssociationInfo.getAssociationsInfo(theClass)){
+								if(ass.getKind() == AssociationKind.ASSOCIATIVE2MEMBER){
+									
+							String id = targets.get(it).name().toLowerCase() + "_list_layout";
+							
+							
+//							for(AssociationInfo ass : getAssociativeGetter(cls, theClass, new ArrayList<AssociationInfo>())){
+									form_relativeLayout = new RelativeLayout(id,"wrap_content","wrap_content");
+	//							String targetRole = ModelUtilities.getAssociationToAssociative(theClass, cls).getTargetAE().name().toLowerCase();
+	//							System.out.println("AAAKKOIIIIII");
+	//							System.out.println(theClass.name());
+	//							System.out.println(ModelUtilities.getAssociativeRole(theClass, cls).toLowerCase());
+									if(firts){
+										form_relativeLayout.addContent(new Include(targets.get(it).name().toLowerCase() + "_form_list"));
+										firts = false;
+										rootView.addContent(form_relativeLayout);
+										associativedivider_view = new RelativeLayout(ass.getSourceAEClass().name().toLowerCase() + "_associations", "wrap_content", "wrap_content");
+										//FALTA O STYLE
+										Element textleft = new TextView(ass.getSourceAEClass().name().toLowerCase() + "_list_layout_divider_text_" + ass.getTargetAE().name().toLowerCase(), "wrap_content", "wrap_content" , ass.getSourceAEClass().name().toLowerCase() + "_associationto_" + ass.getTargetAE().name().toLowerCase(), null);
+		//								textleft.setAttribute("layout_alignTop", "true", namespace);
+										associativedivider_view.addContent(textleft);
+										
+										Element image = new ImageView("default_association_associative_class_list_divider", "wrap_content", "wrap_content", "drawable", "ic_light_association_associative_class_list_divider");
+										image.setAttribute("layout_centerHorizontal", "true", namespace);//fartei-me
+										image.setAttribute("layout_toRightOf", associativedivider_view.getChildren().get(associativedivider_view.getChildren().size() - 1).getAttribute("id",namespace).getValue(), namespace);
+										if(rootView.getChildren().size() > 0)
+											associativedivider_view.setAttribute(new Below(rootView.getChildren().get(rootView.getChildren().size() - 1).getAttribute("id",namespace)));
+										++i;
+										++it;
+										
+										associativedivider_view.addContent(image);
+									}else{
+										
+										if(i % 2 == 0){
+											associativedivider_view = new RelativeLayout(ass.getSourceAEClass() + "_associations", "wrap_content", "wrap_content");
+											//FALTA O STYLE
+											Element textleft = new TextView(ass.getSourceAEClass().name().toLowerCase() + "_list_layout_divider_text_" + ass.getTargetAE().name().toLowerCase(), "wrap_content", "wrap_content" , ass.getSourceAEClass().name().toLowerCase() + "_associationto_" + ass.getTargetAE().name().toLowerCase(), null);
+		//									textleft.setAttribute("layout_alignTop", "true", namespace);
+											associativedivider_view.addContent(textleft);
+											
+											Element image = new ImageView("default_association_associative_class_list_divider", "wrap_content", "wrap_content", "drawable", "ic_light_association_associative_class_list_divider");
+											
+											image.setAttribute("layout_centerHorizontal", "true", namespace);//fartei-me
+											image.setAttribute("layout_toRightOf", associativedivider_view.getChildren().get(associativedivider_view.getChildren().size() - 1).getAttribute("id",namespace).getValue(), namespace);
+											if(rootView.getChildren().size() > 0)
+												associativedivider_view.setAttribute(new Below(rootView.getChildren().get(rootView.getChildren().size() - 1).getAttribute("id",namespace)));
+											++i;
+											
+											associativedivider_view.addContent(image);
+										}else{
+											Element textright = new TextView(ass.getSourceAEClass().name().toLowerCase() + "_list_layout_divider_text_" + ass.getTargetAE().name().toLowerCase(), "wrap_content", "wrap_content" , ass.getSourceAEClass().name().toLowerCase() + "_associationto_" + ass.getTargetAE().name().toLowerCase(), null);
+											textright.setAttribute("layout_toRightOf", "@+id/default_association_associative_class_list_divider", namespace);
+											textright.setAttribute("layout_alignBottom", "@+id/default_association_associative_class_list_divider", namespace);
+											
+											associativedivider_view.addContent(textright);
+											rootView.addContent(associativedivider_view);
+											i = 0;
+											
+											if(rootView.getChildren().size() > 0)
+												form_relativeLayout.setAttribute(new Below(rootView.getChildren().get(rootView.getChildren().size() - 1).getAttribute("id",namespace)));
+											form_relativeLayout.addContent(new Include(targets.get(it).name().toLowerCase() + "_form_list"));
+												
+												
+											rootView.addContent(form_relativeLayout);
+
+										}
+									}
+								}
+							}
+							it++;
+						}
+					}else{
+						Element form = new Include(classId + "_form_list");
+						form_relativeLayout = new RelativeLayout(classId + "_form_list","wrap_content","wrap_content");
+						form_relativeLayout.addContent(form);
+						rootView.addContent(form_relativeLayout);
 					}
+					
+////					--------------*************** CODIGO NOVO - START  ******************* ------------------
+//					List<MAttribute> finalAttributeList;
+//					if(cls.getAnnotation("list") != null){
+//						finalAttributeList = ModelUtilities.annotationValuesToAttributeOrdered(cls.allAttributes(), cls.getAnnotation("list").getValues());
+//					}else
+//						finalAttributeList = cls.attributes();
+////					--------------*************** CODIGO NOVO - END  ******************* ------------------
+//					for (MAttribute att : finalAttributeList){
+//							
+//						String attributeName = att.name().toLowerCase();
+//											
+//						Element dataValue = null;
+//						
+//						if(att.type().isBoolean()){
+//							dataValue = new CheckBox(attributeBaseAncestor(cls, att).name().toLowerCase() + "_list_" + attributeName + "_value", "wrap_content", "wrap_content", attributeBaseAncestor(cls, att).name().toLowerCase() + "_detail_" + attributeName + "_descriptor" ,null); 	
+//							dataValue.setAttribute(new Style(attributeBaseAncestor(cls, att).name().toLowerCase() + "_list_" + attributeName + "_value_style", "@style/"));
+//						}			
+//									
+//						if(att.type().isEnum() || att.type().isInteger() || att.type().isNumber() || att.type().isString() || att.type().isDate() || (att.type().isObjectType() && att.type().toString().equals("Date"))){
+//							dataValue = new TextView(attributeBaseAncestor(cls, att).name().toLowerCase() + "_list_" + attributeName + "_value", "wrap_content", "wrap_content", null); 	
+//							dataValue.setAttribute(new Style(attributeBaseAncestor(cls, att).name().toLowerCase() + "_list_" + attributeName + "_value_style", "@style/"));
+//						}
+//						
+//						if(form_relativeLayout.getChildren().size() > 0 && dataValue != null){
+//							dataValue.setAttribute(new Below(form_relativeLayout.getChildren().get(form_relativeLayout.getChildren().size() - 1).getAttribute("id",namespace)));
+//						}
+//						if(dataValue != null)
+//							form_relativeLayout.addContent(dataValue);
+//					
+//					}
 					
 					Element image = new ImageView("default_list_invalid", "wrap_content", "wrap_content", "drawable", "ic_contract_error");
 					image.setAttribute("layout_centerVertical", "true", namespace);//fartei-me
 					image.setAttribute("layout_alignParentRight", "true", namespace);
 
-					rootView.addContent(form_relativeLayout);
+					
 					rootView.addContent(image);
 					
 					XMLOutputter outputter = new XMLOutputter();
@@ -1259,6 +1532,8 @@ public class AndroidViewLayer extends ViewVisitor{
 						String associationName;
 						for (AssociationInfo association : AssociationInfo.getAssociationsInfo(cls)){
 							associationName = association.getTargetAE().name().toLowerCase();
+							if(association.getKind() == AssociationKind.MEMBER2ASSOCIATIVE)
+								associationName = association.getTargetAEClass().nameAsRolename().toLowerCase();
 							generateNavigationBarAssociations(association, "association", associationName, classId, rootView);
 						}
 						
@@ -1379,12 +1654,14 @@ public class AndroidViewLayer extends ViewVisitor{
 	//sub -> super : ToONE
 	public void generateNavigationBarAssociations(Object association, String typeAssociation, String associationClassName, String classId, Element root_linearLayout){
 		//add if statement here to change name for super and subs ("_navigationbar_association_" -> "tosuper" or "tosub")
-		Element root_ass_linearLayout = new LinearLayout(classId + "_navigationbar_association_" + associationClassName ,"match_parent", "wrap_content", "horizontal");
+		String name = "_navigationbar_association_";
+				
+		Element root_ass_linearLayout = new LinearLayout(classId + name + associationClassName ,"match_parent", "wrap_content", "horizontal");
 		root_ass_linearLayout.setAttribute(new Clickable(false));
 		root_ass_linearLayout.setAttribute(new LongClickable(true));
 		root_linearLayout.addContent(root_ass_linearLayout);
 		 
-		Element associationDescription = new TextView(classId + "_navigationbar_association_" + associationClassName + "_descriptor","wrap_content","wrap_content", "@style/" + classId + "_navigationbar_association_" + associationClassName + "_descriptor_style");
+		Element associationDescription = new TextView(classId + name + associationClassName + "_descriptor","wrap_content","wrap_content", "@style/" + classId + name + associationClassName + "_descriptor_style");
 		associationDescription.setAttribute("layout_gravity", "center", namespace);
 									
 		Element associationImage = null;
@@ -1394,13 +1671,18 @@ public class AndroidViewLayer extends ViewVisitor{
 		//normal association
 		if(association instanceof AssociationInfo){
 			associationDescription.setAttribute(new Text(classId + "_associationto_" + associationClassName));
-			if(((AssociationInfo) association).getKind() == AssociationKind.MANY2MANY || (((AssociationInfo) association).getKind() == AssociationKind.ONE2MANY && ((AssociationInfo) association).getTargetAE().isCollection())){
-				associationImage = new ImageView(classId + "_navigationbar_association_" + associationClassName + "_image","wrap_content","wrap_content","drawable","ic_light_association_many");
-				associationStateInfo = new TextView(classId + "_navigationbar_association_" + associationClassName + "_numberobjects", "wrap_content", "wrap_content", "@style/" + classId + "_navigationbar_association_" + associationClassName + "_numberobjects_style");
+			
+			if(((AssociationInfo) association).getKind() == AssociationKind.MEMBER2ASSOCIATIVE){
+				associationImage = new ImageView(classId + name + associationClassName + "_image","wrap_content","wrap_content","drawable","ic_light_association_associative_class");
+				associationStateInfo = new TextView(classId + name + associationClassName + "_numberobjects", "wrap_content", "wrap_content", "@style/" + classId + name + associationClassName + "_numberobjects_style");
+				associationStateInfo.setAttribute(new Attribute("text", "( 0 )", namespace));
+			}else if(((AssociationInfo) association).getTargetAE().isCollection() && ((AssociationInfo) association).getKind() != AssociationKind.ASSOCIATIVE2MEMBER){
+				associationImage = new ImageView(classId + name + associationClassName + "_image","wrap_content","wrap_content","drawable","ic_light_association_many");
+				associationStateInfo = new TextView(classId + name + associationClassName + "_numberobjects", "wrap_content", "wrap_content", "@style/" + classId + name + associationClassName + "_numberobjects_style");
 				associationStateInfo.setAttribute(new Attribute("text", "( 0 )", namespace));
 			}else{
-				associationImage = new ImageView(classId + "_navigationbar_association_" + associationClassName + "_image","wrap_content","wrap_content","drawable","ic_light_association_one");
-				associationStateInfo = new TextView(classId + "_navigationbar_association_" + associationClassName + "_numberobjects", "wrap_content", "wrap_content", "@style/" + classId + "_navigationbar_association_" + associationClassName + "_numberobjects_style");
+				associationImage = new ImageView(classId + name + associationClassName + "_image","wrap_content","wrap_content","drawable","ic_light_association_one");
+				associationStateInfo = new TextView(classId + name + associationClassName + "_numberobjects", "wrap_content", "wrap_content", "@style/" + classId + name + associationClassName + "_numberobjects_style");
 				associationStateInfo.setAttribute(new Attribute("text", "( 0 )", namespace));
 			}
 		}
@@ -1408,14 +1690,14 @@ public class AndroidViewLayer extends ViewVisitor{
 		if(association instanceof MClass){
 			if(typeAssociation.equals("child")){
 				associationDescription.setAttribute(new Text(classId + "_tosub_" + associationClassName));
-				associationImage = new ImageView(classId + "_navigationbar_association_" + associationClassName + "_image","wrap_content","wrap_content","drawable","ic_light_association_inheritance_sub");
-				associationStateInfo = new TextView(classId + "_navigationbar_association_" + associationClassName + "_numberobjects", "wrap_content", "wrap_content", "@style/" + classId + "_navigationbar_association_" + associationClassName + "_numberobjects_style");
+				associationImage = new ImageView(classId + name + associationClassName + "_image","wrap_content","wrap_content","drawable","ic_light_association_inheritance_sub");
+				associationStateInfo = new TextView(classId + name + associationClassName + "_numberobjects", "wrap_content", "wrap_content", "@style/" + classId + name + associationClassName + "_numberobjects_style");
 				associationStateInfo.setAttribute(new Attribute("text", "( 0 )", namespace));
 			}
 			if(typeAssociation.equals("super")){
 				associationDescription.setAttribute(new Text(classId + "_tosuper_" + associationClassName));
-				associationImage = new ImageView(classId + "_navigationbar_association_" + associationClassName + "_image","wrap_content","wrap_content","drawable","ic_light_association_inheritance_super");				
-				associationStateInfo = new TextView(classId + "_navigationbar_association_" + associationClassName + "_numberobjects", "wrap_content", "wrap_content", "@style/" + classId + "_navigationbar_association_" + associationClassName + "_numberobjects_style");
+				associationImage = new ImageView(classId + name + associationClassName + "_image","wrap_content","wrap_content","drawable","ic_light_association_inheritance_super");				
+				associationStateInfo = new TextView(classId + name + associationClassName + "_numberobjects", "wrap_content", "wrap_content", "@style/" + classId + name + associationClassName + "_numberobjects_style");
 				associationStateInfo.setAttribute(new Attribute("text", "( 1 )", namespace));
 			}
 		}
@@ -1454,15 +1736,17 @@ public class AndroidViewLayer extends ViewVisitor{
 				for (AssociationInfo association : AssociationInfo.getAssociationsInfo(cls)){
 //					if the target class is a super class (generalization)
 					if(association.getTargetAE().cls().allChildren().size() > 0){
+						String associationName = association.getTargetAE().name().toLowerCase();
+						if(association.getKind() == AssociationKind.MEMBER2ASSOCIATIVE)
+							associationName = association.getTargetAEClass().nameAsRolename().toLowerCase();
+						
 						classId = cls.name().toLowerCase();
-						targetId = association.getTargetAE().cls().name().toLowerCase();
-						XMLName = classId + "_generalizationoptions_" + association.getTargetAE().cls().name().toLowerCase() + "_view";
+						targetId = association.getTargetAEClass().name().toLowerCase();
+						XMLName = classId + "_generalizationoptions_" + associationName + "_view";
 						if (FileUtilities.openOutputFile(targetDirectory, XMLName + ".xml")){
 							Element rootView = new LinearLayout("match_parent","match_parent","vertical");
 							
-							String associationName;
 							if(!association.getTargetAE().cls().isAbstract()){
-								associationName = association.getTargetAE().name().toLowerCase();
 								generateGeneralizationOptionsElements(association, "association", associationName, classId, rootView);
 //								generateDividerView(rootView, new Attribute("layout_width","match_parent"), new Attribute("layout_height","2dp"));
 

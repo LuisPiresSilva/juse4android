@@ -13,7 +13,7 @@ public interface ServerInfo {
 	/**
 	 * the database file to be used by the server.
 	 */
-	public String FILE = "database.db4o";
+	public String FILE = "GENERATION-DATABASE.db4o";
 	/**
 	 * the port to be used by the server.
 	 */

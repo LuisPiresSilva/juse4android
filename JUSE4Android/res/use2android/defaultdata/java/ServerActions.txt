@@ -76,8 +76,8 @@ public class ServerActions {
 										}
 										if(c.getType().toString().equals(CommandType.UPDATE.toString())){
 //											Log.i("server", "update" );
-											Object server = Database.get(session, ((ModelMusts) c.getSource()).getType(), ((ModelMusts) c.getSource()).ID(c.getObject()));
-//											Object local = Database.get(((ModelMusts) c.getSource()).getType(), ((ModelMusts) c.getSource()).ID(c.getObject()));
+											Object server = Database.get(session, ((ModelMusts) c.getSource()).getType(), c.getoldObjectID());
+//											//Object local = Database.get(((ModelMusts) c.getSource()).getType(), ((ModelMusts) c.getSource()).ID(c.getObject()));
 											if(server != null){
 //												Log.i("server - update", "command source - " + c.getSource().toString());
 												((ModelMusts) c.getSource()).serverUpdate(server, c.getObject());
@@ -89,8 +89,13 @@ public class ServerActions {
 										}
 										if(c.getType().toString().equals(CommandType.INSERT_ASSOCIATION.toString())){
 //											Log.i("server", "insert association" );
-											Object server_object = Database.get(session, ((ModelMusts) c.getSource()).getType(), ((ModelMusts) c.getSource()).ID(c.getObject()));
-											Object server_neibor = Database.get(session, ((ModelMusts) c.getSource()).getNeiborType(c.getNeibor()), ((ModelMusts) c.getSource()).getNeiborID(c.getNeibor()));
+											Object server_object = Database.get(session, ((ModelMusts) c.getSource()).getType(), c.getoldObjectID());
+											Object server_neibor = Database.get(session, c.getoldNeiborType(),  c.getoldNeiborID());
+//											Log.i("server", "server_object ID - " + c.getoldObjectID());
+//											if(server_object != null)
+//												Log.i("server", "server_object not null - " + c.getoldObjectID());
+//											if(server_neibor != null)
+//												Log.i("server", "server_neibor not null - " + c.getoldNeiborID());
 											if(server_object != null && server_neibor != null){
 												((ModelMusts) c.getSource()).serverInsertAssociation(server_object, server_neibor);
 //												server = Database.get(((ModelMusts) c.getSource()).getType(), c.getoldObject());

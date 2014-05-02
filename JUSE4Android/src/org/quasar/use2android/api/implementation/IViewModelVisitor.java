@@ -88,6 +88,10 @@ public interface IViewModelVisitor {
 	
 	public void printDetailFragment_onCreateView(MClass theClass);
 	
+	public void printDetailFragment_onViewCreated(MClass theClass);
+	
+	public void printDetailFragment_replaceObject(MClass theClass);
+	
 	public void printDetailFragment_VisibilityState(MClass theClass);
 	
 	public void printDetailFragment_SetInputMethod(MClass theClass);
@@ -132,6 +136,8 @@ public interface IViewModelVisitor {
 	public void printNavigationBarFragment_onAttach(MClass theClass);
 	
 	public void printNavigationBarFragment_onCreateView(MClass theClass);
+	
+	public void printNavigationBarFragment_onViewCreated(MClass theClass);
 	
 	public void printNavigationBarFragment_VisibilityState(MClass theClass);
 	

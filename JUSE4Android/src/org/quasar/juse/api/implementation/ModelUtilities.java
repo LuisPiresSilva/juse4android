@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import org.tzi.use.uml.mm.MAssociationClass;
+import org.tzi.use.uml.mm.MAssociationEnd;
 import org.tzi.use.uml.mm.MAttribute;
 import org.tzi.use.uml.mm.MClass;
 import org.tzi.use.uml.mm.MModel;
@@ -97,6 +98,139 @@ public class ModelUtilities
 		}
 		return finalList;
 	}
+	
+	/***********************************************************
+	* @param list of attributes to compare
+	* @param map of the annotations
+	* @return a list with the attributes present in the annotation in the order detailed in the annotation
+	***********************************************************/
+	public static List<AttributeInfo> annotationValuesToAttributeOrderedWithAssociative2Member(List<AttributeInfo> listAttributes, Map<String, String> map){
+		List<AttributeInfo> finalList = new ArrayList<AttributeInfo>();
+		List<Entry<String, String>> entryList = new ArrayList<Entry<String, String>>();
+		if(map != null)
+			entryList.addAll(map.entrySet());
+		while(!entryList.isEmpty()){
+			boolean start = false;
+			int index = 0;
+			int lowest = -1;
+			for(Entry<String, String> x : entryList){
+				try{
+					if(!start || lowest > Integer.parseInt(x.getValue())){
+						lowest = Integer.parseInt(x.getValue());
+						index = entryList.indexOf(x);
+						start = true;
+					}
+				}catch(NumberFormatException e){
+					System.err.println("NumberFormatException:\nAttribute: " + x.getKey());
+					e.printStackTrace();
+					throw new NumberFormatException();
+				}
+			}
+			for(AttributeInfo y : listAttributes)
+				if(y.getName().equals(entryList.get(index).getKey()))
+					finalList.add(y);
+			entryList.remove(index);
+		}
+		for(AttributeInfo y : listAttributes)
+			if(y.getKind() == AssociationKind.ASSOCIATIVE2MEMBER)
+				finalList.add(y);
+		return finalList;
+	}
+	
+	public static boolean isAssociativeClass(MClass theClass){
+//		if(model.getAssociationClassesOnly().contains(theClass))
+			
+		if(theClass instanceof MAssociationClass)
+			return true;
+		else
+			return false;
+		
+	}
+	
+	public static List<AssociationInfo> getAssociativeAssociationTree(MClass theClass){
+		if(isAssociativeClass(theClass)){
+			List<AssociationInfo> list = new ArrayList<AssociationInfo>();
+			for(AssociationInfo ass : AssociationInfo.getAssociationsInfo(theClass))
+				if(ass.getKind() == AssociationKind.ASSOCIATIVE2MEMBER){
+					list.addAll(getAssociativeAssociationTree(ass.getTargetAE().cls()));
+//					targetClass = ass.getTargetAE().cls();
+					list.add(ass);
+				}	
+			return list;
+		}else
+			return new ArrayList<AssociationInfo>();
+	}
+	
+	/***********************************************************
+	* @param the target class
+	* @param the associative class
+	* @return return the ASSOCIATIVE2MEMBER association between the two given classes
+	***********************************************************/
+	public static AssociationInfo getAssociationToAssociative(MClass theClass, MClass theAssociative){
+		for(AssociationInfo x : AssociationInfo.getAssociationsInfo(theClass))
+			if(x.getKind() == AssociationKind.ASSOCIATIVE2MEMBER && x.getSourceAEClass() == theAssociative && x.getTargetAEClass() == theClass)
+				return x;
+		return null;
+	}
+	
+	public static List<MClass> getAssociativeClassTree(MClass theClass){
+		if(isAssociativeClass(theClass)){
+			List<MClass> list = new ArrayList<MClass>();
+			for(AssociationInfo ass : AssociationInfo.getAssociationsInfo(theClass))
+				if(ass.getKind() == AssociationKind.ASSOCIATIVE2MEMBER){
+					list.addAll(getAssociativeClassTree(ass.getTargetAE().cls()));
+//					targetClass = ass.getTargetAE().cls();
+					list.add(ass.getTargetAE().cls());
+				}	
+			return list;
+		}else
+			return new ArrayList<MClass>();
+	}
+	
+	public static List<AssociationInfo> getAssociativeAssociationTree_WithOutAssociativeClasses(MClass theClass){
+		if(isAssociativeClass(theClass)){
+			List<AssociationInfo> list = new ArrayList<AssociationInfo>();
+			for(AssociationInfo ass : AssociationInfo.getAssociationsInfo(theClass))
+				if(ass.getKind() == AssociationKind.ASSOCIATIVE2MEMBER){
+					list.addAll(getAssociativeAssociationTree(ass.getTargetAE().cls()));
+//						targetClass = ass.getTargetAE().cls();
+					if(!isAssociativeClass(ass.getTargetAE().cls()))
+						list.add(ass);
+				}	
+			return list;
+		}else
+			return new ArrayList<AssociationInfo>();
+	}
+	
+	public static List<MClass> getAssociativeClassTree_WithOutAssociativeClasses(MClass theClass){
+		if(isAssociativeClass(theClass)){
+			List<MClass> list = new ArrayList<MClass>();
+			for(AssociationInfo ass : AssociationInfo.getAssociationsInfo(theClass))
+				if(ass.getKind() == AssociationKind.ASSOCIATIVE2MEMBER){
+					list.addAll(getAssociativeClassTree(ass.getTargetAE().cls()));
+//						targetClass = ass.getTargetAE().cls();
+					if(!isAssociativeClass(ass.getTargetAE().cls()))
+						list.add(ass.getTargetAE().cls());
+				}	
+			return list;
+		}else
+			return new ArrayList<MClass>();
+	}
+	
+	public static String getAssociativeRole(MClass theClass, MClass associativeClass){
+		for(AssociationInfo ass : AssociationInfo.getAssociationsInfo(associativeClass))
+			if(ass.getKind() == AssociationKind.ASSOCIATIVE2MEMBER && ass.getSourceAEClass() == associativeClass && ass.getTargetAEClass() == theClass)
+				return ass.getTargetAE().name();
+		return "";
+	}
+	
+	public static MClass getAssociativeClass(MClass theClass){
+		for(AssociationInfo ass : AssociationInfo.getAssociationsInfo(theClass))
+			if(ass.getKind() == AssociationKind.MEMBER2ASSOCIATIVE)
+				return ass.getAssociationClass();
+		return null;
+	}
+	
 	/***********************************************************
 	* @return
 	***********************************************************/
@@ -300,5 +434,32 @@ public class ModelUtilities
 		}
 		System.out.println("Less compless class: " + lessComplexClass(model.classes().toArray(new MClass[0])));
 		System.out.println("More compless class: " + moreComplexClass(model.classes().toArray(new MClass[0])));
+	}
+
+	public static MClass getAssociativeClass(MClass leftMAClass, MClass rightMAClass) {
+		for(AssociationInfo sourceAss : AssociationInfo.getAssociationsInfo(leftMAClass))
+			if(sourceAss.getKind() == AssociationKind.MEMBER2ASSOCIATIVE)
+				for(AssociationInfo targetAss : AssociationInfo.getAssociationsInfo(rightMAClass))
+					if(targetAss.getKind() == AssociationKind.MEMBER2ASSOCIATIVE && sourceAss.getTargetAEClass() == targetAss.getTargetAEClass())
+						return sourceAss.getTargetAEClass();
+		return null;
+	}
+	
+	public static MClass getOtherMember(MAssociationClass associative, MClass member) {
+		for(AssociationInfo sourceAss : AssociationInfo.getAssociationsInfo(member))
+			if(sourceAss.getKind() == AssociationKind.MEMBER2ASSOCIATIVE && sourceAss.getTargetAEClass() == associative)
+				for(AssociationInfo targetAss : AssociationInfo.getAssociationsInfo(associative))
+					if(targetAss.getKind() == AssociationKind.ASSOCIATIVE2MEMBER && targetAss.getSourceAEClass() == associative && targetAss.getTargetAEClass() != member)
+						return targetAss.getTargetAEClass();
+		return null;
+	}
+	
+	public static MAssociationEnd getOtherMemberAssociation(MAssociationClass associative, MClass member) {
+		for(AssociationInfo sourceAss : AssociationInfo.getAssociationsInfo(member))
+			if(sourceAss.getKind() == AssociationKind.MEMBER2ASSOCIATIVE && sourceAss.getTargetAEClass() == associative)
+				for(AssociationInfo targetAss : AssociationInfo.getAssociationsInfo(associative))
+					if(targetAss.getKind() == AssociationKind.ASSOCIATIVE2MEMBER && targetAss.getSourceAEClass() == associative && targetAss.getTargetAEClass() != member)
+						return targetAss.getTargetAE();
+		return null;
 	}
 }
