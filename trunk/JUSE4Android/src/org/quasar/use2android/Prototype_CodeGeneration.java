@@ -28,10 +28,10 @@ public final class Prototype_CodeGeneration
 	private static String	Authors				= "Luís Pires da Silva and Fernando Brito e Abreu";
 	
 	private static String	SOURCE_WORKSPACE	= "";
-	private static String	TARGET_WORKSPACE	= "";
+	private static String	TARGET_WORKSPACE	= "C:\\D\\WorkSpace\\Eclipse mestrado";
 	
-	private static String	AndroidProjectName	= "";
-	private static String	ServerProjectName	= "";
+	private static String	AndroidProjectName	= "CopaPaisesAndroid";
+	private static String	ServerProjectName	= "CopaPaisesServer";
 	
 	private final static String	BUSINESSLAYER_NAME		= "businessLayer";
 	private final static String	PRESENTATIONLAYER_NAME	= "presentationLayer";
@@ -42,15 +42,16 @@ public final class Prototype_CodeGeneration
 	private final static String	DB4O_CS_JAR			= "db4o-8.0.249.16098-cs-java5.jar";
 	private final static String	DB4O_OPTIONAL_JAR	= "db4o-8.0.249.16098-optional-java5.jar";
 	
-	private static String	MODEL_DIRECTORY		= "";
-	private static String	MODEL_FILE			= "";
+	private static String	MODEL_DIRECTORY		= "C:\\D\\WorkSpace\\DropBox\\Dropbox_Mestrado\\Dropbox\\LuisSilva_ISCTE\\Models specification-files\\CopaPaises";
+	private static String	MODEL_FILE			= "CopaPaises.use";
 	private static String	TARGET_PACKAGE 		= "org.quasar.";
 	
 //	Server Information
-	private static String	USER	= "db4o";
-	private static String	PASS	= "db4o";
-	private static String	PORT 	= "4444";	
-	private static String	IP		= "0.0.0.0";
+	private static String	DATABASE	= "CopaPaises";
+	private static String	USER		= "db4o";
+	private static String	PASS		= "db4o";
+	private static String	PORT 		= "4444";	
+	private static String	IP			= "80.172.235.96";
 	
 	//used only in executable jar
 	private static String getJarFolder() {
@@ -62,7 +63,6 @@ public final class Prototype_CodeGeneration
 	    return s.substring(0, s.lastIndexOf(File.separatorChar)+1);
 	}
 	
-	//used only in executable jar
 	private static String getSourceFolder() {
 	    String name = Prototype_CodeGeneration.class.getName().replace('.', '/');
 	    String s = Prototype_CodeGeneration.class.getResource("/" + name + ".class").toString();
@@ -93,7 +93,8 @@ public final class Prototype_CodeGeneration
 			try {
 				USE_BASE_DIRECTORY = URLDecoder.decode(getSourceFolder() + USE_PROJECT, "utf-8");
 				SOURCE_WORKSPACE = URLDecoder.decode(getSourceFolder() + JUSE4ANDROIDPROJECT, "utf-8");
-				TARGET_WORKSPACE = URLDecoder.decode(getSourceFolder(), "utf-8");
+				if(TARGET_WORKSPACE.equals(""))
+					TARGET_WORKSPACE = URLDecoder.decode(getSourceFolder(), "utf-8");
 			} catch (UnsupportedEncodingException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -143,9 +144,9 @@ public final class Prototype_CodeGeneration
 		
 		api.androidGeneration(Authors, AndroidProjectName, SOURCE_WORKSPACE, TARGET_WORKSPACE, TARGET_PACKAGE, BUSINESSLAYER_NAME, 
 								PRESENTATIONLAYER_NAME, PERSISTENCELAYER_NAME, LIBRARY_DIRECTORY, DB4O_CORE_JAR,DB4O_CS_JAR,DB4O_OPTIONAL_JAR,
-								USER, PASS, PORT, IP);
+								DATABASE, USER, PASS, PORT, IP);
 		
 		api.serverGeneration(Authors, ServerProjectName, SOURCE_WORKSPACE, TARGET_WORKSPACE, TARGET_PACKAGE, LIBRARY_DIRECTORY,
-								DB4O_CORE_JAR,DB4O_CS_JAR,DB4O_OPTIONAL_JAR, USER, PASS, PORT, IP);
+								DB4O_CORE_JAR,DB4O_CS_JAR,DB4O_OPTIONAL_JAR, DATABASE, USER, PASS, PORT, IP);
 	}
 }

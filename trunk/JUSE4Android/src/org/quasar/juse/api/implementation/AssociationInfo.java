@@ -51,6 +51,19 @@ public class AssociationInfo
 	}
 
 	/***********************************************************
+	 * @return the name
+	 ***********************************************************/
+	public String getName()
+	{
+		if(this.kind == AssociationKind.MEMBER2ASSOCIATIVE)//defines a name to the association between a class and its associative class (the name of the associative association is the name of the associative class)
+			return sourceAE.name() + "_" + sourceAE.association().name();
+		else if(this.kind == AssociationKind.ASSOCIATIVE2MEMBER)
+			return targetAE.name() + "_" + sourceAE.association().name();
+		else
+			return sourceAE.association().name();
+	}
+	
+	/***********************************************************
 	 * @return the kind
 	 ***********************************************************/
 	public AssociationKind getKind()
@@ -74,6 +87,28 @@ public class AssociationInfo
 		return targetAE;
 	}
 
+	/***********************************************************
+	 * @return the sourceAE class
+	 ***********************************************************/
+	public MClass getSourceAEClass()
+	{
+		if(this.kind == AssociationKind.ASSOCIATIVE2MEMBER)
+			return this.associationClass;
+		else
+			return sourceAE.cls();
+	}
+
+	/***********************************************************
+	 * @return the targetAE class
+	 ***********************************************************/
+	public MClass getTargetAEClass()
+	{
+		if(this.kind == AssociationKind.MEMBER2ASSOCIATIVE)
+			return this.associationClass;
+		else
+			return targetAE.cls();
+	}
+	
 	/***********************************************************
 	 * @return the associationClass
 	 ***********************************************************/
@@ -162,8 +197,8 @@ public class AssociationInfo
 
 	/***********************************************************
 	* @param theClass whose root we want
-	* @param the Attribute whose root we want
-	* @return the root parent of the class and attribute passed as parameters
+	* @param the Association whose root we want
+	* @return the root parent of the class and association passed as parameters
 	***********************************************************/
 	private static MClass associationBaseAncestor(MClass theClass, MAssociation ass)
 	{

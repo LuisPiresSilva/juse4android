@@ -163,5 +163,32 @@ public class AttributeInfo
 		
 		return result;
 	}
+	
+	/***********************************************************
+	 * @param theClass
+	 * @return
+	 ***********************************************************/
+	public static List<AttributeInfo> getAssociativeToMemberAttributesInfo(MClass theClass)
+	{
+		List<AttributeInfo> result = new ArrayList<AttributeInfo>();
+		
+		for (AssociationInfo ai : AssociationInfo.getAssociationsInfo(theClass))
+		{
+			MClass sourceClass = ai.getSourceAE().cls();
+			String sourceName = ai.getSourceAE().name();
+
+			switch (ai.getKind())
+			{
+				case ASSOCIATIVE2MEMBER:
+					result.add(new AttributeInfo(ai.getKind(), sourceName, sourceClass.type()));
+					break;
+				default:
+					System.out.println("ERROR: " + ai);
+			}
+		}
+		
+		
+		return result;
+	}
 
 }

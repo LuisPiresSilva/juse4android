@@ -6,38 +6,42 @@ import java.util.Set;
 import org.tzi.use.uml.ocl.type.Type;
 
 public class AndroidTypes {
-
+	
 	/***********************************************************
 	 * @param oclType
+	 * @param android type (smallest or normal)
 	 * @return
 	 ***********************************************************/
-	public static String androidPrimitiveTypeToWidget(Type oclType)
+	public static String androidPrimitiveTypeToWidget(Type oclType, AndroidWidgetPreference androidType)
 	{
-		String type = androidPrimitiveTypeToReadWidget(oclType);
+		String type = androidPrimitiveTypeToReadWidget(oclType, androidType);
 		if(type.equals("ERROR!"))
-			type = androidPrimitiveTypeToWriteWidget(oclType);
+			type = androidPrimitiveTypeToWriteWidget(oclType, androidType);
 		return type;
 	}
 	
 	/***********************************************************
 	 * @param oclType
+	 * @param android type (smallest or normal)
 	 * @return
 	 ***********************************************************/
-	public static String androidPrimitiveTypeToReadWidget(Type oclType)
+	public static String androidPrimitiveTypeToReadWidget(Type oclType, AndroidWidgetPreference androidType)
 	{
-		if (oclType.isInteger())
+		if (oclType.isInteger() && androidType == AndroidWidgetPreference.NORMAL || androidType == AndroidWidgetPreference.SMALLEST)
 			return "TextView";
-		if (oclType.isReal())
+		if (oclType.isReal() && androidType == AndroidWidgetPreference.NORMAL || androidType == AndroidWidgetPreference.SMALLEST)
 			return "TextView";
-		if (oclType.isBoolean())
-			return "boolean";//to do
-		if (oclType.isString())
+		if (oclType.isBoolean() && androidType == AndroidWidgetPreference.NORMAL || androidType == AndroidWidgetPreference.SMALLEST)
+			return "CheckBox";//to do
+		if (oclType.isString() && androidType == AndroidWidgetPreference.NORMAL || androidType == AndroidWidgetPreference.SMALLEST)
 			return "TextView";
-		if (oclType.isEnum())
-			return "TextView";//to do
+		if (oclType.isEnum() && androidType == AndroidWidgetPreference.NORMAL || androidType == AndroidWidgetPreference.SMALLEST)
+			return "TextView";
 		if (oclType.isObjectType()){
-			if(oclType.toString().equals("Date"))
+			if(oclType.toString().equals("Date") && androidType == AndroidWidgetPreference.NORMAL)
 				return "DatePicker";
+			else if(oclType.toString().equals("Date") && androidType == AndroidWidgetPreference.SMALLEST)
+				return "TextView";
 			else
 				return oclType.toString();//to do
 		}
@@ -47,8 +51,10 @@ public class AndroidTypes {
 			return "Object";//to do
 		if (oclType.isVoidType())
 			return "void";//to do
-		if (oclType.isDate())
+		if(oclType.toString().equals("Date") && androidType == AndroidWidgetPreference.NORMAL)
 			return "DatePicker";
+		if(oclType.toString().equals("Date") && androidType == AndroidWidgetPreference.SMALLEST)
+			return "TextView";
 
 		return "ERROR!";
 	}
@@ -57,21 +63,23 @@ public class AndroidTypes {
 	 * @param oclType
 	 * @return
 	 ***********************************************************/
-	public static String androidPrimitiveTypeToWriteWidget(Type oclType)
+	public static String androidPrimitiveTypeToWriteWidget(Type oclType, AndroidWidgetPreference androidType)
 	{
-		if (oclType.isInteger())
+		if (oclType.isInteger() && androidType == AndroidWidgetPreference.NORMAL || androidType == AndroidWidgetPreference.SMALLEST)
 			return "EditText";
-		if (oclType.isReal())
+		if (oclType.isReal() && androidType == AndroidWidgetPreference.NORMAL || androidType == AndroidWidgetPreference.SMALLEST)
 			return "EditText";
-		if (oclType.isBoolean())
-			return "boolean";//to do
-		if (oclType.isString())
+		if (oclType.isBoolean() && androidType == AndroidWidgetPreference.NORMAL || androidType == AndroidWidgetPreference.SMALLEST)
+			return "CheckBox";
+		if (oclType.isString() && androidType == AndroidWidgetPreference.NORMAL || androidType == AndroidWidgetPreference.SMALLEST)
 			return "EditText";
-		if (oclType.isEnum())
-			return oclType.toString();//to do
+		if (oclType.isEnum() && androidType == AndroidWidgetPreference.NORMAL || androidType == AndroidWidgetPreference.SMALLEST)
+			return "Spinner";
 		if (oclType.isObjectType()){
-			if(oclType.toString().equals("Date"))
+			if(oclType.toString().equals("Date") && androidType == AndroidWidgetPreference.NORMAL)
 				return "DatePicker";
+			else if(oclType.toString().equals("Date") && androidType == AndroidWidgetPreference.SMALLEST)
+				return "TextView";
 			else
 				return oclType.toString();//to do
 		}
@@ -81,8 +89,10 @@ public class AndroidTypes {
 			return "Object";//to do
 		if (oclType.isVoidType())
 			return "void";//to do
-		if (oclType.isDate())
+		if(oclType.toString().equals("Date") && androidType == AndroidWidgetPreference.NORMAL)
 			return "DatePicker";
+		if(oclType.toString().equals("Date") && androidType == AndroidWidgetPreference.SMALLEST)
+			return "TextView";
 
 		return "ERROR!";
 	}
@@ -141,124 +151,101 @@ public class AndroidTypes {
 			if (androidType != null)
 			{
 				if (androidType.equals("Activity"))
-				{
 					result.add("import android.app.Activity;");
-				}
+				if (androidType.equals("FragmentActivity"))
+					result.add("import android.support.v4.app.FragmentActivity;");
 				if (androidType.equals("Fragment"))
-				{
-					result.add("import android.app.Fragment;");
-				}
+					result.add("import android.support.v4.app.Fragment;");
 				if (androidType.equals("FragmentTransaction"))
-				{
-					result.add("import android.app.FragmentTransaction;");
-				}
+					result.add("import android.support.v4.app.FragmentTransaction;");
 				if (androidType.equals("InputMethodManager"))
-				{
 					result.add("import android.view.inputmethod.InputMethodManager;");
-				}
 				if (androidType.equals("Context"))
-				{
 					result.add("import android.content.Context;");
-				}
 				if (androidType.equals("Intent"))
-				{
 					result.add("import android.content.Intent;");
-				}
 				if (androidType.equals("Menu"))
-				{
 					result.add("import android.view.Menu;");
-				}
 				if (androidType.equals("MenuItem"))
-				{
 					result.add("import android.view.MenuItem;");
-				}
 				if (androidType.equals("ListView"))
-				{
 					result.add("import android.widget.ListView;");
-				}
 				if (androidType.equals("GridView"))
-				{
 					result.add("import android.widget.GridView;");
-				}
 				if (androidType.equals("Toast"))
-				{
 					result.add("import android.widget.Toast;");
-				}
 				if (androidType.equals("Color"))
-				{
 					result.add("import android.graphics.Color;");
-				}
 				if (androidType.equals("TransitionDrawable"))
-				{
 					result.add("import android.graphics.drawable.TransitionDrawable;");
-				}
 				if (androidType.equals("Bundle"))
-				{
 					result.add("import android.os.Bundle;");
-				}
 				if (androidType.equals("LayoutInflater"))
-				{
 					result.add("import android.view.LayoutInflater;");
-				}
 				if (androidType.equals("View"))
-				{
 					result.add("import android.view.View;");
-				}
 				if (androidType.equals("ViewGroup"))
-				{
 					result.add("import android.view.ViewGroup;");
-				}
 				if (androidType.equals("View.OnClickListener"))
-				{
 					result.add("import android.view.View.OnClickListener;");
-				}
 				if (androidType.equals("View.OnLongClickListener"))
-				{
 					result.add("import android.view.View.OnLongClickListener;");
-				}
 				if (androidType.equals("AdapterView"))
-				{
 					result.add("import android.widget.AdapterView;");
-				}
 				if (androidType.equals("AdapterView.OnItemClickListener"))
-				{
 					result.add("import android.widget.AdapterView.OnItemClickListener;");
-				}
 				if (androidType.equals("ImageView"))
-				{
 					result.add("import android.widget.ImageView;");
-				}
 				if (androidType.equals("TextView"))
-				{
 					result.add("import android.widget.TextView;");
-				}
 				if (androidType.equals("EditText"))
-				{
 					result.add("import android.widget.EditText;");
-				}
 				if (androidType.equals("DatePicker"))
-				{
 					result.add("import android.widget.DatePicker;");
-				}
+				if (androidType.equals("Spinner"))
+					result.add("import android.widget.Spinner;");
+				if (androidType.equals("Spinner"))
+					result.add("import android.widget.Spinner;");
+				if (androidType.equals("CheckBox"))
+					result.add("import android.widget.CheckBox;");
+				if (androidType.equals("CheckBox"))
+					result.add("import android.widget.CheckBox;");
 			}
 		}
 		return result;
 	}
 
-	public static String androidWidgetContentSetter(Type type, String content)
-	{
-		String widget = androidPrimitiveTypeToReadWidget(type);
-		if(widget.equals("ERROR!"))
-			widget = androidPrimitiveTypeToWriteWidget(type);
+//	CASE SPINNER PARA ENUM
+	public static String androidWidgetContentSetter(AndroidWidgetsTypes widgettype, Type type, String content, AndroidWidgetPreference androidType){
+		String widget;
+		if(widgettype == AndroidWidgetsTypes.WRITE_WIDGET)
+			widget = androidPrimitiveTypeToWriteWidget(type, androidType);
+		else if(widgettype == AndroidWidgetsTypes.READ_WIDGET)
+			widget = androidPrimitiveTypeToReadWidget(type, androidType);
+		else
+			widget = "error";
 		switch(widget){
 			case "TextView":
-				return "setText(\"\" + " + content + ")";//guarantees that is an String (example -> just double needs "" + double)
+				if(content.equals("\"null\""))
+					return "setText(" + content + ")";
+				else if(type.isDate() || (type.isObjectType() && type.toString().equals("Date")))
+					return "setText(\"\" + " + content + ".getYear() + " + content + ".getMonth() + " + content + ".getDay())";
+				else
+					return "setText(\"\" + " + content + ")";//guarantees that is an String (example -> just double needs "" + double)
 			case "EditText":
-				return "setText(\"\" + " + content + ")";
-			//this is java the java.util.Date is expected in business classes therefore its methods
-			//can be accessed
+				if(content.equals("\"null\""))
+					return "setText(" + content + ")";
+				else if(type.isDate() || (type.isObjectType() && type.toString().equals("Date")))
+					return "setText(\"\" + " + content + ".getYear() + " + content + ".getMonth() + " + content + ".getDay())";
+				else
+					return "setText(\"\" + " + content + ")";
+			//this is java the java.util.Date is expected in business classes therefore its methods can be accessed
 			case "DatePicker":
 				return "updateDate(" + content + ".getYear()," + content + ".getMonth()," + content + ".getDay())";
+			case "CheckBox":
+				return "setChecked(" + content + ")";
+			case "Spinner":
+				return "setSelection(" + type.toString() + ".valueOf(" + content + ".toString()).ordinal())";
 //			case "others":
 //				return something;
 			default:
@@ -266,13 +253,24 @@ public class AndroidTypes {
 		}
 	}
 	
-	public static String androidInputWidgetContentGetter(Type type, String variable){
-		String widget = androidPrimitiveTypeToWriteWidget(type);
+	public static String androidInputWidgetContentGetter(AndroidWidgetsTypes widgettype, Type type, String variable, AndroidWidgetPreference androidType){
+		String widget;
+		if(widgettype == AndroidWidgetsTypes.WRITE_WIDGET)
+			widget = androidPrimitiveTypeToWriteWidget(type, androidType);
+		else if(widgettype == AndroidWidgetsTypes.READ_WIDGET)
+			widget = androidPrimitiveTypeToReadWidget(type, androidType);
+		else
+			widget = "error";
 		switch(widget){
 			case "EditText":
 				return variable + ".getText().toString()";
 			case "DatePicker":
 				return variable +".getYear()," + variable + ".getMonth()," + variable + ".getDayOfMonth()";
+			case "CheckBox":
+				return variable + ".isChecked()";
+			//for this case we only work with the position since in multi-languages the values may differ - this way we avoid multiple code enums
+			case "Spinner":
+				return variable + ".getSelectedItemPosition()";
 //			case "others":
 //				return something;
 			default:

@@ -7,8 +7,9 @@ import UTILS_PACKAGE.WarningDialogFragment;
 
 import android.app.Activity;
 import android.app.DialogFragment;
-import android.app.Fragment;
-import android.app.FragmentTransaction;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -62,15 +63,23 @@ public class UtilNavigate {
 		activity.startActivityForResult(intent, code);
 	}
 
-	public static void replaceFragment(Activity activity, Fragment fragment, int container, Bundle extras) {
+	public static void replaceFragment(FragmentActivity activity, Fragment fragment, int container, Bundle extras) {
 		fragment.setArguments(extras);
-		FragmentTransaction transaction = activity.getFragmentManager().beginTransaction();
+		FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
 
 		transaction.replace(container, fragment);
 //		transaction.addToBackStack(null);
 		transaction.commit();
-		activity.getFragmentManager().executePendingTransactions();
+		activity.getSupportFragmentManager().executePendingTransactions();
+	}
+	
+	public static void replaceFragment(Fragment host, Fragment fragment, int container, Bundle extras) {
+		fragment.setArguments(extras);
+		FragmentTransaction transaction = host.getChildFragmentManager().beginTransaction();
 
+		transaction.replace(container, fragment);
+		transaction.commit();
+		host.getChildFragmentManager().executePendingTransactions();
 	}
 
 	public static Bundle setFragmentBundleArguments(String objectKey, Object object) {
@@ -79,9 +88,14 @@ public class UtilNavigate {
 		return arguments;
 	}
 
-	public static void addFragment(Activity activity, Fragment fragment, int container, Bundle extras) {
+	public static void addFragment(FragmentActivity activity, Fragment fragment, int container, Bundle extras) {
 		fragment.setArguments(extras);
-		activity.getFragmentManager().beginTransaction().add(container, fragment).commit();
+		activity.getSupportFragmentManager().beginTransaction().add(container, fragment).commit();
+	}
+	
+	public static void addFragment(Fragment host, Fragment fragment, int container, Bundle extras) {
+		fragment.setArguments(extras);
+		host.getChildFragmentManager().beginTransaction().add(container, fragment).commit();
 	}
 
 	public static Bundle setBundles(Bundle... extras) {
@@ -104,6 +118,17 @@ public class UtilNavigate {
 		if (key instanceof String)
 			arguments.putString(objectKey, (String) key);
 		arguments.putInt(associationKey, associationQuant);
+		return arguments;
+	}
+	
+	public static Bundle setActivityBundleArguments(String objectKey, Object object, String associationMultKey, int associationQuant, String associationNameKey, String associationName) {
+		Bundle arguments = new Bundle();
+		if (object instanceof Integer)
+			arguments.putInt(objectKey, (Integer) object);
+		if (object instanceof String)
+			arguments.putString(objectKey, (String) object);
+		arguments.putString(associationNameKey, associationName);
+		arguments.putInt(associationMultKey, associationQuant);
 		return arguments;
 	}
 
