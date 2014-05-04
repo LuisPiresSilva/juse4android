@@ -4,6 +4,8 @@ package org.quasar.use2android.defaultdata.java;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.app.Activity;
+import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -15,14 +17,33 @@ import TARGET_PACKAGE.MAIN_APPLICATION;
 import DATABASE_PACKAGE.Database;
 import BUSINESS_PACKAGE.ModelMusts;
 import UTILS_PACKAGE.UtilNavigate;
+IMPORT_DOMAIN_CLASSES
 
 public class ServerActions {
 
 	private static AsyncTask<Void, String, Boolean> send_task;
 	private static AsyncTask<Void, String, Boolean> get_task;
-
-	public static void sendChanges() {
+	private static ProgressDialog progressDialog;
+	
+	public static void sendChanges(final Activity activity) {
 		send_task = new AsyncTask<Void, String, Boolean>() {
+				
+			@Override
+		    protected void onPreExecute() {
+		        progressDialog = new ProgressDialog(activity);
+		        progressDialog.setMessage("sending...");
+		        progressDialog.setCancelable(false);
+		        progressDialog.show();
+
+		    }
+			
+			@Override
+		    protected void onPostExecute(Boolean result) 
+		    {
+		        progressDialog.cancel();
+
+		    }
+		    
 			@Override
 			protected Boolean doInBackground(Void... params) {
 				boolean error = false;
@@ -67,7 +88,7 @@ public class ServerActions {
 										if(c.getType().toString().equals(CommandType.INSERT.toString())){
 //											Log.i("server", "entrei no insert");
 //											Log.i("object type", "-" +((ModelMusts) c.getSource()).getType());
-											if(Database.get(session, ((ModelMusts) c.getSource()).getType(), ((ModelMusts) c.getSource()).ID(c.getObject())) == null){
+											if(Database.get(session, ((ModelMusts) c.getSource()).getType(), c.getoldObjectID()) == null){
 	//											condição de ja existencia no server
 												Object o = ((ModelMusts) c.getSource()).serverInsert(c.getObject());
 												session.store(o);
@@ -127,17 +148,10 @@ public class ServerActions {
 									}
 									
 								}
-//								Receipt x1 = Database.get(client, Receipt.class, 232801085);
-//								ManyTMTest y2 = Database.get(client, ManyTMTest.class, -34413197);
-//								x1.addOneManyTMTest(y2);
-//								client.store(x1);
-//								client.commit();
-//								Log.i("server all", "" +Database.getAll(session, Receipt.class));
-//								Log.i("server all", "" +Database.getAll(session, ManyTMTest.class));
+
 								session.commit();
 								Transactions.removeTransaction(transaction);
-//								if(transaction != null)
-//									Log.i("got transaction", "" + transaction.toString());
+
 							}
 						} catch (Exception e3) {
 							if(transaction != null)
@@ -168,8 +182,25 @@ public class ServerActions {
 		
 	}
 
-	public static void getChanges() {
+	public static void getChanges(final Activity activity) {
 		get_task = new AsyncTask<Void, String, Boolean>() {
+		
+			@Override
+		    protected void onPreExecute() {
+		        progressDialog = new ProgressDialog(activity);
+		        progressDialog.setMessage("Synchronizing...");
+		        progressDialog.setCancelable(false);
+		        progressDialog.show();
+
+		    }
+			
+			@Override
+		    protected void onPostExecute(Boolean result) 
+		    {
+		        progressDialog.cancel();
+
+		    }
+		    
 			@Override
 			protected Boolean doInBackground(Void... params) {
 //				ObjectContainer client = Db4oClientServer.openClient(Database.dbServerConfig(), ServerInfo.HOST, ServerInfo.PORT, ServerInfo.USER,	ServerInfo.PASS);
@@ -178,43 +209,53 @@ public class ServerActions {
 //				   Log.i("objects in server", "" + objectToUpdate.toString());
 //				}
 //				Log.i("pedir ver objectos todos", "" + "ja pedi ao server");
+				boolean error = false;
+				ObjectContainer client = null;
+				ObjectContainer session = null;
 				try{
-					ObjectContainer client = Db4oClientServer.openClient(ServerInfo.HOST, ServerInfo.PORT, ServerInfo.USER,	ServerInfo.PASS);
-					
+					client = Db4oClientServer.openClient(ServerInfo.HOST, ServerInfo.PORT, ServerInfo.USER,	ServerInfo.PASS);
+				}catch (Exception e1){
+					error = true;
+					UtilNavigate.showWarning(CopaPaisesMemory.getActiveActivity(), "Connection Warning", "Connection to server failed\ncheck if you are connected to the internet");
+				}
+				if(client != null){
 					try {
-						ObjectContainer session = client.ext().openSession();
+						session = client.ext().openSession();
+					} catch (Exception e2) {
+						error = true;
+						UtilNavigate.showWarning(CopaPaisesMemory.getActiveActivity(), "Connection Warning", "Connection to server sucess\nproblem getting session");
+					}
+					
+					if(session != null){
 						try {
-							ObjectSet<Object> allObjects = session.query(Object.class);
 							Database.close();
 							Database.DeleteDB();
 							ObjectContainer local = Database.OpenDB();
+							List<Object> allObjects = new ArrayList<Object>();
+							QUERY_DOMAIN_CLASSES
 							for (Object objectToUpdate : allObjects) {
 							    local.store(objectToUpdate);
 							}
 							local.commit();
 						} catch (Exception e3) {
-							UtilNavigate.showWarning(MAIN_APPLICATION.getActiveActivity(), "Connection  problem", "problem during the storage\nrolling back changes");
+							error = true;
+							UtilNavigate.showWarning(CopaPaisesMemory.getActiveActivity(), "Connection  problem", "problem during the storage\nrolling back changes");
 						} finally {
 							session.close();
+							client.close();
 						}
-
-					} catch (Exception e2) {
-						UtilNavigate.showWarning(MAIN_APPLICATION.getActiveActivity(), "Connection Warning", "Connection to server sucess\nproblem getting session");
-					} finally {
-						client.close();
 					}
-				}catch (Exception e1){
-					UtilNavigate.showWarning(MAIN_APPLICATION.getActiveActivity(), "Connection Warning", "Connection to server failed\ncheck if you are connected to the internet");
 				}
-				UtilNavigate.showWarning(MAIN_APPLICATION.getActiveActivity(), "Synchronization sucess", "new DB is ready for use");
+				if(!error)
+					UtilNavigate.showWarning(CopaPaisesMemory.getActiveActivity(), "Synchronization sucess", "new DB is ready for use");
 				return null;
 			}
 		}.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 	}
 
-	public static void synchronize() {
-		sendChanges();
-		if(send_task.getStatus() == AsyncTask.Status.FINISHED)
-			getChanges();// deve ter ordem com tasks não pode ser so assim
+	public static void synchronize(final Activity activity) {
+//		sendChanges();
+//		if(send_task.getStatus() == AsyncTask.Status.FINISHED)
+			getChanges(activity);// deve ter ordem com tasks não pode ser so assim
 	}
 }

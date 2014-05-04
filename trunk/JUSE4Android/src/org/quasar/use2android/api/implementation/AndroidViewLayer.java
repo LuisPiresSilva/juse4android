@@ -943,6 +943,8 @@ public class AndroidViewLayer extends ViewVisitor{
 		FileUtilities.copyFile(sourceDirectory + "ic_menu_confirm_creation.png", targetDirectory + "ic_menu_confirm_creation.png");
 		FileUtilities.copyFile(sourceDirectory + "ic_menu_location.png", targetDirectory + "ic_menu_location.png");
 		FileUtilities.copyFile(sourceDirectory + "ic_contract_error.png", targetDirectory + "ic_contract_error.png");
+		FileUtilities.copyFile(sourceDirectory + "ic_android_mode_read.png", targetDirectory + "ic_android_mode_read.png");
+		FileUtilities.copyFile(sourceDirectory + "ic_android_mode_write.png", targetDirectory + "ic_android_mode_write.png");
 		
 	}
 	
