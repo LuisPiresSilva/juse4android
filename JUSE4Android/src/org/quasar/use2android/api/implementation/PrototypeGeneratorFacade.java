@@ -19,7 +19,7 @@
 
 package org.quasar.use2android.api.implementation;
 
-import java.util.ArrayList;
+import java.util.ArrayList; 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -631,6 +631,19 @@ public class PrototypeGeneratorFacade extends BasicFacade
 				FileUtilities.replaceStringInFile(currentFile, "GENERATION-PORT", PORT);
 				FileUtilities.replaceStringInFile(currentFile, "GENERATION-USER", USER);
 				FileUtilities.replaceStringInFile(currentFile, "GENERATION-PASS", PASS);
+				
+				if(file.equals("ServerActions")){
+					String import_code = "";
+					String query_code = "";
+					for (MClass cls : getSystem().model().classes()){
+						if(cls.isAnnotated() && cls.getAnnotation("domain") != null){
+							import_code = import_code + "import " +  basePackageName + "." + businessLayerName + "." + cls.name() + ";\n";
+							query_code = query_code + "\n\t\t\t\t\t\t\tallObjects.addAll(session.query(" + cls.name() + ".class));";
+						}
+					}
+					FileUtilities.replaceStringInFile(currentFile, "IMPORT_DOMAIN_CLASSES", import_code);
+					FileUtilities.replaceStringInFile(currentFile, "QUERY_DOMAIN_CLASSES", query_code);
+				}
 			}
 		}
 	}
