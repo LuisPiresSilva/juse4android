@@ -3637,7 +3637,7 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 			FileUtilities.incIndent();
 			for(AssociationInfo x : supers){
 				if(!x.getTargetAEClass().isAbstract()){
-					String targetRole = x.getTargetAEClass().name().toLowerCase();
+					String targetRole = x.getTargetAE().name().toLowerCase();
 					if(model.getAssociationClassesOnly().contains(x.getTargetAEClass()))
 						targetRole = x.getTargetAEClass().nameAsRolename().toLowerCase();
 					println("if(view.findViewById(R.id." + theClass.name().toLowerCase() + "_generalizationoptions_" + targetRole + ") != null)");

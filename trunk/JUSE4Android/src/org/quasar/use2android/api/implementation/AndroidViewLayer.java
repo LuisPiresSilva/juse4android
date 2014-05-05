@@ -1380,13 +1380,13 @@ public class AndroidViewLayer extends ViewVisitor{
 					
 					if(ModelUtilities.isAssociativeClass(cls)){
 						
-						System.out.println(getAssociativeTree_Associatives(cls, new ArrayList<MClass>()).toString());
+//						System.out.println(getAssociativeTree_Associatives(cls, new ArrayList<MClass>()).toString());
 						List<MClass> targets = ModelUtilities.getAssociativeClassTree_WithOutAssociativeClasses(cls);
 						boolean firts = true;
 						int it = 0;
 						int i = 0;
 						for(MClass theClass : getAssociativeTree_Associatives(cls, new ArrayList<MClass>())){
-							System.out.println(getAssociativeGetter(cls, theClass, new ArrayList<AssociationInfo>()).toString());
+//							System.out.println(getAssociativeGetter(cls, theClass, new ArrayList<AssociationInfo>()).toString());
 							Element associativedivider_view = null;
 							
 							for(AssociationInfo ass: AssociationInfo.getAssociationsInfo(theClass)){
