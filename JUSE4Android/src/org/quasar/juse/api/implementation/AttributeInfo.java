@@ -179,8 +179,18 @@ public class AttributeInfo
 
 			switch (ai.getKind())
 			{
+				case ONE2ONE:
+					break;
+				case ONE2MANY:
+					break;
+				case MANY2MANY:
+					break;
 				case ASSOCIATIVE2MEMBER:
 					result.add(new AttributeInfo(ai.getKind(), sourceName, sourceClass.type()));
+					break;
+				case MEMBER2ASSOCIATIVE:
+					break;
+				case MEMBER2MEMBER:
 					break;
 				default:
 					System.out.println("ERROR: " + ai);

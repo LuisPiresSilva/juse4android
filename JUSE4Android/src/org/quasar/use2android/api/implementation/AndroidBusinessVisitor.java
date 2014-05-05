@@ -139,7 +139,9 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 								+ " new " + JavaTypes.javaImplementationType(attribute.getType()) + "();");
 			else{
 				if(isSuperClass(theClass)){
-					if(attribute.getName().equals("ID"))
+					if(attribute.getType().isEnum())
+						println("private String " + attribute.getName() + ";");
+					else if(attribute.getName().equals("ID"))
 						println("protected " + JavaTypes.javaInterfaceType(attribute.getType()) + " " + attribute.getName() + ";");
 					else
 						println("private " + JavaTypes.javaInterfaceType(attribute.getType()) + " " + attribute.getName() + ";");
@@ -1421,11 +1423,11 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 				
 				String upperRange = targetMultiplicity.toString();
 				String lowerRange = targetMultiplicity.toString();
-				System.out.println("association: " + targetRole + "   - teste 1 - " + targetMultiplicity.toString());
+//				System.out.println("association: " + targetRole + "   - teste 1 - " + targetMultiplicity.toString());
 				if(targetMultiplicity.toString().contains("..")){
 					upperRange = targetMultiplicity.toString().split("\\.\\.")[1];
 					lowerRange = targetMultiplicity.toString().split("\\.\\.")[0];
-					System.out.println("teste 2 - " + lowerRange + " and " + upperRange);
+//					System.out.println("teste 2 - " + lowerRange + " and " + upperRange);
 				}
 				if(upperRange.equals("*")){
 					upperRange = "-1";

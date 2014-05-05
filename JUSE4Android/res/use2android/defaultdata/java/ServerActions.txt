@@ -216,14 +216,14 @@ public class ServerActions {
 					client = Db4oClientServer.openClient(ServerInfo.HOST, ServerInfo.PORT, ServerInfo.USER,	ServerInfo.PASS);
 				}catch (Exception e1){
 					error = true;
-					UtilNavigate.showWarning(CopaPaisesMemory.getActiveActivity(), "Connection Warning", "Connection to server failed\ncheck if you are connected to the internet");
+					UtilNavigate.showWarning(MAIN_APPLICATION.getActiveActivity(), "Connection Warning", "Connection to server failed\ncheck if you are connected to the internet");
 				}
 				if(client != null){
 					try {
 						session = client.ext().openSession();
 					} catch (Exception e2) {
 						error = true;
-						UtilNavigate.showWarning(CopaPaisesMemory.getActiveActivity(), "Connection Warning", "Connection to server sucess\nproblem getting session");
+						UtilNavigate.showWarning(MAIN_APPLICATION.getActiveActivity(), "Connection Warning", "Connection to server sucess\nproblem getting session");
 					}
 					
 					if(session != null){
@@ -239,7 +239,7 @@ public class ServerActions {
 							local.commit();
 						} catch (Exception e3) {
 							error = true;
-							UtilNavigate.showWarning(CopaPaisesMemory.getActiveActivity(), "Connection  problem", "problem during the storage\nrolling back changes");
+							UtilNavigate.showWarning(MAIN_APPLICATION.getActiveActivity(), "Connection  problem", "problem during the storage\nrolling back changes");
 						} finally {
 							session.close();
 							client.close();
@@ -247,7 +247,7 @@ public class ServerActions {
 					}
 				}
 				if(!error)
-					UtilNavigate.showWarning(CopaPaisesMemory.getActiveActivity(), "Synchronization sucess", "new DB is ready for use");
+					UtilNavigate.showWarning(MAIN_APPLICATION.getActiveActivity(), "Synchronization sucess", "new DB is ready for use");
 				return null;
 			}
 		}.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
