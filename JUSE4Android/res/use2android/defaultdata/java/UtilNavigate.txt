@@ -82,9 +82,9 @@ public class UtilNavigate {
 		host.getChildFragmentManager().executePendingTransactions();
 	}
 
-	public static Bundle setFragmentBundleArguments(String objectKey, Object object) {
+	public static Bundle setFragmentBundleArguments(String objectKey, int id) {
 		Bundle arguments = new Bundle();
-		arguments.putSerializable(objectKey, (Serializable) object);
+		arguments.putInt(objectKey, id);
 		return arguments;
 	}
 

@@ -83,7 +83,7 @@ public class PrototypeGeneratorFacade extends BasicFacade
 			
 			ModelUtilities util = new ModelUtilities(getSystem().model());
 			for(AssociationInfo association : AssociationInfo.getAssociationsInfo(cls))
-				validator.rectifyHolders(association, util);
+				validator.rectifyHolders(association, util, getSystem().model());
 		}
 		
 		//temporario - adiciona anotacoes as classes associativas

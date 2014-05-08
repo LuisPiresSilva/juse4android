@@ -7,6 +7,7 @@ import org.quasar.juse.api.implementation.ModelUtilities;
 import org.tzi.use.uml.mm.MAttribute;
 import org.tzi.use.uml.mm.MClass;
 import org.tzi.use.uml.mm.MElementAnnotation;
+import org.tzi.use.uml.mm.MModel;
 import org.tzi.use.uml.ocl.type.Type;
 import org.tzi.use.uml.ocl.type.TypeFactory;
 import org.tzi.use.uml.sys.soil.MAttributeAssignmentStatement;
@@ -43,13 +44,43 @@ public class DomainModelRestrictions {
 	
 	}
 	
-	public void rectifyHolders(AssociationInfo association, ModelUtilities util){
+	public void rectifyHolders(AssociationInfo association, ModelUtilities util, MModel model){
+		if(association.getSourceAE().getAnnotation("holder") == null && isSuperClass(association.getSourceAE().cls(), model))
+			association.getSourceAE().addAnnotation(new MElementAnnotation("holder"));
+		if(association.getTargetAE().getAnnotation("holder") == null && isSuperClass(association.getTargetAE().cls(), model))
+			association.getTargetAE().addAnnotation(new MElementAnnotation("holder"));
+		
 		if(association.getKind() == AssociationKind.MANY2MANY || association.getKind() == AssociationKind.ONE2ONE){
 			if((association.getSourceAE().getAnnotation("holder") == null &&
 					association.getTargetAE().getAnnotation("holder") == null))
-				if(util.moreComplexClass(association.getSourceAE().cls(), association.getTargetAE().cls()) == 
-						util.moreComplexClass(association.getTargetAE().cls(), association.getSourceAE().cls()))
-					association.getTargetAE().addAnnotation(new MElementAnnotation("holder"));
+					if(util.moreComplexClass(association.getSourceAE().cls(), association.getTargetAE().cls()) == 
+							util.moreComplexClass(association.getTargetAE().cls(), association.getSourceAE().cls()))
+						association.getTargetAE().addAnnotation(new MElementAnnotation("holder"));
 		}
+	}
+	
+	/***********************************************************
+	* @param theClass to check
+	* @return true if is subclass, false if not
+	***********************************************************/
+	private boolean isSubClass(MClass theClass, MModel model)
+	{
+		for(MClass x : model.classes())
+			if(x != theClass && theClass.isSubClassOf(x))
+				return true;
+		return false;
+	}
+	
+	/***********************************************************
+	* @param theClass to check
+	* @return true if is super class, false if not
+	***********************************************************/
+	private boolean isSuperClass(MClass theClass, MModel model)
+	{
+		for(MClass x : model.classes())
+			if( (!theClass.parents().isEmpty() && x != theClass && x.isSubClassOf(theClass))//middle super
+				|| (theClass.parents().isEmpty() && x != theClass && x.isSubClassOf(theClass)) )//top super
+				return true;
+		return false;
 	}
 }
