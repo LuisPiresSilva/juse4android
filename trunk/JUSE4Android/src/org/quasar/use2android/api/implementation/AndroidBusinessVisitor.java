@@ -176,7 +176,7 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 		if (!parents.isEmpty())
 			print(" extends " + StringUtil.fmtSeq(parents.iterator(), ","));
 		
-		println(" implements Comparable<Object>, Serializable");
+		println(" implements Comparable<Object>");
 		println("{");
 	}
 
@@ -1574,7 +1574,7 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 		}
 		
 //		Object association Actions
-		if(!theClass.allAssociations().isEmpty()){
+		if(!theClass.allAssociations().isEmpty() || ModelUtilities.isAssociativeClass(theClass)){
 			String [] associationActions = {"insertAssociation","deleteAssociation"};
 			for(String action : associationActions){
 				println("/**********************************************************************");
@@ -2188,7 +2188,7 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 			printDelete(theClass);
 		}
 		
-		if(!theClass.associations().isEmpty()){
+		if(!theClass.associations().isEmpty() || ModelUtilities.isAssociativeClass(theClass)){
 			printInsertAssociation(theClass);
 			printDeleteAssociation(theClass);
 			printNotityDeletion(theClass);
@@ -2442,7 +2442,7 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 										println("{");
 										incIndent();
 											println("object.add" + capitalize(targetRole) + "((" + ai.getTargetAE().cls().name() + ") neighbor);");
-											println("object.set" + capitalize(targetRole) + "(object." + targetRole  + "());");
+//											println("object.set" + capitalize(targetRole) + "(object." + targetRole  + "());");
 											println("Transactions.AddCommand(new Command(getAccess(), CommandType.INSERT_ASSOCIATION, CommandTargetLayer.DATABASE, oldID, " + theClass.name().toLowerCase() + ", object, " + ai.getTargetAE().cls().name() + ".class, ((" + ai.getTargetAE().cls().name() + ") neighbor).ID(), null, neighbor));");
 											println("Transactions.AddCommand(new Command(getAccess(), CommandType.INSERT_ASSOCIATION, CommandTargetLayer.VIEW, oldID, " + theClass.name().toLowerCase() + ", object, " + ai.getTargetAE().cls().name() + ".class, ((" + ai.getTargetAE().cls().name() + ") neighbor).ID(), null, neighbor));");
 										decIndent();
@@ -2465,7 +2465,7 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 										println("{");
 											incIndent();
 											println("object.add" + capitalize(targetRole) + "((" + ai.getTargetAE().cls().name() + ") neighbor);");
-											println("object.set" + capitalize(targetRole) + "(object." + targetRole  + "());");
+//											println("object.set" + capitalize(targetRole) + "(object." + targetRole  + "());");
 											println("Transactions.AddCommand(new Command(getAccess(), CommandType.INSERT_ASSOCIATION, CommandTargetLayer.DATABASE, oldID, " + theClass.name().toLowerCase() + ", object, " + ai.getTargetAE().cls().name() + ".class, ((" + ai.getTargetAE().cls().name() + ") neighbor).ID(), null, neighbor));");
 											println("Transactions.AddCommand(new Command(getAccess(), CommandType.INSERT_ASSOCIATION, CommandTargetLayer.VIEW, oldID, " + theClass.name().toLowerCase() + ", object, " + ai.getTargetAE().cls().name() + ".class, ((" + ai.getTargetAE().cls().name() + ") neighbor).ID(), null, neighbor));");
 										decIndent();
@@ -2670,7 +2670,7 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 										println("{");
 										incIndent();
 											println("object.remove" + capitalize(targetRole) + "((" + ai.getTargetAE().cls().name() + ") neighbor);");
-											println("object.set" + capitalize(targetRole) + "(object." + targetRole  + "());");
+//											println("object.set" + capitalize(targetRole) + "(object." + targetRole  + "());");
 											println("Transactions.AddCommand(new Command(getAccess(), CommandType.DELETE_ASSOCIATION, CommandTargetLayer.DATABASE, oldID, " + theClass.name().toLowerCase() + ", object, " + ai.getTargetAE().cls().name() + ".class, ((" + ai.getTargetAE().cls().name() + ") neighbor).ID(), neighbor, null));");
 											println("Transactions.AddCommand(new Command(getAccess(), CommandType.DELETE_ASSOCIATION, CommandTargetLayer.VIEW, oldID, " + theClass.name().toLowerCase() + ", object, " + ai.getTargetAE().cls().name() + ".class, ((" + ai.getTargetAE().cls().name() + ") neighbor).ID(), neighbor, null));");
 											decIndent();
@@ -2694,7 +2694,7 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 										println("{");
 										incIndent();
 											println("object.remove" + capitalize(targetRole) + "((" + ai.getTargetAE().cls().name() + ") neighbor);");
-											println("object.set" + capitalize(targetRole) + "(object." + targetRole  + "());");
+//											println("object.set" + capitalize(targetRole) + "(object." + targetRole  + "());");
 											println("Transactions.AddCommand(new Command(getAccess(), CommandType.DELETE_ASSOCIATION, CommandTargetLayer.DATABASE, oldID, " + theClass.name().toLowerCase() + ", object, " + ai.getTargetAE().cls().name() + ".class, ((" + ai.getTargetAE().cls().name() + ") neighbor).ID(), neighbor, null));");
 											println("Transactions.AddCommand(new Command(getAccess(), CommandType.DELETE_ASSOCIATION, CommandTargetLayer.VIEW, oldID, " + theClass.name().toLowerCase() + ", object, " + ai.getTargetAE().cls().name() + ".class, ((" + ai.getTargetAE().cls().name() + ") neighbor).ID(), neighbor, null));");	
 										decIndent();
@@ -2999,7 +2999,7 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 		printAccessServerInsert(theClass);
 		printAccessServerUpdate(theClass);
 		
-		if(!theClass.associations().isEmpty()){
+		if(!theClass.associations().isEmpty() || ModelUtilities.isAssociativeClass(theClass)){
 			printAccessServerInsertAssociation(theClass);
 			printAccessServerDeleteAssociation(theClass);
 		}
@@ -3276,7 +3276,7 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 									println("{");
 									incIndent();
 										println("((" + theClass.name() + ") oldObject).add" + capitalize(targetRole) + "((" + targetAE.cls().name() + ") newNeibor);");
-										println("((" + theClass.name() + ") oldObject).set" + capitalize(targetRole) + "(((" + theClass.name() + ") oldObject)." + targetRole + "());");
+//										println("((" + theClass.name() + ") oldObject).set" + capitalize(targetRole) + "(((" + theClass.name() + ") oldObject)." + targetRole + "());");
 										println("((" + theClass.name() + ") oldObject).checkModelRestrictions();");
 										println("((" + theClass.name() + ") oldObject).checkRestrictions();");
 									decIndent();
@@ -3309,7 +3309,7 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 									println("{");
 									incIndent();
 										println("((" + theClass.name() + ") oldObject).add" + capitalize(targetRole) + "((" + targetAE.cls().name() + ") newNeibor);");
-										println("((" + theClass.name() + ") oldObject).set" + capitalize(targetRole) + "(((" + theClass.name() + ") oldObject)." + targetRole + "());");
+//										println("((" + theClass.name() + ") oldObject).set" + capitalize(targetRole) + "(((" + theClass.name() + ") oldObject)." + targetRole + "());");
 										println("((" + theClass.name() + ") oldObject).checkModelRestrictions();");
 										println("((" + theClass.name() + ") oldObject).checkRestrictions();");
 									decIndent();
@@ -3485,7 +3485,7 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 									println("{");
 									incIndent();
 										println("((" + theClass.name() + ") oldObject).remove" + capitalize(targetRole) + "((" + targetAE.cls().name() + ") oldNeibor);");
-										println("((" + theClass.name() + ") oldObject).set" + capitalize(targetRole) + "(((" + theClass.name() + ") oldNeibor)." + targetRole + "());");
+//										println("((" + theClass.name() + ") oldObject).set" + capitalize(targetRole) + "(((" + theClass.name() + ") oldNeibor)." + targetRole + "());");
 									decIndent();
 									println("}");
 								decIndent();
@@ -3516,7 +3516,7 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 									println("{");
 									incIndent();
 										println("((" + theClass.name() + ") oldObject).remove" + capitalize(targetRole) + "((" + targetAE.cls().name() + ") oldNeibor);");
-										println("((" + theClass.name() + ") oldObject).set" + capitalize(targetRole) + "(((" + theClass.name() + ") oldObject)." + targetRole + "());");
+//										println("((" + theClass.name() + ") oldObject).set" + capitalize(targetRole) + "(((" + theClass.name() + ") oldObject)." + targetRole + "());");
 									decIndent();
 									println("}");
 								decIndent();

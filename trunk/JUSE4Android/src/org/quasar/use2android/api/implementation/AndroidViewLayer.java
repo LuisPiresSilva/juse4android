@@ -1523,7 +1523,7 @@ public class AndroidViewLayer extends ViewVisitor{
 		for (MClass cls : mModel.classes()){
 			if(cls.isAnnotated() && cls.getAnnotation("domain") != null){
 //				just for super classes who have associations
-				if(!cls.allAssociations().isEmpty()){
+				if(ModelUtilities.isAssociativeClass(cls) || !cls.allAssociations().isEmpty()){
 					String classId = cls.name().toLowerCase();
 					String XMLName = classId + "_list_navigationbar";
 					if (FileUtilities.openOutputFile(targetDirectory, XMLName + ".xml")){
@@ -1532,6 +1532,7 @@ public class AndroidViewLayer extends ViewVisitor{
 						rootView.addNamespaceDeclaration(namespace);
 						
 						String associationName;
+							
 						for (AssociationInfo association : AssociationInfo.getAssociationsInfo(cls)){
 							associationName = association.getTargetAE().name().toLowerCase();
 							if(association.getKind() == AssociationKind.MEMBER2ASSOCIATIVE)
@@ -1565,7 +1566,7 @@ public class AndroidViewLayer extends ViewVisitor{
 		for (MClass cls : mModel.classes()){
 			if(cls.isAnnotated() && cls.getAnnotation("domain") != null){
 //				if class has any association or is an super ou sub class (generalization also permit navigation)
-				if(!cls.associations().isEmpty() || cls.children().size() > 0 || cls.parents().size() > 0){
+				if(ModelUtilities.isAssociativeClass(cls) || !cls.associations().isEmpty() || cls.children().size() > 0 || cls.parents().size() > 0){
 					classId = cls.name().toLowerCase();
 					XMLName = classId + "_view_navigationbar";
 					if (FileUtilities.openOutputFile(targetDirectory, XMLName + ".xml")){
