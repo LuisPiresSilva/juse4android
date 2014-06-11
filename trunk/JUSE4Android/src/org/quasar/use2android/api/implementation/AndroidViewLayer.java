@@ -1,6 +1,6 @@
 package org.quasar.use2android.api.implementation;
 
-import java.io.FileOutputStream; 
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,6 +44,7 @@ import org.quasar.use2android.jdom.android.XML.widgets.Strings;
 import org.quasar.use2android.jdom.android.XML.widgets.Style;
 import org.quasar.use2android.jdom.android.XML.widgets.Text;
 import org.quasar.use2android.jdom.android.XML.widgets.TextView;
+import org.quasar.use2android.jdom.android.XML.widgets.CustomTimePicker;
 import org.quasar.use2android.jdom.android.XML.widgets.Width;
 import org.tzi.use.uml.mm.MAttribute;
 import org.tzi.use.uml.mm.MClass;
@@ -506,6 +507,12 @@ public class AndroidViewLayer extends ViewVisitor{
 			rootView.addContent(datepicker);
 			//Datepicker - end
 			
+			//CustomTimePicker - start
+			Element customTimePicker = new Element("style");
+			customTimePicker.setAttribute("name", "default_customtimepicker_style");
+			rootView.addContent(customTimePicker);
+			//CustomTimePicker - end
+			
 			//Spinner - start
 			Element spinnerstyle = new Element("style");
 			spinnerstyle.setAttribute("name", "default_spinner_style");
@@ -539,6 +546,65 @@ public class AndroidViewLayer extends ViewVisitor{
 					Element rootView = new Resources();
 					classId = cls.name().toLowerCase();
 					
+					if(cls.name().equals("CalendarDate") || cls.name().equals("CalendarTime")){
+						//detail - start
+						Element style_descriptor = new Element("style");
+						Element style_read = new Element("style");
+						
+						if(cls.name().equals("CalendarDate"))
+							style_descriptor.setAttribute("name", classId + "_detail_" + "calendardate" + "_descriptor_style");
+						if(cls.name().equals("CalendarTime"))
+							style_descriptor.setAttribute("name", classId + "_detail_" + "calendartime" + "_descriptor_style");
+
+						style_descriptor.setAttribute("parent", "@style/default_textview_style");
+						
+						if(cls.name().equals("CalendarDate"))
+							style_read.setAttribute("name", classId + "_detail_" + "calendardate" + "_value_style");
+						if(cls.name().equals("CalendarTime"))
+							style_read.setAttribute("name", classId + "_detail_" + "calendartime" + "_value_style");
+						
+						if(style_read.getAttributesSize() > 0 && style_read.getAttributesSize() > 0){
+							rootView.addContent(style_descriptor);
+							rootView.addContent(style_read);
+						}
+						//detail - end
+						
+						//insertupdate - start
+						style_descriptor = new Element("style");
+						Element style_write = new Element("style");
+						
+						if(cls.name().equals("CalendarDate"))
+							style_descriptor.setAttribute("name", classId + "_insertupdate_" + "calendardate" + "_descriptor_style");
+						if(cls.name().equals("CalendarTime"))
+							style_descriptor.setAttribute("name", classId + "_insertupdate_" + "calendartime" + "_descriptor_style");
+						
+						style_descriptor.setAttribute("parent", "@style/default_textview_style");
+						
+						if(cls.name().equals("CalendarDate"))
+							style_write.setAttribute("name", classId + "_insertupdate_" + "calendardate" + "_value_style");
+						if(cls.name().equals("CalendarTime"))
+							style_write.setAttribute("name", classId + "_insertupdate_" + "calendartime" + "_value_style");
+						
+						if(style_write.getAttributesSize() > 0 && style_write.getAttributesSize() > 0){
+							rootView.addContent(style_descriptor);
+							rootView.addContent(style_write);
+						}
+						//insertupdate - end
+						
+						//list - start
+						Element style_list = new Element("style");
+						
+						if(cls.name().equals("CalendarDate"))
+							style_list.setAttribute("name", classId + "_list_" + "calendardate" + "_value_style");
+						if(cls.name().equals("CalendarTime"))
+							style_list.setAttribute("name", classId + "_list_" + "calendartime" + "_value_style");
+						
+						if(style_list.getAttributesSize() > 0 && style_list.getAttributesSize() > 0){
+							rootView.addContent(style_list);
+						}
+						//list - end
+					}
+					
 					//detail - start
 					List<MAttribute> finalReadAttributeList;
 					if(cls.getAnnotation("display") != null)
@@ -558,8 +624,12 @@ public class AndroidViewLayer extends ViewVisitor{
 						if(att.type().isBoolean())
 							style_read.setAttribute("parent", "@style/default_CheckBox_style");
 						
-						if(att.type().isDate() || (att.type().isObjectType() && att.type().toString().equals("Date"))){
+						if(att.type().isDate() || (att.type().isObjectType() && att.type().toString().equals("CalendarDate"))){
 							style_read.setAttribute("parent", "@style/default_datepicker_style");						
+						}
+						
+						if(att.type().isDate() || (att.type().isObjectType() && att.type().toString().equals("CalendarTime"))){
+							style_read.setAttribute("parent", "@style/default_customtimepicker_style");						
 						}
 
 						if(att.type().isEnum()){
@@ -594,9 +664,13 @@ public class AndroidViewLayer extends ViewVisitor{
 						if(att.type().isBoolean())
 							style_write.setAttribute("parent", "@style/default_CheckBox_style");
 						
-						if(att.type().isDate() || (att.type().isObjectType() && att.type().toString().equals("Date")))
+						if(att.type().isDate() || (att.type().isObjectType() && att.type().toString().equals("CalendarDate")))
 							style_write.setAttribute("parent", "@style/default_datepicker_style");						
 
+						if(att.type().isDate() || (att.type().isObjectType() && att.type().toString().equals("CalendarTime")))
+							style_write.setAttribute("parent", "@style/default_customtimepicker_style");						
+						
+						
 						if(att.type().isEnum())
 							style_write.setAttribute("parent", "default_spinner_style");			
 						
@@ -625,8 +699,11 @@ public class AndroidViewLayer extends ViewVisitor{
 						if(att.type().isBoolean())
 							style_list.setAttribute("parent", "@style/default_CheckBox_style");
 						
-						if(att.type().isDate() || (att.type().isObjectType() && att.type().toString().equals("Date")))
-							style_list.setAttribute("parent", "@style/default_textview_style");						
+						if(att.type().isDate() || (att.type().isObjectType() && att.type().toString().equals("CalendarDate")))
+							style_list.setAttribute("parent", "@style/default_textview_style");	
+						
+						if(att.type().isDate() || (att.type().isObjectType() && att.type().toString().equals("CalendarTime")))
+							style_list.setAttribute("parent", "@style/default_textview_style");	
 						
 						if(att.type().isEnum())
 							style_list.setAttribute("parent", "@style/default_textview_style");			
@@ -761,12 +838,28 @@ public class AndroidViewLayer extends ViewVisitor{
 				if (FileUtilities.openOutputFile(targetDirectory, XMLName + ".xml")){				
 					Element rootView = new Resources();
 					
-					for (MAttribute att : cls.attributes()){
-						String attributeName = att.name().toLowerCase();
-						Element strings_detail = new Strings(classId + "_detail_" + attributeName + "_descriptor", att.name() + ": ");
-						Element strings_insert_update = new Strings(classId + "_insertupdate_" + attributeName + "_descriptor", "Choose a " + att.name() + ": ");
+					if(cls.name().equals("CalendarDate") || cls.name().equals("CalendarTime")){
+						Element strings_detail = null;
+						Element strings_insert_update = null;
+						if(cls.name().equals("CalendarDate")){
+							strings_detail = new Strings(classId + "_detail_" + "calendardate" + "_descriptor", "Date" + ": ");
+							strings_insert_update = new Strings(classId + "_insertupdate_" + "calendardate" + "_descriptor", "Choose a " + "date" + ": ");
+						}
+
+						if(cls.name().equals("CalendarTime")){
+							strings_detail = new Strings(classId + "_detail_" + "calendartime" + "_descriptor", "Time" + ": ");
+							strings_insert_update = new Strings(classId + "_insertupdate_" + "calendartime" + "_descriptor", "Choose a " + "time" + ": ");
+						}
 						rootView.addContent(strings_detail);
 						rootView.addContent(strings_insert_update);
+					}else{
+						for (MAttribute att : cls.attributes()){
+							String attributeName = att.name().toLowerCase();
+							Element strings_detail = new Strings(classId + "_detail_" + attributeName + "_descriptor", att.name() + ": ");
+							Element strings_insert_update = new Strings(classId + "_insertupdate_" + attributeName + "_descriptor", "Choose a " + att.name() + ": ");
+							rootView.addContent(strings_detail);
+							rootView.addContent(strings_insert_update);
+						}
 					}
 
 					for(AssociationInfo ass : AssociationInfo.getAssociationsInfo(cls)){
@@ -864,6 +957,7 @@ public class AndroidViewLayer extends ViewVisitor{
 		FileUtilities.copyFile(sourceDirectory + "default_warning_fragment.xml",targetDirectory + "default_warning_fragment.xml");
 		FileUtilities.copyFile(sourceDirectory + "launcher_activity.xml",targetDirectory + mModel.name().toLowerCase() + "_launcher_activity.xml");
 		FileUtilities.copyFile(sourceDirectory + "launcher_gridview_row.xml",targetDirectory + mModel.name().toLowerCase() + "_launcher_gridview_row.xml");
+		FileUtilities.copyFile(sourceDirectory + "time_picker_widget.xml",targetDirectory + "time_picker_widget.xml");
 		FileUtilities.replaceStringInFile(targetDirectory + mModel.name().toLowerCase() + "_launcher_gridview_row.xml", "@drawable/launcher_gridview_selector", "@drawable/" + mModel.name().toLowerCase() + "_launcher_gridview_selector");
 		
 		targetDirectory = rootDirectory + drawable + "/";
@@ -953,7 +1047,47 @@ public class AndroidViewLayer extends ViewVisitor{
 		String XMLName;
 		String classId;
 		for (MClass cls : mModel.classes()){
-			if(cls.isAnnotated() && cls.getAnnotation("domain") != null){
+			if(cls.name().equals("CalendarDate") || cls.name().equals("CalendarTime")){
+				classId = cls.name().toLowerCase();
+				XMLName = classId + "_form_detail";
+				if (FileUtilities.openOutputFile(targetDirectory, XMLName + ".xml")){					
+					Element rootView = new Element("merge");
+					rootView.addNamespaceDeclaration(namespace);
+					
+					Element linearLayout = new LinearLayout(classId + "_detail_layout","wrap_content","wrap_content","vertical");
+
+					Element dataDescriptor = null;
+					if(cls.name().equals("CalendarDate"))
+						dataDescriptor = new TextView(classId + "_detail_" + "calendardate" + "_descriptor", "wrap_content", "wrap_content", classId + "_detail_" + "calendardate" + "_descriptor" , "@style/" + classId + "_detail_" + "calendardate" + "_descriptor_style");
+					
+					if(cls.name().equals("CalendarTime"))
+						dataDescriptor = new TextView(classId + "_detail_" + "calendartime" + "_descriptor", "wrap_content", "wrap_content", classId + "_detail_" + "calendartime" + "_descriptor" , "@style/" + classId + "_detail_" + "calendartime" + "_descriptor_style");
+						
+					linearLayout.addContent(dataDescriptor);
+					
+					Element dataValue = null;
+
+					if(cls.name().equals("CalendarDate"))
+						dataValue = new DatePicker(classId + "_detail_" + "calendardate" + "_value", "wrap_content", "wrap_content", "@style/" + classId + "_detail_" + "calendardate" + "_value_style", false); 	
+
+					if(cls.name().equals("CalendarTime"))
+						dataValue = new CustomTimePicker(targetPackage, classId + "_detail_" + "calendartime" + "_value", "wrap_content", "wrap_content", "@style/" + classId + "_detail_" + "calendartime" + "_value_style", false); 	
+		
+					if(dataValue != null)
+						linearLayout.addContent(dataValue);
+											
+					rootView.addContent(linearLayout);
+					
+					XMLOutputter outputter = new XMLOutputter();
+					try {
+						outputter.setFormat(format);
+						outputter.output(new Document(rootView), new FileOutputStream (targetDirectory + XMLName + ".xml"));
+						statistics.addOneToGenerated();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}else if(cls.isAnnotated() && cls.getAnnotation("domain") != null){
 				classId = cls.name().toLowerCase();
 				XMLName = classId + "_form_detail";
 				if (FileUtilities.openOutputFile(targetDirectory, XMLName + ".xml")){					
@@ -972,29 +1106,46 @@ public class AndroidViewLayer extends ViewVisitor{
 					for (MAttribute att : finalAttributeList){
 						String attributeName = att.name().toLowerCase();
 						
-						Element linearLayout = new LinearLayout(classId + "_detail_" + attributeName,"wrap_content","wrap_content","horizontal");
+						Element linearLayout = null;
+						if(att.type().isObjectType())
+							linearLayout = new LinearLayout(att.type().toString().toLowerCase() + "_detail_container_" + att.name().toLowerCase(),"wrap_content","wrap_content","vertical");
+						else
+							linearLayout = new LinearLayout(classId + "_detail_" + attributeName,"wrap_content","wrap_content","horizontal");
 						
 						if(relativeLayout.getChildren().size() > 0){
 							linearLayout.setAttribute(new Below(relativeLayout.getChildren().get(relativeLayout.getChildren().size() - 1).getAttribute("id",namespace)));
 						}
-						Element dataDescriptor = new TextView(classId + "_detail_" + attributeName + "_descriptor", "wrap_content", "wrap_content", classId + "_detail_" + attributeName + "_descriptor" , "@style/" + classId + "_detail_" + attributeName + "_descriptor_style");
+						
+//						if(!att.type().isObjectType()){
+							Element dataDescriptor = new TextView(classId + "_detail_" + attributeName + "_descriptor", "wrap_content", "wrap_content", classId + "_detail_" + attributeName + "_descriptor" , "@style/" + classId + "_detail_" + attributeName + "_descriptor_style");
+							linearLayout.addContent(dataDescriptor);
+//						}
+						
+						
 						
 						Element dataValue = null;
 						
 						if(att.type().isBoolean())
 							dataValue = new CheckBox(classId + "_detail_" + attributeName + "_value", "wrap_content", "wrap_content", "@style/" + classId + "_detail_" + attributeName + "_value_style", false); 	
 
-						if(att.type().isDate() || (att.type().isObjectType() && att.type().toString().equals("Date")))
-							dataValue = new DatePicker(classId + "_detail_" + attributeName + "_value", "wrap_content", "wrap_content", "@style/" + classId + "_detail_" + attributeName + "_value_style", false); 	
-
+//						if(att.type().isDate() || (att.type().isObjectType() && att.type().toString().equals("CalendarDate")))
+//							dataValue = new DatePicker(classId + "_detail_" + attributeName + "_value", "wrap_content", "wrap_content", "@style/" + classId + "_detail_" + attributeName + "_value_style", false); 	
+//
+//						if(att.type().isDate() || (att.type().isObjectType() && att.type().toString().equals("CalendarTime")))
+//							dataValue = new TimePicker(classId + "_detail_" + attributeName + "_value", "wrap_content", "wrap_content", "@style/" + classId + "_detail_" + attributeName + "_value_style", false); 	
+						
 						if(att.type().isEnum())
 							dataValue = new TextView(classId + "_detail_" + attributeName + "_value", "wrap_content", "wrap_content", "@style/" + classId + "_detail_" + attributeName + "_value_style");
 						
 						if(att.type().isInteger() || att.type().isNumber() || att.type().isString())
 							dataValue = new TextView(classId + "_detail_" + attributeName + "_value", "wrap_content", "wrap_content", "@style/" + classId + "_detail_" + attributeName + "_value_style"); 	
 						
+						if(att.type().isObjectType())
+							dataValue = new Include(att.type().toString().toLowerCase() + "_form_detail");
+							
 						
-						linearLayout.addContent(dataDescriptor);
+						
+						
 						if(dataValue != null)
 							linearLayout.addContent(dataValue);
 						
@@ -1021,7 +1172,49 @@ public class AndroidViewLayer extends ViewVisitor{
 		String XMLName;
 		String classId;
 		for (MClass cls : mModel.classes()){
-			if(cls.isAnnotated() && cls.getAnnotation("domain") != null){
+			if(cls.name().equals("CalendarDate") || cls.name().equals("CalendarTime")){
+				classId = cls.name().toLowerCase();
+				XMLName = classId + "_form_insertupdate";
+				if (FileUtilities.openOutputFile(targetDirectory, XMLName + ".xml")){					
+					Element rootView = new Element("merge");
+					rootView.addNamespaceDeclaration(namespace);
+					
+					Element linearLayout = new LinearLayout(classId + "_insertupdate_layout","wrap_content","wrap_content","vertical");
+
+					
+						
+					Element dataDescriptor = null;
+					if(cls.name().equals("CalendarDate"))
+						dataDescriptor = new TextView(classId + "_insertupdate_" + "calendardate" + "_descriptor", "wrap_content", "wrap_content", classId + "_insertupdate_" + "calendardate" + "_descriptor" , "@style/" + classId + "_insertupdate_" + "calendardate" + "_descriptor_style");
+					
+					if(cls.name().equals("CalendarTime"))
+						dataDescriptor = new TextView(classId + "_insertupdate_" + "calendartime" + "_descriptor", "wrap_content", "wrap_content", classId + "_insertupdate_" + "calendartime" + "_descriptor" , "@style/" + classId + "_insertupdate_" + "calendartime" + "_descriptor_style");
+						
+					linearLayout.addContent(dataDescriptor);
+					
+					Element dataValue = null;
+
+					if(cls.name().equals("CalendarDate"))
+						dataValue = new DatePicker(classId + "_insertupdate_" + "calendardate" + "_value", "wrap_content", "wrap_content", "@style/" + classId + "_insertupdate_" + "calendardate" + "_value_style", true); 	
+
+					if(cls.name().equals("CalendarTime"))
+						dataValue = new CustomTimePicker(targetPackage, classId + "_insertupdate_" + "calendartime" + "_value", "wrap_content", "wrap_content", "@style/" + classId + "_insertupdate_" + "calendartime" + "_value_style", true); 	
+		
+					if(dataValue != null)
+						linearLayout.addContent(dataValue);
+											
+					rootView.addContent(linearLayout);
+					
+					XMLOutputter outputter = new XMLOutputter();
+					try {
+						outputter.setFormat(format);
+						outputter.output(new Document(rootView), new FileOutputStream (targetDirectory + XMLName + ".xml"));
+						statistics.addOneToGenerated();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}else if(cls.isAnnotated() && cls.getAnnotation("domain") != null){
 				classId = cls.name().toLowerCase();
 				XMLName = classId + "_form_insertupdate";
 				if (FileUtilities.openOutputFile(targetDirectory, XMLName + ".xml")){					
@@ -1040,33 +1233,50 @@ public class AndroidViewLayer extends ViewVisitor{
 					
 					for (MAttribute att : finalAttributeList){
 						String attributeName = att.name().toLowerCase();
-						Element linearLayout = new LinearLayout(classId + "_insertupdate_" + attributeName,"match_parent","wrap_content","horizontal");
+						
+						Element linearLayout = null;
+						if(att.type().isObjectType())
+							linearLayout = new LinearLayout(att.type().toString().toLowerCase() + "_detail_container_" + att.name().toLowerCase(),"match_parent","wrap_content","vertical");
+						else
+							linearLayout = new LinearLayout(classId + "_insertupdate_" + attributeName,"match_parent","wrap_content","horizontal");
 						
 						if(relativeLayout.getChildren().size() > 0){
 							linearLayout.setAttribute(new Below(relativeLayout.getChildren().get(relativeLayout.getChildren().size() - 1).getAttribute("id",namespace)));
 						}
-						Element dataDescriptor = new TextView(classId + "_insertupdate_" + attributeName + "_descriptor", "wrap_content", "wrap_content", classId + "_insertupdate_" + attributeName + "_descriptor" , "@style/" + classId + "_insertupdate_" + attributeName + "_descriptor_style");
+						
+//						if(!att.type().isObjectType()){
+							Element dataDescriptor = new TextView(classId + "_insertupdate_" + attributeName + "_descriptor", "wrap_content", "wrap_content", classId + "_insertupdate_" + attributeName + "_descriptor" , "@style/" + classId + "_insertupdate_" + attributeName + "_descriptor_style");
+							linearLayout.addContent(dataDescriptor);
+//						}
+						
 						
 						Element dataValue = null;
 						
 						if(att.type().isBoolean())
 							dataValue = new CheckBox(classId + "_insertupdate_" + attributeName + "_value", "match_parent", "wrap_content", "@style/" + classId + "_detail_" + attributeName + "_value_style", true); 
 						
-						if(att.type().isDate() || (att.type().isObjectType() && att.type().toString().equals("Date")))
-							dataValue = new DatePicker(classId + "_insertupdate_" + attributeName + "_value", "wrap_content", "wrap_content", "@style/" + classId + "_insertupdate_" + attributeName + "_value_style", true); 	
-
+//						if(att.type().isDate() || (att.type().isObjectType() && att.type().toString().equals("CalendarDate")))
+//							dataValue = new DatePicker(classId + "_insertupdate_" + attributeName + "_value", "wrap_content", "wrap_content", "@style/" + classId + "_insertupdate_" + attributeName + "_value_style", true); 	
+//
+//						if(att.type().isDate() || (att.type().isObjectType() && att.type().toString().equals("CalendarTime")))
+//							dataValue = new TimePicker(classId + "_insertupdate_" + attributeName + "_value", "wrap_content", "wrap_content", "@style/" + classId + "_insertupdate_" + attributeName + "_value_style", true); 	
+						
 						if(att.type().isEnum())
 							dataValue = new Spinner(classId + "_insertupdate_" + attributeName + "_value", "match_parent", "wrap_content", att.type().shortName().toLowerCase(), classId + "_insertupdate_" + attributeName + "_descriptor"); 
 						
 						if(att.type().isString())
 							dataValue = new EditText(classId + "_insertupdate_" + attributeName + "_value", "match_parent", "wrap_content", null); 	
+						
 						if(att.type().isNumber())
 							dataValue = new EditText(classId + "_insertupdate_" + attributeName + "_value", "match_parent", "wrap_content", "numberDecimal"); 	
+						
 						if(att.type().isInteger())
 							dataValue = new EditText(classId + "_insertupdate_" + attributeName + "_value", "match_parent", "wrap_content", "number"); 	
 						
+						if(att.type().isObjectType())
+							dataValue = new Include(att.type().toString().toLowerCase() + "_form_insertupdate");
+
 						
-						linearLayout.addContent(dataDescriptor);
 						if(dataValue != null)
 							linearLayout.addContent(dataValue);
 						
@@ -1093,7 +1303,38 @@ public class AndroidViewLayer extends ViewVisitor{
 		String XMLName;
 		String classId;
 		for (MClass cls : mModel.classes()){
-			if(cls.isAnnotated() && cls.getAnnotation("domain") != null && !ModelUtilities.isAssociativeClass(cls)){
+			if(cls.name().equals("CalendarDate") || cls.name().equals("CalendarTime")){
+				classId = cls.name().toLowerCase();
+				XMLName = classId + "_form_list";
+				if (FileUtilities.openOutputFile(targetDirectory, XMLName + ".xml")){
+					Element rootView = new Element("merge");
+					rootView.addNamespaceDeclaration(namespace);
+					
+					Element linearLayout = new LinearLayout(classId + "_list_layout","wrap_content","wrap_content","vertical");
+					
+					Element dataValue = null;
+
+					if(cls.name().equals("CalendarDate"))
+						dataValue = new TextView(classId + "_list_" + "calendardate" + "_value", "wrap_content", "wrap_content", "@style/" + classId + "_list_" + "calendardate" + "_value_style");
+
+					if(cls.name().equals("CalendarTime"))
+						dataValue = new TextView(classId + "_list_" + "calendartime" + "_value", "wrap_content", "wrap_content", "@style/" + classId + "_list_" + "calendartime" + "_value_style");
+		
+					if(dataValue != null)
+						linearLayout.addContent(dataValue);
+											
+					rootView.addContent(linearLayout);
+					
+					XMLOutputter outputter = new XMLOutputter();
+					try {
+						outputter.setFormat(format);
+						outputter.output(new Document(rootView), new FileOutputStream (targetDirectory + XMLName + ".xml"));
+						statistics.addOneToGenerated();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}else if(cls.isAnnotated() && cls.getAnnotation("domain") != null && !ModelUtilities.isAssociativeClass(cls)){
 				classId = cls.name().toLowerCase();
 				XMLName = classId + "_form_list";
 				if (FileUtilities.openOutputFile(targetDirectory, XMLName + ".xml")){
@@ -1128,9 +1369,14 @@ public class AndroidViewLayer extends ViewVisitor{
 							dataValue.addContent(dataval);
 						}			
 									
-						if(att.type().isEnum() || att.type().isInteger() || att.type().isNumber() || att.type().isString() || att.type().isDate() || (att.type().isObjectType() && att.type().toString().equals("Date"))){
+						if(att.type().isEnum() || att.type().isInteger() || att.type().isNumber() || att.type().isString() || att.type().isDate() || (att.type().isObjectType() && (att.type().toString().equals("CalendarDate") || att.type().toString().equals("CalendarTime")))){
 							dataValue = new TextView(attributeBaseAncestor(cls, att).name().toLowerCase() + "_list_" + attributeName + "_value", "wrap_content", "wrap_content", null); 	
 							dataValue.setAttribute(new Style(attributeBaseAncestor(cls, att).name().toLowerCase() + "_list_" + attributeName + "_value_style", "@style/"));
+						}
+						
+						if(att.type().isObjectType()){
+							dataValue = new RelativeLayout(att.type().toString() + "_list_container","wrap_content","wrap_content");
+							dataValue.addContent(new Include(att.type().toString().toLowerCase() + "_form_list"));
 						}
 						
 						if(form_relativeLayout.getChildren().size() > 0 && dataValue != null){
@@ -1738,7 +1984,7 @@ public class AndroidViewLayer extends ViewVisitor{
 				
 				for (AssociationInfo association : AssociationInfo.getAssociationsInfo(cls)){
 //					if the target class is a super class (generalization)
-					if(association.getTargetAE().cls().allChildren().size() > 0){
+					if(association.getTargetAE().cls().allChildren().size() > 0 && isSuperClass(association.getTargetAEClass())){
 						String associationName = association.getTargetAE().name().toLowerCase();
 						if(association.getKind() == AssociationKind.MEMBER2ASSOCIATIVE)
 							associationName = association.getTargetAEClass().nameAsRolename().toLowerCase();

@@ -122,6 +122,9 @@ public abstract class ViewModelVisitor extends FileUtilities implements IViewMod
 	public abstract void printDetailFragment_VisibilityState(MClass theClass);
 	
 	@Override
+	public abstract void printDetailFragment_confirmActiveView(MClass theClass);
+	
+	@Override
 	public abstract void printDetailFragment_SetInputMethod(MClass theClass);
 	
 	@Override

@@ -94,6 +94,8 @@ public interface IViewModelVisitor {
 	
 	public void printDetailFragment_VisibilityState(MClass theClass);
 	
+	public void printDetailFragment_confirmActiveView(MClass theClass);
+	
 	public void printDetailFragment_SetInputMethod(MClass theClass);
 	
 	public void printDetailFragment_setViewDetailData(MClass theClass);

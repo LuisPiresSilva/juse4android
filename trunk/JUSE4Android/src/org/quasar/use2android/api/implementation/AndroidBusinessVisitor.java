@@ -1328,7 +1328,7 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 				if(!AssociationInfo.getAssociationsInfo(c).isEmpty())
 					validClass = true;
 //		if the class has any association or its parent does
-		if(validClass){
+//		if(validClass){
 			String AssociationRestrictionsValid = "AssociationRestrictionsValid";
 			
 			println("private boolean " + AssociationRestrictionsValid + " = false;");
@@ -1471,8 +1471,9 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 			println("**********************************************************************/");
 			println("public void checkRestrictions()");
 			println("{");
-			incIndent();		
-			print("if(");
+			incIndent();
+			if(validClass)
+				print("if(");
 			
 			int i = 0;
 			int last = AssociationInfo.getAssociationsInfo(theClass).size();
@@ -1519,18 +1520,23 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 				if(i < last)
 					print(" && ");
 			}
-			println(")");
-			incIndent();
+			if(validClass){
+				println(")");
+				incIndent();
+			}
 			println("set" + AssociationRestrictionsValid + "(true);");
-			decIndent();
-			println("else");
-			incIndent();
-			println("set" + AssociationRestrictionsValid + "(false);");
-			decIndent();
+			if(validClass)
+				decIndent();
+			if(validClass){
+				println("else");
+				incIndent();
+				println("set" + AssociationRestrictionsValid + "(false);");
+				decIndent();
+			}
 			decIndent();
 			println("}");
 			println();
-		}
+//		}
 	}
 	
 	/*
@@ -2285,7 +2291,8 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 				println("{");
 					incIndent();
 					println("int oldID = " + theClass.name().toLowerCase() + ".ID();");
-					println("notifyDeletion(object);");
+					if(ModelUtilities.hasAssociations(theClass))
+						println("notifyDeletion(object);");
 					println("Transactions.getSession().delete(object);");
 					println("");
 					println("Transactions.AddCommand(new Command(getAccess(), CommandType.DELETE, CommandTargetLayer.DATABASE, oldID, object, null, null, 0, null, null));");
@@ -2373,7 +2380,7 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 										println("if(neighbor instanceof " + ai.getTargetAE().cls().name() + ")");
 										println("{");
 										incIndent();
-											println("object.add" + capitalize(targetRole) + "((" + ai.getTargetAE().cls().name() + ") neighbor);");
+											println("object.set" + capitalize(targetRole) + "((" + ai.getTargetAE().cls().name() + ") neighbor);");
 											println("Transactions.AddCommand(new Command(getAccess(), CommandType.INSERT_ASSOCIATION, CommandTargetLayer.DATABASE, oldID, " + theClass.name().toLowerCase() + ", object, " + ai.getTargetAE().cls().name() + ".class, ((" + ai.getTargetAE().cls().name() + ") neighbor).ID(), null, neighbor));");
 											println("Transactions.AddCommand(new Command(getAccess(), CommandType.INSERT_ASSOCIATION, CommandTargetLayer.VIEW, oldID, " + theClass.name().toLowerCase() + ", object, " + ai.getTargetAE().cls().name() + ".class, ((" + ai.getTargetAE().cls().name() + ") neighbor).ID(), null, neighbor));");
 										decIndent();
@@ -2999,10 +3006,10 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 		printAccessServerInsert(theClass);
 		printAccessServerUpdate(theClass);
 		
-		if(!theClass.associations().isEmpty() || ModelUtilities.isAssociativeClass(theClass)){
+//		if(!theClass.associations().isEmpty() || ModelUtilities.isAssociativeClass(theClass)){
 			printAccessServerInsertAssociation(theClass);
 			printAccessServerDeleteAssociation(theClass);
-		}
+//		}
 		println("//Server specific methods - End");
 	}
 	

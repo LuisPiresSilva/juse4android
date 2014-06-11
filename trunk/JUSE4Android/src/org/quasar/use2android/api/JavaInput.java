@@ -25,17 +25,26 @@ public class JavaInput {
 			outPutCode.append("String " + newVariableName + " = " + variableInputCode + ";\n");
 
 
-		if (oclType.isDate() || (oclType.isObjectType() && oclType.toString().equals("Date")))
-			outPutCode.append("Date " + newVariableName + " = new Date(" + variableInputCode + ");\n");
+//		if (oclType.isDate() || (oclType.isObjectType() && oclType.toString().equals("CalendarDate")))
+//			outPutCode.append("Date " + newVariableName + " = new Date(" + variableInputCode + ");\n");
+		
+		if (oclType.isObjectType() && !oclType.toString().equals("CalendarDate"))
+			outPutCode.append(oclType.toString() + " " + newVariableName + " = " + variableInputCode + ";\n");
 		
 		return outPutCode.toString();
 	}
 
-	public static String inputValidation(Type oclType, String newVariableName ,String attributeName, String variableInputCode, String ErrorMessageComponentHolder, boolean addReturnNullInError, String indentLevel, boolean commentedValidation){
+	public static String inputValidation(MAttribute att, String newVariableName ,String attributeName, String variableInputCode, String ErrorMessageComponentHolder, boolean addReturnNullInError, String indentLevel, boolean commentedValidation, boolean isSpecialPrimitive){
 		StringBuffer outPutCode = new StringBuffer("");
 		String commented = "";
 		if(commentedValidation)
 			commented = "//";
+		
+		Type oclType;
+		if(isSpecialPrimitive)
+			oclType = att.owner().type();
+		else
+			oclType = att.type();	
 		
 		if (oclType.isInteger()){
 			outPutCode.append(commented + "try{\n");
@@ -79,8 +88,11 @@ public class JavaInput {
 		}
 		//for this case since we work with component based ui we believe that the date already comes in the right format
 		//so we are going only to declare a new instance and put the necessary code for future possible checks
-		if (oclType.isDate() || (oclType.isObjectType() && oclType.toString().equals("Date"))){
-			outPutCode.append(commented + "if (" + newVariableName + "  something to check){\n");
+		if (oclType.isDate() || (oclType.isObjectType() && (oclType.toString().equals("CalendarDate") || oclType.toString().equals("CalendarTime")))){
+			outPutCode.append(commented + newVariableName + " = " + variableInputCode + ";\n");
+			
+			commented = "//";
+			outPutCode.append(indentLevel + commented + "if (" + newVariableName + "  something to check){\n");
 			outPutCode.append(indentLevel + commented + "\t" + ErrorMessageComponentHolder + "\"Date input error\", \"Error in input of " + attributeName + ":\\n error specific message\");\n");
 			if(addReturnNullInError)
 				outPutCode.append(indentLevel + commented + "\treturn null;\n");
@@ -90,8 +102,13 @@ public class JavaInput {
 		return outPutCode.toString();
 	}
 	
-	public static String inputComparatorConditionSetter(Type oclType, String newVariableName, String attributeGetter, String attributeSetter, String variableInputCode, String indentLevel){
+	public static String inputComparatorConditionSetter(MAttribute att, String newVariableName, String attributeGetter, String attributeSetter, String variableInputCode, String indentLevel, boolean isSpecialPrimitive){
 		StringBuffer outPutCode = new StringBuffer("");
+		Type oclType;
+		if(isSpecialPrimitive)
+			oclType = att.owner().type();
+		else
+			oclType = att.type();	
 		
 		if (oclType.isInteger()){
 			outPutCode.append("int " + newVariableName + " = Integer.parseInt(" + variableInputCode + ");\n");
@@ -112,9 +129,12 @@ public class JavaInput {
 		}
 		//for this case since we work with component based ui we believe that the date already comes in the right format
 		//so we are going only to declare a new instance a put the necessary code for future possible checks
-		if (oclType.isDate() || (oclType.isObjectType() && oclType.toString().equals("Date"))){
-			outPutCode.append("Date " + newVariableName + " = new Date(" + variableInputCode + ");\n");
-			outPutCode.append(indentLevel + "if (" + attributeGetter + ".compareTo(" + newVariableName + ") != 0)\n");
+		if (oclType.isDate() || (oclType.isObjectType() && (oclType.toString().equals("CalendarDate") || oclType.toString().equals("CalendarTime")))){
+//			outPutCode.append("Date " + newVariableName + " = new Date(" + variableInputCode + ");\n");
+//			outPutCode.append(indentLevel + "if (" + attributeGetter + ".compareTo(" + newVariableName + ") != 0)\n");
+//			outPutCode.append(indentLevel + "\t" + attributeSetter + "(" + newVariableName + ");");
+			outPutCode.append("int " + newVariableName + " = " + variableInputCode + ";\n");
+			outPutCode.append(indentLevel + "if (" + attributeGetter + " != " + newVariableName + ")\n");
 			outPutCode.append(indentLevel + "\t" + attributeSetter + "(" + newVariableName + ");");
 
 		}

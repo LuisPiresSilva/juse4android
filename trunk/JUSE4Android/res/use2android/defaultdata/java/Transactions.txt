@@ -99,4 +99,14 @@ public class Transactions {
 		return session;
 	}
 	
+	public synchronized static void addSpecialCommand(Command command){
+		AndroidTransaction transaction = new AndroidTransaction();
+		transaction.getCommands().add(command);
+		
+		ObjectContainer sess = Database.OpenDB();
+		sess.store(transaction);
+		sess.commit();
+		
+	}
+	
 }
