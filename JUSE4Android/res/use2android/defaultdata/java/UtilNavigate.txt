@@ -88,6 +88,21 @@ public class UtilNavigate {
 		return arguments;
 	}
 
+	public static Bundle setFragmentBundleArguments(String objectKey, int id, boolean isChildFragment) {
+		Bundle arguments = new Bundle();
+		arguments.putInt(objectKey, id);
+		arguments.putBoolean("IsChildFragment", isChildFragment);
+		return arguments;
+	}
+	
+	public static Bundle setFragmentBundleArguments(String objectKey, int id, boolean isChildFragment, int container) {
+		Bundle arguments = new Bundle();
+		arguments.putInt(objectKey, id);
+		arguments.putBoolean("IsChildFragment", isChildFragment);
+		arguments.putInt("container", container);
+		return arguments;
+	}
+	
 	public static void addFragment(FragmentActivity activity, Fragment fragment, int container, Bundle extras) {
 		fragment.setArguments(extras);
 		activity.getSupportFragmentManager().beginTransaction().add(container, fragment).commit();

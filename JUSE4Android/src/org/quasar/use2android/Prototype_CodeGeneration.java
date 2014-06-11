@@ -30,8 +30,8 @@ public final class Prototype_CodeGeneration
 	private static String	SOURCE_WORKSPACE	= "";
 	private static String	TARGET_WORKSPACE	= "C:\\D\\WorkSpace\\Eclipse mestrado";
 	
-	private static String	AndroidProjectName	= "CopaPaisesAndroid";
-	private static String	ServerProjectName	= "CopaPaisesServer";
+	private static String	AndroidProjectName	= "LeiloesAndroid2";
+	private static String	ServerProjectName	= "LeiloesServer";
 	
 	private final static String	BUSINESSLAYER_NAME		= "businessLayer";
 	private final static String	PRESENTATIONLAYER_NAME	= "presentationLayer";
@@ -42,12 +42,12 @@ public final class Prototype_CodeGeneration
 	private final static String	DB4O_CS_JAR			= "db4o-8.0.249.16098-cs-java5.jar";
 	private final static String	DB4O_OPTIONAL_JAR	= "db4o-8.0.249.16098-optional-java5.jar";
 	
-	private static String	MODEL_DIRECTORY		= "C:\\D\\WorkSpace\\DropBox\\Dropbox_Mestrado\\Dropbox\\LuisSilva_ISCTE\\Models specification-files\\CopaPaises";
-	private static String	MODEL_FILE			= "CopaPaises.use";
+	private static String	MODEL_DIRECTORY		= "C:\\D\\WorkSpace\\DropBox\\Dropbox_Mestrado\\Dropbox\\LuisSilva_ISCTE\\Models specification-files\\Leiloes";
+	private static String	MODEL_FILE			= "Leiloes.use";
 	private static String	TARGET_PACKAGE 		= "org.quasar.";
 	
 //	Server Information
-	private static String	DATABASE	= "CopaPaises";
+	private static String	DATABASE	= "Leiloes";
 	private static String	USER		= "db4o";
 	private static String	PASS		= "db4o";
 	private static String	PORT 		= "4444";	

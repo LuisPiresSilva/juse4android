@@ -3,6 +3,8 @@ package org.quasar.use2android.api;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.quasar.juse.api.implementation.FileUtilities;
+import org.tzi.use.uml.mm.MAttribute;
 import org.tzi.use.uml.ocl.type.Type;
 
 public class AndroidTypes {
@@ -38,12 +40,16 @@ public class AndroidTypes {
 		if (oclType.isEnum() && androidType == AndroidWidgetPreference.NORMAL || androidType == AndroidWidgetPreference.SMALLEST)
 			return "TextView";
 		if (oclType.isObjectType()){
-			if(oclType.toString().equals("Date") && androidType == AndroidWidgetPreference.NORMAL)
+			if(oclType.toString().equals("CalendarDate") && androidType == AndroidWidgetPreference.NORMAL)
 				return "DatePicker";
-			else if(oclType.toString().equals("Date") && androidType == AndroidWidgetPreference.SMALLEST)
+			else if(oclType.toString().equals("CalendarDate") && androidType == AndroidWidgetPreference.SMALLEST)
+				return "TextView";
+			else if(oclType.toString().equals("CalendarTime") && androidType == AndroidWidgetPreference.NORMAL)
+				return "CustomTimePicker";
+			else if(oclType.toString().equals("CalendarTime") && androidType == AndroidWidgetPreference.SMALLEST)
 				return "TextView";
 			else
-				return oclType.toString();//to do
+				return "Fragment";//to do
 		}
 		if (oclType.isTrueObjectType())
 			return oclType.toString();//to do
@@ -51,10 +57,10 @@ public class AndroidTypes {
 			return "Object";//to do
 		if (oclType.isVoidType())
 			return "void";//to do
-		if(oclType.toString().equals("Date") && androidType == AndroidWidgetPreference.NORMAL)
-			return "DatePicker";
-		if(oclType.toString().equals("Date") && androidType == AndroidWidgetPreference.SMALLEST)
-			return "TextView";
+//		if(oclType.toString().equals("Date") && androidType == AndroidWidgetPreference.NORMAL)
+//			return "DatePicker";
+//		if(oclType.toString().equals("Date") && androidType == AndroidWidgetPreference.SMALLEST)
+//			return "TextView";
 
 		return "ERROR!";
 	}
@@ -76,12 +82,16 @@ public class AndroidTypes {
 		if (oclType.isEnum() && androidType == AndroidWidgetPreference.NORMAL || androidType == AndroidWidgetPreference.SMALLEST)
 			return "Spinner";
 		if (oclType.isObjectType()){
-			if(oclType.toString().equals("Date") && androidType == AndroidWidgetPreference.NORMAL)
+			if(oclType.toString().equals("CalendarDate") && androidType == AndroidWidgetPreference.NORMAL)
 				return "DatePicker";
-			else if(oclType.toString().equals("Date") && androidType == AndroidWidgetPreference.SMALLEST)
+			else if(oclType.toString().equals("CalendarDate") && androidType == AndroidWidgetPreference.SMALLEST)
+				return "TextView";
+			else if(oclType.toString().equals("CalendarTime") && androidType == AndroidWidgetPreference.NORMAL)
+				return "CustomTimePicker";
+			else if(oclType.toString().equals("CalendarTime") && androidType == AndroidWidgetPreference.SMALLEST)
 				return "TextView";
 			else
-				return oclType.toString();//to do
+				return "Fragment";//to do
 		}
 		if (oclType.isTrueObjectType())
 			return oclType.toString();//to do
@@ -204,12 +214,9 @@ public class AndroidTypes {
 					result.add("import android.widget.DatePicker;");
 				if (androidType.equals("Spinner"))
 					result.add("import android.widget.Spinner;");
-				if (androidType.equals("Spinner"))
-					result.add("import android.widget.Spinner;");
 				if (androidType.equals("CheckBox"))
 					result.add("import android.widget.CheckBox;");
-				if (androidType.equals("CheckBox"))
-					result.add("import android.widget.CheckBox;");
+				
 			}
 		}
 		return result;
@@ -228,20 +235,23 @@ public class AndroidTypes {
 			case "TextView":
 				if(content.equals("\"null\""))
 					return "setText(" + content + ")";
-				else if(type.isDate() || (type.isObjectType() && type.toString().equals("Date")))
-					return "setText(\"\" + " + content + ".getYear() + " + content + ".getMonth() + " + content + ".getDay())";
+				else if(type.isDate() || (type.isObjectType() && type.toString().equals("CalendarDate")))
+					return "setText(\"\" + " + content + ".year() + \"/\" + (" + content + ".month() + 1) + \"/\" + " + content + ".day())";
+				else if(type.isDate() || (type.isObjectType() && type.toString().equals("CalendarTime")))
+					return "setText(\"\" + " + content + ".hours() + \":\" + " + content + ".minutes() + \":\" + " + content + ".seconds())";
 				else
 					return "setText(\"\" + " + content + ")";//guarantees that is an String (example -> just double needs "" + double)
 			case "EditText":
 				if(content.equals("\"null\""))
 					return "setText(" + content + ")";
-				else if(type.isDate() || (type.isObjectType() && type.toString().equals("Date")))
-					return "setText(\"\" + " + content + ".getYear() + " + content + ".getMonth() + " + content + ".getDay())";
 				else
 					return "setText(\"\" + " + content + ")";
 			//this is java the java.util.Date is expected in business classes therefore its methods can be accessed
 			case "DatePicker":
-				return "updateDate(" + content + ".getYear()," + content + ".getMonth()," + content + ".getDay())";
+				return "init(" + content + ".year()," + content + ".month()," + content + ".day(), null)";
+			case "CustomTimePicker":
+				return "init(" + content + ".hours()," + content + ".minutes()," + content + ".seconds())";
+				
 			case "CheckBox":
 				return "setChecked(" + content + ")";
 			case "Spinner":
@@ -253,8 +263,13 @@ public class AndroidTypes {
 		}
 	}
 	
-	public static String androidInputWidgetContentGetter(AndroidWidgetsTypes widgettype, Type type, String variable, AndroidWidgetPreference androidType){
+	public static String androidInputWidgetContentGetter(AndroidWidgetsTypes widgettype, MAttribute att, String variable, AndroidWidgetPreference androidType, boolean isSpecialPrimitive){
 		String widget;
+		Type type;
+		if(isSpecialPrimitive)
+			type = att.owner().type();
+		else
+			type = att.type();		
 		if(widgettype == AndroidWidgetsTypes.WRITE_WIDGET)
 			widget = androidPrimitiveTypeToWriteWidget(type, androidType);
 		else if(widgettype == AndroidWidgetsTypes.READ_WIDGET)
@@ -263,14 +278,19 @@ public class AndroidTypes {
 			widget = "error";
 		switch(widget){
 			case "EditText":
-				return variable + ".getText().toString()";
+				return att.name().toLowerCase() + variable + ".getText().toString()";
 			case "DatePicker":
-				return variable +".getYear()," + variable + ".getMonth()," + variable + ".getDayOfMonth()";
+				if(att.name().toLowerCase().equals("day"))
+					return att.owner().name().toLowerCase() + variable + ".getDayOfMonth()";
+				else
+					return att.owner().name().toLowerCase() + variable + ".get" + FileUtilities.capitalize(att.name() + "()");
+			case "CustomTimePicker":
+				return att.owner().name().toLowerCase() + variable + ".getCurrent" + FileUtilities.capitalize(att.name()) + "()";
 			case "CheckBox":
-				return variable + ".isChecked()";
+				return att.name().toLowerCase() + variable + ".isChecked()";
 			//for this case we only work with the position since in multi-languages the values may differ - this way we avoid multiple code enums
 			case "Spinner":
-				return variable + ".getSelectedItemPosition()";
+				return att.name().toLowerCase() + variable + ".getSelectedItemPosition()";
 //			case "others":
 //				return something;
 			default:

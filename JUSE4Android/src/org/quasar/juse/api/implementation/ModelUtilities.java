@@ -462,4 +462,28 @@ public class ModelUtilities
 						return targetAss.getTargetAE();
 		return null;
 	}
+
+	public static boolean hasAssociations(MClass cls) {
+		if(AssociationInfo.getAllAssociationsInfo(cls).isEmpty())
+			return false;
+		else
+			return true;
+	}
+
+	public static boolean isSpecialPrimitive(MClass theClass) {
+		if(theClass.name().equals("CalendarDate") || theClass.name().equals("CalendarTime"))
+			return true;
+		else
+			return false;
+	}
+
+	public static List<MClass> getAttributeObjectTypeOwners(MClass theClass) {
+		List<MClass> list = new ArrayList<MClass>();
+		for(MClass clazz : theClass.model().classes())
+			if(theClass != clazz && clazz.isAnnotated() && clazz.getAnnotation("domain") != null)
+				for(MAttribute att : clazz.attributes())
+					if(att.type().isObjectType() && att.type().toString().equals(theClass.name()))
+						list.add(clazz);
+		return list;
+	}
 }

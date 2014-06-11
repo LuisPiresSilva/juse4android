@@ -367,6 +367,8 @@ public class PrototypeGeneratorFacade extends BasicFacade
 //			FileUtilities.closeOutputFile();
 //		}
 
+		FileUtilities.createDirectory(targetDirectory + "/customViews/");
+		
 		generateAndroidTemplates(sourcePath + "/res/use2android/defaultdata/java", BASEPACKAGENAME, targetDirectory,
 				businessDirectory, businessLayerName, persistenceDirectory, persistenceLayerName, presentationDirectory,
 				presentationLayerName, utilsDirectory, utilsLayerName,
@@ -384,51 +386,57 @@ public class PrototypeGeneratorFacade extends BasicFacade
 			
 		for (MClass cls : getSystem().model().classes())
 		{
-			if(cls.isAnnotated() && cls.getAnnotation("domain") != null){
-				if (FileUtilities.openOutputFile(presentationDirectory + "/" + cls.name() , cls.name() + "Activity.java"))
-				{
-					VMvisitor.printActivity_ClassHeader(cls, presentationLayerName);
-	
-					FileUtilities.incIndent();
-	
-					VMvisitor.printActivity_Attributes(cls);
-										
-					VMvisitor.printActivity_UsefullMethods(cls);
-					
-					VMvisitor.printActivity_onSaveInstanceState(cls);
-					
-					VMvisitor.printActivity_onCreate(cls);
-					
-					VMvisitor.printActivity_onStart(cls);
-					
-					VMvisitor.printActivity_onResume(cls);
-					
-					VMvisitor.printActivity_onPause(cls);
-					
-					VMvisitor.printActivity_onBackPressed(cls);
-					
-					VMvisitor.printActivity_onDestroy(cls);
-					
-					VMvisitor.printActivity_onItemSelected(cls);
-					
-					VMvisitor.printActivity_onPrepareOptionsMenu(cls);
-					
-					VMvisitor.printActivity_onOptionsItemSelected(cls);
-					
-					VMvisitor.printActivity_onActivityResult(cls);
-					
-					VMvisitor.printActivity_onDetailOK(cls);
-					
-					VMvisitor.printActivity_onDetailCancel(cls);
-					
-					VMvisitor.printActivity_addToList(cls);
-					
-					VMvisitor.printActivity_propertyChange(cls);
-					
-					FileUtilities.decIndent();
-					FileUtilities.println("}");
-	
-					FileUtilities.closeOutputFile();
+			if(cls.isAnnotated() && cls.getAnnotation("domain") != null && (
+					cls.getAnnotation("list") != null ||
+					cls.getAnnotation("creation") != null ||
+					cls.getAnnotation("display") != null)){
+				
+				if(ModelUtilities.hasAssociations(cls) || cls.getAnnotation("StartingPoint") != null){
+					if (FileUtilities.openOutputFile(presentationDirectory + "/" + cls.name() , cls.name() + "Activity.java"))
+					{
+						VMvisitor.printActivity_ClassHeader(cls, presentationLayerName);
+		
+						FileUtilities.incIndent();
+		
+						VMvisitor.printActivity_Attributes(cls);
+											
+						VMvisitor.printActivity_UsefullMethods(cls);
+						
+						VMvisitor.printActivity_onSaveInstanceState(cls);
+						
+						VMvisitor.printActivity_onCreate(cls);
+						
+						VMvisitor.printActivity_onStart(cls);
+						
+						VMvisitor.printActivity_onResume(cls);
+						
+						VMvisitor.printActivity_onPause(cls);
+						
+						VMvisitor.printActivity_onBackPressed(cls);
+						
+						VMvisitor.printActivity_onDestroy(cls);
+						
+						VMvisitor.printActivity_onItemSelected(cls);
+						
+						VMvisitor.printActivity_onPrepareOptionsMenu(cls);
+						
+						VMvisitor.printActivity_onOptionsItemSelected(cls);
+						
+						VMvisitor.printActivity_onActivityResult(cls);
+						
+						VMvisitor.printActivity_onDetailOK(cls);
+						
+						VMvisitor.printActivity_onDetailCancel(cls);
+						
+						VMvisitor.printActivity_addToList(cls);
+						
+						VMvisitor.printActivity_propertyChange(cls);
+						
+						FileUtilities.decIndent();
+						FileUtilities.println("}");
+		
+						FileUtilities.closeOutputFile();
+					}
 				}
 				
 				if (FileUtilities.openOutputFile(presentationDirectory + "/" + cls.name() , cls.name() + "DetailFragment.java"))
@@ -459,6 +467,8 @@ public class PrototypeGeneratorFacade extends BasicFacade
 					
 					VMvisitor.printDetailFragment_VisibilityState(cls);
 					
+					VMvisitor.printDetailFragment_confirmActiveView(cls);
+					
 					VMvisitor.printDetailFragment_SetInputMethod(cls);
 					
 					VMvisitor.printDetailFragment_setViewDetailData(cls);
@@ -485,68 +495,71 @@ public class PrototypeGeneratorFacade extends BasicFacade
 					FileUtilities.closeOutputFile();
 				}
 				
-				if (FileUtilities.openOutputFile(presentationDirectory + "/" + cls.name() , cls.name() + "NavigationBarFragment.java"))
-				{
-					VMvisitor.printNavigationBarFragment_ClassHeader(cls, presentationLayerName);
+				if(ModelUtilities.hasAssociations(cls)){
+					if(	FileUtilities.openOutputFile(presentationDirectory + "/" + cls.name() , cls.name() + "NavigationBarFragment.java")){
+						VMvisitor.printNavigationBarFragment_ClassHeader(cls, presentationLayerName);
+		
+						FileUtilities.incIndent();
+		
+						VMvisitor.printNavigationBarFragment_Attributes(cls);
+						
+						VMvisitor.printNavigationBarFragment_DefaultConstructor(cls);
+						
+						VMvisitor.printNavigationBarFragment_onCreate(cls);
+						
+						VMvisitor.printNavigationBarFragment_onSaveInstanceState(cls);
+						
+						VMvisitor.printNavigationBarFragment_onDestroy(cls);
+						
+						VMvisitor.printNavigationBarFragment_onActivityCreated(cls);
+						
+						VMvisitor.printNavigationBarFragment_onAttach(cls);
+						
+						VMvisitor.printNavigationBarFragment_onCreateView(cls);
+						
+						VMvisitor.printNavigationBarFragment_onViewCreated(cls);
+						
+						VMvisitor.printNavigationBarFragment_VisibilityState(cls);
+						
+						VMvisitor.printNavigationBarFragment_setViewingObject(cls);
+						
+						VMvisitor.printNavigationBarFragment_refreshNavigationBar(cls);
+						
+						VMvisitor.printNavigationBarFragment_prepareView(cls);
+						
+						VMvisitor.printNavigationBarFragment_setNumberAssociation(cls);
+						
+						VMvisitor.printNavigationBarFragment_objectValidation(cls);
 	
-					FileUtilities.incIndent();
-	
-					VMvisitor.printNavigationBarFragment_Attributes(cls);
-					
-					VMvisitor.printNavigationBarFragment_DefaultConstructor(cls);
-					
-					VMvisitor.printNavigationBarFragment_onCreate(cls);
-					
-					VMvisitor.printNavigationBarFragment_onSaveInstanceState(cls);
-					
-					VMvisitor.printNavigationBarFragment_onDestroy(cls);
-					
-					VMvisitor.printNavigationBarFragment_onActivityCreated(cls);
-					
-					VMvisitor.printNavigationBarFragment_onAttach(cls);
-					
-					VMvisitor.printNavigationBarFragment_onCreateView(cls);
-					
-					VMvisitor.printNavigationBarFragment_onViewCreated(cls);
-					
-					VMvisitor.printNavigationBarFragment_VisibilityState(cls);
-					
-					VMvisitor.printNavigationBarFragment_setViewingObject(cls);
-					
-					VMvisitor.printNavigationBarFragment_refreshNavigationBar(cls);
-					
-					VMvisitor.printNavigationBarFragment_prepareView(cls);
-					
-					VMvisitor.printNavigationBarFragment_setNumberAssociation(cls);
-					
-					VMvisitor.printNavigationBarFragment_objectValidation(cls);
-
-					VMvisitor.printNavigationBarFragment_ScreenClickListeners(cls);
-					
-					VMvisitor.printNavigationBarFragment_BusinessListeners(cls);
-									
-					FileUtilities.decIndent();
-					FileUtilities.println("}");
-	
-					FileUtilities.closeOutputFile();
+						VMvisitor.printNavigationBarFragment_ScreenClickListeners(cls);
+						
+						VMvisitor.printNavigationBarFragment_BusinessListeners(cls);
+										
+						FileUtilities.decIndent();
+						FileUtilities.println("}");
+		
+						FileUtilities.closeOutputFile();
+					}
 				}
 				
-				if (FileUtilities.openOutputFile(presentationDirectory + "/" + cls.name() , cls.name() + "ListViewHolder.java"))
-				{
-					VMvisitor.printListViewHolder_ClassHeader(cls, presentationLayerName);
-	
-					FileUtilities.incIndent();
-	
-					VMvisitor.printListViewHolder_Attributes(cls);
-					
-					VMvisitor.printListViewHolder_ViewHolderInnerClass(cls);
-					
-					VMvisitor.printListViewHolder_RequiredMethods(cls);
-					
-					FileUtilities.decIndent();
-					FileUtilities.println("}");
-	
-					FileUtilities.closeOutputFile();
+				if(ModelUtilities.hasAssociations(cls)){
+					if (FileUtilities.openOutputFile(presentationDirectory + "/" + cls.name() , cls.name() + "ListViewHolder.java"))
+					{
+						VMvisitor.printListViewHolder_ClassHeader(cls, presentationLayerName);
+		
+						FileUtilities.incIndent();
+		
+						VMvisitor.printListViewHolder_Attributes(cls);
+						
+						VMvisitor.printListViewHolder_ViewHolderInnerClass(cls);
+						
+						VMvisitor.printListViewHolder_RequiredMethods(cls);
+						
+						FileUtilities.decIndent();
+						FileUtilities.println("}");
+		
+						FileUtilities.closeOutputFile();
+					}
 				}
 			}
 			
@@ -596,6 +609,8 @@ public class PrototypeGeneratorFacade extends BasicFacade
 		files.put("Utils", utilsLayerName);
 		files.put("WarningDialogFragment", utilsLayerName);
 		files.put("LauncherGridViewAdapter", basePackageName);
+		files.put("CustomTimePicker", basePackageName  + ".customViews");
+		files.put("TimePickerDialog", basePackageName + ".customViews");
 		
 		FileUtilities.createDirectory(utilsDirectory);
 		for(String file : files.keySet()){
@@ -615,6 +630,12 @@ public class PrototypeGeneratorFacade extends BasicFacade
 				FileUtilities.copyFile(sourceDirectory + "/" + file + ".txt", baseDirectory + "/" + file + ".java");
 				FileUtilities.replaceStringInFile(baseDirectory + "/" + file + ".java", "org.quasar.use2android.defaultdata.java", basePackageName);
 				currentFile = baseDirectory + "/" + file + ".java";
+			}
+			if(files.get(file).equals(basePackageName  + ".customViews")){
+				FileUtilities.copyFile(sourceDirectory + "/customViews/" + file + ".txt", baseDirectory + "/customViews/" + file + ".java");
+				FileUtilities.replaceStringInFile(baseDirectory + "/customViews/" + file + ".java", "org.quasar.use2android.defaultdata.java.customViews", basePackageName + ".customViews");
+				FileUtilities.replaceStringInFile(baseDirectory + "/customViews/" + file + ".java", "org.quasar.use2android.defaultdata.java", basePackageName);
+				currentFile = baseDirectory + "/customViews/" + file + ".java";
 			}
 
 			if(!currentFile.equals("")){
