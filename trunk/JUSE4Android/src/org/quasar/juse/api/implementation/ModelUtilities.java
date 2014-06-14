@@ -481,7 +481,7 @@ public class ModelUtilities
 		List<MClass> list = new ArrayList<MClass>();
 		for(MClass clazz : theClass.model().classes())
 			if(theClass != clazz && clazz.isAnnotated() && clazz.getAnnotation("domain") != null)
-				for(MAttribute att : clazz.attributes())
+				for(MAttribute att : clazz.allAttributes())
 					if(att.type().isObjectType() && att.type().toString().equals(theClass.name()))
 						list.add(clazz);
 		return list;

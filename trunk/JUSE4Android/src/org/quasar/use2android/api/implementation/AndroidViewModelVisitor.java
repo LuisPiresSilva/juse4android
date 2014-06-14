@@ -2238,9 +2238,9 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 			for (MAttribute att : finalAttributes)
 	//			if(att.name() != "ID")
 				if(att.type().isObjectType())
-					println("private " + att.type().toString() + "DetailFragment " + att.name().toLowerCase() + "View;");
+					println("private " + att.type().toString() + "DetailFragment " + att.name() + "View;");
 				else
-					println("private " + AndroidTypes.androidPrimitiveTypeToWriteWidget(att.type(), AndroidWidgetPreference.NORMAL) + " " + att.name().toLowerCase() + "View;");
+					println("private " + AndroidTypes.androidPrimitiveTypeToWriteWidget(att.type(), AndroidWidgetPreference.NORMAL) + " " + att.name() + "View;");
 		}else if(ModelUtilities.isSpecialPrimitive(theClass)){
 			println("private " + AndroidTypes.androidPrimitiveTypeToWriteWidget(theClass.type(), AndroidWidgetPreference.NORMAL) + " " + theClass.name().toLowerCase() + "View;");
 		}
@@ -2547,37 +2547,37 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 		println("{");
 		FileUtilities.incIndent();
 			println("super.onViewCreated(view, savedInstanceState);");
-			println("if(savedInstanceState != null)");
-			println("{");
-			FileUtilities.incIndent();
-				if(ModelUtilities.isAssociativeClass(theClass)){
-					for(AssociationInfo ass : AssociationInfo.getAssociationsInfo(theClass))
-						if(ass.getKind() == AssociationKind.ASSOCIATIVE2MEMBER){
-							println("fragment" + ass.getTargetAEClass().name() + " = getChildFragmentManager().findFragmentById(R.id." + ass.getTargetAEClass().name().toLowerCase() + "_detail_container);");
-							println("if(fragment" + ass.getTargetAEClass().name() + " == null)");
-							FileUtilities.incIndent();
-								println("fragment" + ass.getTargetAEClass().name() + " = new " + ass.getTargetAEClass().name() + "DetailFragment();");
-							FileUtilities.decIndent();
-						}
-				}
-//			 	Zona nova - START
-			 	if(!theClass.isAbstract()){
-			 		List<MAttribute> finalAttributes = getDetailViewAttributes(theClass, true, true);			 						
-			 		for (MAttribute att : finalAttributes)
-			 			if(att.type().isObjectType()){
-			 				println(att.name() + "View" + " = (" + att.type().toString() + "DetailFragment) getChildFragmentManager().findFragmentById(R.id." + att.type().toString().toLowerCase() + "_detail_container);");
-							println("if(" + att.name() + "View" + " == null)");
-							FileUtilities.incIndent();
-								println(att.name() + "View" + " = new " + att.type().toString() + "DetailFragment();");
-							FileUtilities.decIndent();
-			 			}
-			 	}
-//			 	Zona nova - END
-			FileUtilities.decIndent();
-			println("}");
-			println("else");
-			println("{");
-			FileUtilities.incIndent();
+//			println("if(savedInstanceState != null)");
+//			println("{");
+//			FileUtilities.incIndent();
+//				if(ModelUtilities.isAssociativeClass(theClass)){
+//					for(AssociationInfo ass : AssociationInfo.getAssociationsInfo(theClass))
+//						if(ass.getKind() == AssociationKind.ASSOCIATIVE2MEMBER){
+//							println("fragment" + ass.getTargetAEClass().name() + " = getChildFragmentManager().findFragmentById(R.id." + ass.getTargetAEClass().name().toLowerCase() + "_detail_container);");
+//							println("if(fragment" + ass.getTargetAEClass().name() + " == null)");
+//							FileUtilities.incIndent();
+//								println("fragment" + ass.getTargetAEClass().name() + " = new " + ass.getTargetAEClass().name() + "DetailFragment();");
+//							FileUtilities.decIndent();
+//						}
+//				}
+////			 	Zona nova - START
+//			 	if(!theClass.isAbstract()){
+//			 		List<MAttribute> finalAttributes = getDetailViewAttributes(theClass, true, true);			 						
+//			 		for (MAttribute att : finalAttributes)
+//			 			if(att.type().isObjectType()){
+//			 				println(att.name() + "View" + " = (" + att.type().toString() + "DetailFragment) getChildFragmentManager().findFragmentById(R.id." + att.type().toString().toLowerCase() + "_detail_container);");
+//							println("if(" + att.name() + "View" + " == null)");
+//							FileUtilities.incIndent();
+//								println(att.name() + "View" + " = new " + att.type().toString() + "DetailFragment();");
+//							FileUtilities.decIndent();
+//			 			}
+//			 	}
+////			 	Zona nova - END
+//			FileUtilities.decIndent();
+//			println("}");
+//			println("else");
+//			println("{");
+//			FileUtilities.incIndent();
 				if(!theClass.isAbstract()){
 			 		List<MAttribute> finalAttributes = getDetailViewAttributes(theClass, true, true);			 						
 			 		for (MAttribute att : finalAttributes)
@@ -2649,8 +2649,8 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 					println("}");
 				}
 //			 	Zona nova - END
-			FileUtilities.decIndent();
-			println("}");
+//			FileUtilities.decIndent();
+//			println("}");
 			
 		FileUtilities.decIndent();
 		println("}");
@@ -2676,8 +2676,8 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 						println("setViewDetailData();");
 					if(!theClass.isAbstract())
 						for(MAttribute att : theClass.allAttributes())
-							if(att.type().isObjectType())
-								println(att.name() + "View.replaceObject(ARG_VIEW, " + theClass.name().toLowerCase() + "." + att.name().toLowerCase() + "());");
+							if(att.type().isObjectType() && att.type() != theClass.type())
+								println(att.name() + "View.replaceObject(ARG_VIEW, " + theClass.name().toLowerCase() + "." + att.name() + "());");
 					FileUtilities.decIndent();
 					println("}");
 					if(!theClass.isAbstract()){
@@ -2687,8 +2687,8 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 							println("fragment.onSaveInstanceState(UtilNavigate.setFragmentBundleArguments(ARG_VIEW_EDIT, new" + theClass.name() + ".ID()));");
 							println("setViewNewOrEditData();");
 							for(MAttribute att : theClass.allAttributes())
-								if(att.type().isObjectType())
-									println(att.name() + "View.replaceObject(ARG_VIEW, " + theClass.name().toLowerCase() + "." + att.name().toLowerCase() + "());");
+								if(att.type().isObjectType() && att.type() != theClass.type())
+									println(att.name() + "View.replaceObject(ARG_VIEW, " + theClass.name().toLowerCase() + "." + att.name() + "());");
 						FileUtilities.decIndent();
 						println("}");
 						
@@ -2779,7 +2779,7 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 					for (MAttribute att : finalAttributes)
 		//				if(att.name() != "ID")
 						if(!att.type().isObjectType())
-							println(att.name().toLowerCase() + "View = (" + AndroidTypes.androidPrimitiveTypeToWriteWidget(att.type(), AndroidWidgetPreference.NORMAL) + ") activeView.findViewById(R.id." + attributeBaseAncestor(theClass, att).name().toLowerCase() + "_insertupdate_" + att.name().toLowerCase() + "_value);");
+							println(att.name() + "View = (" + AndroidTypes.androidPrimitiveTypeToWriteWidget(att.type(), AndroidWidgetPreference.NORMAL) + ") activeView.findViewById(R.id." + attributeBaseAncestor(theClass, att).name().toLowerCase() + "_insertupdate_" + att.name().toLowerCase() + "_value);");
 			}else{
 				println(theClass.name().toLowerCase() + "View = (" + AndroidTypes.androidPrimitiveTypeToWriteWidget(theClass.type(), AndroidWidgetPreference.NORMAL) + ") activeView.findViewById(R.id." + theClass.name().toLowerCase() + "_insertupdate_" + theClass.name().toLowerCase() + "_value);");
 			}
@@ -2880,11 +2880,11 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 									println("if(" + theClass.name().toLowerCase() + "." + att.name() + "() != null" + ")");
 									println("{");
 									FileUtilities.incIndent();
-										println(att.name().toLowerCase() + "View." + AndroidTypes.androidWidgetContentSetter(AndroidWidgetsTypes.WRITE_WIDGET, att.type(), theClass.name().toLowerCase() + "." + att.name() + "()", AndroidWidgetPreference.NORMAL) + ";");
+										println(att.name() + "View." + AndroidTypes.androidWidgetContentSetter(AndroidWidgetsTypes.WRITE_WIDGET, att.type(), theClass.name().toLowerCase() + "." + att.name() + "()", AndroidWidgetPreference.NORMAL) + ";");
 									FileUtilities.decIndent();
 									println("}");
 								}else
-									println(att.name().toLowerCase() + "View." + AndroidTypes.androidWidgetContentSetter(AndroidWidgetsTypes.WRITE_WIDGET, att.type(), theClass.name().toLowerCase() + "." + att.name() + "()", AndroidWidgetPreference.NORMAL) + ";");
+									println(att.name() + "View." + AndroidTypes.androidWidgetContentSetter(AndroidWidgetsTypes.WRITE_WIDGET, att.type(), theClass.name().toLowerCase() + "." + att.name() + "()", AndroidWidgetPreference.NORMAL) + ";");
 							}
 					}
 				FileUtilities.decIndent();
@@ -2974,9 +2974,8 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 								print(", ");
 							}
 							print("temp_" + AllAttributes.get(i).name());
-						}
-	//					else if(AllAttributes.get(i).name() != "ID")
-	//						print(defaultValueType(AllAttributes.get(i).type()));
+						}else
+							print(JavaTypes.javaDummyValue(AllAttributes.get(i).type()) + ", ");
 						
 					if (finalAttributes.contains(AllAttributes.get(i)) && i < AllAttributes.size() - 1 && AllAttributes.get(i).name() != "ID")
 						print(", ");
@@ -3004,7 +3003,7 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 	@Override
 	public void printDetailFragment_ActionViewEdit(MClass theClass) {
 		if(!theClass.isAbstract()){
-			println("public boolean ActionViewEdit()");
+			println("public " + theClass.name() + " ActionViewEdit()");
 			println("{");
 			FileUtilities.incIndent();
 				println("if (" + theClass.name().toLowerCase() + " != null)");
@@ -3016,17 +3015,18 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 		//				--------------*************** CODIGO NOVO - END  ******************* ------------------
 						for (MAttribute att : finalAttributes)
 							if(att.type().isObjectType())
-								println(att.name() + "View.ActionViewEdit();");
-							else
+								println(att.name() + "View.ActionViewEdit().setID();");
+							else{
+								println(JavaInput.inputTemporaryVariables(att.type(), "temp_" + att.name(), AndroidTypes.androidInputWidgetContentGetter(AndroidWidgetsTypes.WRITE_WIDGET, att, "View", AndroidWidgetPreference.NORMAL, ModelUtilities.isSpecialPrimitive(theClass))));
 								println(JavaInput.inputComparatorConditionSetter(att, "temp_" + att.name(), theClass.name().toLowerCase() + "." + att.name() + "()", theClass.name().toLowerCase() + ".set" + capitalize(att.name()), AndroidTypes.androidInputWidgetContentGetter(AndroidWidgetsTypes.WRITE_WIDGET, att, "View", AndroidWidgetPreference.NORMAL, ModelUtilities.isSpecialPrimitive(theClass)), getIndentSpace(), ModelUtilities.isSpecialPrimitive(theClass)));
-					
-					println("return true;");
+							}
+					println("return " + theClass.name().toLowerCase() + ";");
 				FileUtilities.decIndent();
 				println("}");
 				println("else");
 				println("{");
 				FileUtilities.incIndent();
-					println("return false;");
+					println("return null;");
 				FileUtilities.decIndent();
 				println("}");
 			FileUtilities.decIndent();
@@ -3097,7 +3097,7 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 					println("if(getArguments().containsKey(ARG_VIEW_EDIT))");
 					println("{");
 					FileUtilities.incIndent();
-						println("if(ActionViewEdit())");
+						println("if(ActionViewEdit() != null)");
 		 				FileUtilities.incIndent();
 		 					println("mCallbacks.onDetailOK(false, " + theClass.name().toLowerCase() + ");");
 		 				FileUtilities.decIndent();
@@ -3456,7 +3456,7 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 				if(association.getSourceAEClass() == theClass)
 					println(targetRole + "View = (View) getActivity().findViewById(R.id." + theClass.name().toLowerCase() + "_navigationbar_association_" + targetRole.toLowerCase() + ");");
 				else
-					println(targetRole + "View = (View) getActivity().findViewById(R.id." + associationTargetBaseAncestor(theClass, association).name().toLowerCase() + "_navigationbar_association_" + targetRole + ");");
+					println(targetRole + "View = (View) getActivity().findViewById(R.id." + associationTargetBaseAncestor(theClass, association).name().toLowerCase() + "_navigationbar_association_" + targetRole.toLowerCase() + ");");
 				println(targetRole + "View.setOnClickListener(ClickListener);");
 				println(targetRole + "View.setOnLongClickListener(LongClickListener);");
 				println();
@@ -3608,7 +3608,7 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 					if(association.getSourceAE().cls() == theClass)
 						println("number_objects = (TextView) rootView.findViewById(R.id." + theClass.name().toLowerCase() + "_navigationbar_association_" + targetRole.toLowerCase() + "_numberobjects);");
 					else
-						println("number_objects = (TextView) rootView.findViewById(R.id." + associationTargetBaseAncestor(theClass, association).name().toLowerCase() + "_navigationbar_association_" + targetRole + "_numberobjects);");
+						println("number_objects = (TextView) rootView.findViewById(R.id." + associationTargetBaseAncestor(theClass, association).name().toLowerCase() + "_navigationbar_association_" + targetRole.toLowerCase() + "_numberobjects);");
 					
 					if(association.getKind() != AssociationKind.ASSOCIATIVE2MEMBER && association.getTargetAE().isCollection()){
 						println("if(" + theClass.name().toLowerCase() + "." + targetRole + "().isEmpty())");
@@ -3683,7 +3683,7 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 					if(association.getSourceAE().cls() == theClass)
 						println("number_objects = (TextView) rootView.findViewById(R.id." + theClass.name().toLowerCase() + "_navigationbar_association_" + targetRole.toLowerCase() + "_numberobjects);");
 					else
-						println("number_objects = (TextView) rootView.findViewById(R.id." + associationTargetBaseAncestor(theClass, association).name().toLowerCase() + "_navigationbar_association_" + targetRole + "_numberobjects);");
+						println("number_objects = (TextView) rootView.findViewById(R.id." + associationTargetBaseAncestor(theClass, association).name().toLowerCase() + "_navigationbar_association_" + targetRole.toLowerCase() + "_numberobjects);");
 					
 					println("prepareView(" + targetRole + "View, false);");
 					println("setNumberAssociation(number_objects, 0);");
@@ -4481,26 +4481,26 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 							switch (ass.getKind())
 							{
 								case ASSOCIATIVE2MEMBER:
-									println("if(((" + theClass.name() + ") object)." + ass.getTargetAE().nameAsRolename().toLowerCase() + "() == null)");
+									println("if(((" + theClass.name() + ") object)." + ass.getTargetAE().nameAsRolename() + "() == null)");
 									FileUtilities.incIndent();
-										println("message += \"This " + theClass.name() + " must have at least 1 " + ass.getTargetAE().nameAsRolename().toLowerCase() + "\\n\";");
+										println("message += \"This " + theClass.name() + " must have at least 1 " + ass.getTargetAE().nameAsRolename() + "\\n\";");
 									FileUtilities.decIndent();
 									break;
 								case MEMBER2ASSOCIATIVE:
 									if(!upperRange.equals("-1") && !upperRange.equals("1")){
-										println("if(((" + theClass.name() + ") object)." + ass.getTargetAE().nameAsRolename().toLowerCase() + "().size() > " + upperRange + ")");
+										println("if(((" + theClass.name() + ") object)." + ass.getTargetAE().nameAsRolename() + "().size() > " + upperRange + ")");
 										FileUtilities.incIndent();
-											println("message += \"This " + theClass.name() + " can only have a maximun of " + upperRange + " " + ass.getTargetAE().nameAsRolename().toLowerCase() + "\\n\";");
+											println("message += \"This " + theClass.name() + " can only have a maximun of " + upperRange + " " + ass.getTargetAE().nameAsRolename() + "\\n\";");
 										FileUtilities.decIndent();
 									}
 									if(!lowerRange.equals("0")){
 										if(lowerRange.equals("1") && upperRange.equals("1"))
-											println("if(((" + theClass.name() + ") object)." + ass.getTargetAE().nameAsRolename().toLowerCase() + "() == null)");
+											println("if(((" + theClass.name() + ") object)." + ass.getTargetAE().nameAsRolename() + "() == null)");
 										else
-											println("if(((" + theClass.name() + ") object)." + ass.getTargetAE().nameAsRolename().toLowerCase() + "().size() < " + lowerRange + ")");
+											println("if(((" + theClass.name() + ") object)." + ass.getTargetAE().nameAsRolename() + "().size() < " + lowerRange + ")");
 
 										FileUtilities.incIndent();
-											println("message += \"This " + theClass.name() + " must have at least " + lowerRange + " " + ass.getTargetAE().nameAsRolename().toLowerCase() + "\\n\";");
+											println("message += \"This " + theClass.name() + " must have at least " + lowerRange + " " + ass.getTargetAE().nameAsRolename() + "\\n\";");
 										FileUtilities.decIndent();
 											
 									}
@@ -4525,41 +4525,41 @@ public class AndroidViewModelVisitor extends ViewModelVisitor{
 //									}
 									break;
 								case ONE2ONE:
-									println("message += \"This " + theClass.name() + " must have at least " + lowerRange + " " + ass.getTargetAE().nameAsRolename().toLowerCase() + "\\n\";");
+									println("message += \"This " + theClass.name() + " must have at least " + lowerRange + " " + ass.getTargetAE().nameAsRolename() + "\\n\";");
 									break;
 								case ONE2MANY:
 									if(!upperRange.equals("-1") && !upperRange.equals("1")){
-										println("if(((" + theClass.name() + ") object)." + ass.getTargetAE().nameAsRolename().toLowerCase() + "().size() > " + upperRange + ")");
+										println("if(((" + theClass.name() + ") object)." + ass.getTargetAE().nameAsRolename() + "().size() > " + upperRange + ")");
 										FileUtilities.incIndent();
-											println("message += \"This " + theClass.name() + " can only have a maximun of " + upperRange + " " + ass.getTargetAE().nameAsRolename().toLowerCase() + "\\n\";");
+											println("message += \"This " + theClass.name() + " can only have a maximun of " + upperRange + " " + ass.getTargetAE().nameAsRolename() + "\\n\";");
 										FileUtilities.decIndent();
 									}
 									if(!lowerRange.equals("0")){
 										if(lowerRange.equals("1") && upperRange.equals("1"))
-											println("if(((" + theClass.name() + ") object)." + ass.getTargetAE().nameAsRolename().toLowerCase() + "() == null)");
+											println("if(((" + theClass.name() + ") object)." + ass.getTargetAE().nameAsRolename() + "() == null)");
 										else
-											println("if(((" + theClass.name() + ") object)." + ass.getTargetAE().nameAsRolename().toLowerCase() + "().size() < " + lowerRange + ")");
+											println("if(((" + theClass.name() + ") object)." + ass.getTargetAE().nameAsRolename() + "().size() < " + lowerRange + ")");
 
 										FileUtilities.incIndent();
-											println("message += \"This " + theClass.name() + " must have at least " + lowerRange + " " + ass.getTargetAE().nameAsRolename().toLowerCase() + "\\n\";");
+											println("message += \"This " + theClass.name() + " must have at least " + lowerRange + " " + ass.getTargetAE().nameAsRolename() + "\\n\";");
 										FileUtilities.decIndent();
 											
 									}									break;
 								case MANY2MANY:
 									if(!upperRange.equals("-1") && !upperRange.equals("1")){
-										println("if(((" + theClass.name() + ") object)." + ass.getTargetAE().nameAsRolename().toLowerCase() + "().size() > " + upperRange + ")");
+										println("if(((" + theClass.name() + ") object)." + ass.getTargetAE().nameAsRolename() + "().size() > " + upperRange + ")");
 										FileUtilities.incIndent();
-											println("message += \"This " + theClass.name() + " can only have a maximun of " + upperRange + " " + ass.getTargetAE().nameAsRolename().toLowerCase() + "\\n\";");
+											println("message += \"This " + theClass.name() + " can only have a maximun of " + upperRange + " " + ass.getTargetAE().nameAsRolename() + "\\n\";");
 										FileUtilities.decIndent();
 									}
 									if(!lowerRange.equals("0")){
 										if(lowerRange.equals("1") && upperRange.equals("1"))
-											println("if(((" + theClass.name() + ") object)." + ass.getTargetAE().nameAsRolename().toLowerCase() + "() == null)");
+											println("if(((" + theClass.name() + ") object)." + ass.getTargetAE().nameAsRolename() + "() == null)");
 										else
-											println("if(((" + theClass.name() + ") object)." + ass.getTargetAE().nameAsRolename().toLowerCase() + "().size() < " + lowerRange + ")");
+											println("if(((" + theClass.name() + ") object)." + ass.getTargetAE().nameAsRolename() + "().size() < " + lowerRange + ")");
 
 										FileUtilities.incIndent();
-											println("message += \"This " + theClass.name() + " must have at least " + lowerRange + " " + ass.getTargetAE().nameAsRolename().toLowerCase() + "\\n\";");
+											println("message += \"This " + theClass.name() + " must have at least " + lowerRange + " " + ass.getTargetAE().nameAsRolename() + "\\n\";");
 										FileUtilities.decIndent();
 											
 									}									break;

@@ -278,7 +278,7 @@ public class AndroidTypes {
 			widget = "error";
 		switch(widget){
 			case "EditText":
-				return att.name().toLowerCase() + variable + ".getText().toString()";
+				return att.name() + variable + ".getText().toString()";
 			case "DatePicker":
 				if(att.name().toLowerCase().equals("day"))
 					return att.owner().name().toLowerCase() + variable + ".getDayOfMonth()";
@@ -287,10 +287,10 @@ public class AndroidTypes {
 			case "CustomTimePicker":
 				return att.owner().name().toLowerCase() + variable + ".getCurrent" + FileUtilities.capitalize(att.name()) + "()";
 			case "CheckBox":
-				return att.name().toLowerCase() + variable + ".isChecked()";
+				return att.name() + variable + ".isChecked()";
 			//for this case we only work with the position since in multi-languages the values may differ - this way we avoid multiple code enums
 			case "Spinner":
-				return att.name().toLowerCase() + variable + ".getSelectedItemPosition()";
+				return att.name() + variable + ".getSelectedItemPosition()";
 //			case "others":
 //				return something;
 			default:
