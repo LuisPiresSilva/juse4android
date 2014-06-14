@@ -279,6 +279,9 @@ public class AndroidPersistenceVisitor extends PersistenceVisitor{
 								updateDepth = 2;
 					}	
 				}
+				for(MAttribute att : theClass.allAttributes())
+					if(att.type().isObjectType())
+						updateDepth = 2;
 				println("configuration.common().objectClass(" + theClass.name() + ".class).objectField(\"ID\").indexed(true);");
 				println("configuration.common().objectClass(" + theClass.name() + ".class).updateDepth(" + updateDepth + ");");
 			}
@@ -310,6 +313,9 @@ public class AndroidPersistenceVisitor extends PersistenceVisitor{
 								updateDepth = 2;
 					}	
 				}
+				for(MAttribute att : theClass.allAttributes())
+					if(att.type().isObjectType())
+						updateDepth = 2;
 				println("configuration.common().objectClass(" + theClass.name() + ".class).objectField(\"ID\").indexed(true);");
 				println("configuration.common().objectClass(" + theClass.name() + ".class).updateDepth(" + updateDepth + ");");
 			}

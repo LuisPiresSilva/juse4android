@@ -140,11 +140,11 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 			else{
 				if(isSuperClass(theClass)){
 					if(attribute.getType().isEnum())
-						println("private String " + attribute.getName() + ";");
-					else if(attribute.getName().equals("ID"))
-						println("protected " + JavaTypes.javaInterfaceType(attribute.getType()) + " " + attribute.getName() + ";");
+						println("protected String " + attribute.getName() + ";");
+//					else if(attribute.getName().equals("ID"))
+//						println("protected " + JavaTypes.javaInterfaceType(attribute.getType()) + " " + attribute.getName() + ";");
 					else
-						println("private " + JavaTypes.javaInterfaceType(attribute.getType()) + " " + attribute.getName() + ";");
+						println("protected " + JavaTypes.javaInterfaceType(attribute.getType()) + " " + attribute.getName() + ";");
 				}else
 					if(attribute.getType().isEnum())
 						println("private String " + attribute.getName() + ";");
@@ -441,11 +441,15 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 			if(inheritedUniqueAttributes.contains(uniqueAttributes.get(i)))
 				if(uniqueAttributes.get(i).getKind() == AssociationKind.ASSOCIATIVE2MEMBER)
 					print(uniqueAttributes.get(i).getName() + "() != null ? " + uniqueAttributes.get(i).getName() + "().ID() : null");
+				else if(uniqueAttributes.get(i).getType().isObjectType())
+					print(uniqueAttributes.get(i).getName() + ".ID()");
 				else
 					print(uniqueAttributes.get(i).getName() + "()");
 			else
 				if(uniqueAttributes.get(i).getKind() == AssociationKind.ASSOCIATIVE2MEMBER)
 					print(uniqueAttributes.get(i).getName() + " != null ? " + uniqueAttributes.get(i).getName() + ".ID() : null");
+				else if(uniqueAttributes.get(i).getType().isObjectType())
+					print(uniqueAttributes.get(i).getName() + ".ID()");
 				else
 					print(uniqueAttributes.get(i).getName());
 			if(i < uniqueAttributes.size() - 1)
@@ -2250,21 +2254,27 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 				println(theClass.name() + " object = Database.get(" + theClass.name() + ".class, " + theClass.name().toLowerCase() + ".ID());");
 				println("int oldID = " + theClass.name().toLowerCase() + ".ID();");
 				println("object.setID();");
-				println("if(Database.get(" + theClass.name() + ".class, object.ID()) == null)");
-				println("{");
+				if(!ModelUtilities.isAssociativeClass(theClass)){
+					println("if(Database.get(" + theClass.name() + ".class, object.ID()) == null)");
+					println("{");
 					incIndent();
+				}
+					
 					println("object.checkModelRestrictions();");
 					println("object.checkRestrictions();");
 					println("");
 					println("Transactions.getSession().store(object);");
 					println("Transactions.AddCommand(new Command(getAccess(), CommandType.UPDATE, CommandTargetLayer.DATABASE, " + "oldID, " + theClass.name().toLowerCase() + ", object, null, 0, null, null));");
 					println("Transactions.AddCommand(new Command(getAccess(), CommandType.UPDATE, CommandTargetLayer.VIEW, " + "oldID, " + theClass.name().toLowerCase() + ", object, null, 0, null, null));");
+					
+				if(!ModelUtilities.isAssociativeClass(theClass)){
 					decIndent();
-				println("}else{");
-					incIndent();
-					println("Transactions.CancelTransaction(\"Failed in Edit\", \"this " + theClass.name() + " already exists\");");
-					decIndent();
-				println("}");
+					println("}else{");
+						incIndent();
+						println("Transactions.CancelTransaction(\"Failed in Edit\", \"this " + theClass.name() + " already exists\");");
+						decIndent();
+					println("}");
+				}
 				decIndent();
 			println("}catch(Exception e){");
 			incIndent();
@@ -3572,6 +3582,9 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 						updateDepth = 2;
 			}	
 		}
+		for(MAttribute att : theClass.allAttributes())
+			if(att.type().isObjectType())
+				updateDepth = 2;
 		
 		println("configuration.common().objectClass(" + theClass.name() + ".class).objectField(\"ID\").indexed(true);");
 		println("configuration.common().objectClass(" + theClass.name() + ".class).updateDepth(" + updateDepth + ");");
@@ -3590,6 +3603,9 @@ public class AndroidBusinessVisitor extends BusinessVisitor
 						updateDepth = 2;
 			}	
 		}
+		for(MAttribute att : theClass.allAttributes())
+			if(att.type().isObjectType())
+				updateDepth = 2;
 		println("configuration.common().objectClass(" + theClass.name() + ".class).objectField(\"ID\").indexed(true);");
 		println("configuration.common().objectClass(" + theClass.name() + ".class).updateDepth(" + updateDepth + ");");
 		closeMethodForInput();

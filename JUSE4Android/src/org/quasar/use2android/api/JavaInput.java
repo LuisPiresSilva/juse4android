@@ -111,20 +111,30 @@ public class JavaInput {
 			oclType = att.type();	
 		
 		if (oclType.isInteger()){
-			outPutCode.append("int " + newVariableName + " = Integer.parseInt(" + variableInputCode + ");\n");
-			outPutCode.append(indentLevel + "if (" + attributeGetter + " != " + newVariableName + ")\n");
+//			outPutCode.append("int " + newVariableName + " = Integer.parseInt(" + variableInputCode + ");\n");
+			outPutCode.append("if (" + attributeGetter + " != " + newVariableName + ")\n");
 			outPutCode.append(indentLevel + "\t" + attributeSetter + "(" + newVariableName + ");");
 		}
 		if (oclType.isReal()){
-			outPutCode.append("double " + newVariableName + " = Double.parseDouble(" + variableInputCode + ");\n");
-			outPutCode.append(indentLevel + "if (" + attributeGetter + " != " + newVariableName + ")\n");
+//			outPutCode.append("double " + newVariableName + " = Double.parseDouble(" + variableInputCode + ");\n");
+			outPutCode.append("if (" + attributeGetter + " != " + newVariableName + ")\n");
 			outPutCode.append(indentLevel + "\t" + attributeSetter + "(" + newVariableName + ");");
 		}
-//		if (oclType.isBoolean())
-//			outPutCode.append("boolean");
+		if (oclType.isBoolean()){
+//			outPutCode.append("boolean " + newVariableName + " = " + variableInputCode + ";\n");
+			outPutCode.append("if (" + attributeGetter + " != " + newVariableName + ")\n");
+			outPutCode.append(indentLevel + "\t" + attributeSetter + "(" + newVariableName + ");");
+		}
+
+		if (oclType.isEnum()){
+			outPutCode.append("if (" + attributeGetter + " != " + newVariableName + ")\n");
+			outPutCode.append(indentLevel + "\t" + attributeSetter + "(" + newVariableName + ");");
+			
+		}
+		
 		if (oclType.isString()){
-			outPutCode.append("String " + newVariableName + " = " + variableInputCode + ";\n");
-			outPutCode.append(indentLevel + "if (!" + attributeGetter + ".equals(" + variableInputCode + "))\n");
+//			outPutCode.append("String " + newVariableName + " = " + variableInputCode + ";\n");
+			outPutCode.append("if (!" + attributeGetter + ".equals(" + variableInputCode + "))\n");
 			outPutCode.append(indentLevel + "\t" + attributeSetter + "(" + newVariableName + ");");
 		}
 		//for this case since we work with component based ui we believe that the date already comes in the right format
@@ -133,7 +143,7 @@ public class JavaInput {
 //			outPutCode.append("Date " + newVariableName + " = new Date(" + variableInputCode + ");\n");
 //			outPutCode.append(indentLevel + "if (" + attributeGetter + ".compareTo(" + newVariableName + ") != 0)\n");
 //			outPutCode.append(indentLevel + "\t" + attributeSetter + "(" + newVariableName + ");");
-			outPutCode.append("int " + newVariableName + " = " + variableInputCode + ";\n");
+			outPutCode.append(newVariableName + " = " + variableInputCode + ";\n");
 			outPutCode.append(indentLevel + "if (" + attributeGetter + " != " + newVariableName + ")\n");
 			outPutCode.append(indentLevel + "\t" + attributeSetter + "(" + newVariableName + ");");
 

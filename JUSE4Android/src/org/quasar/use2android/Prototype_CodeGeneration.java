@@ -18,7 +18,7 @@ public final class Prototype_CodeGeneration
 {
 	//note: change the RUN_JAR boolean to false if working in a java environment (i.e. this class is the main class)
 	//change it to true before exporting/creating the executable jar file
-	private static boolean	RUN_JAR = false;
+	private static boolean	RUN_JAR = true;
 	
 	private static String	USE_PROJECT = "USE3.0.6";
 	private static String	JUSE4ANDROIDPROJECT = "JUSE4Android";
@@ -30,8 +30,8 @@ public final class Prototype_CodeGeneration
 	private static String	SOURCE_WORKSPACE	= "";
 	private static String	TARGET_WORKSPACE	= "C:\\D\\WorkSpace\\Eclipse mestrado";
 	
-	private static String	AndroidProjectName	= "LeiloesAndroid2";
-	private static String	ServerProjectName	= "LeiloesServer";
+	private static String	AndroidProjectName	= "RoyalAndLoyalAndroid";
+	private static String	ServerProjectName	= "RoyalAndLoyalServer";
 	
 	private final static String	BUSINESSLAYER_NAME		= "businessLayer";
 	private final static String	PRESENTATIONLAYER_NAME	= "presentationLayer";
@@ -42,12 +42,12 @@ public final class Prototype_CodeGeneration
 	private final static String	DB4O_CS_JAR			= "db4o-8.0.249.16098-cs-java5.jar";
 	private final static String	DB4O_OPTIONAL_JAR	= "db4o-8.0.249.16098-optional-java5.jar";
 	
-	private static String	MODEL_DIRECTORY		= "C:\\D\\WorkSpace\\DropBox\\Dropbox_Mestrado\\Dropbox\\LuisSilva_ISCTE\\Models specification-files\\Leiloes";
-	private static String	MODEL_FILE			= "Leiloes.use";
+	private static String	MODEL_DIRECTORY		= "C:\\D\\WorkSpace\\DropBox\\Dropbox_Mestrado\\Dropbox\\LuisSilva_ISCTE\\Models specification-files\\RoyalAndLoyal";
+	private static String	MODEL_FILE			= "RoyalAndLoyal.use";
 	private static String	TARGET_PACKAGE 		= "org.quasar.";
 	
 //	Server Information
-	private static String	DATABASE	= "Leiloes";
+	private static String	DATABASE	= "RoyalAndLoyal";
 	private static String	USER		= "db4o";
 	private static String	PASS		= "db4o";
 	private static String	PORT 		= "4444";	
@@ -107,7 +107,7 @@ public final class Prototype_CodeGeneration
 		
 		if(args.length > 0 && !args[0].isEmpty() && !args[1].isEmpty()){
 			try {
-				TARGET_WORKSPACE		= URLDecoder.decode(args[0], "utf-8");
+				TARGET_WORKSPACE	= URLDecoder.decode(args[0], "utf-8");
 				MODEL_DIRECTORY = URLDecoder.decode(args[1].substring(0 ,args[1].lastIndexOf("\\")), "utf-8");
 				MODEL_FILE = URLDecoder.decode(args[1].substring(args[1].lastIndexOf("\\") + 1, args[1].length()), "utf-8");
 			} catch (UnsupportedEncodingException e) {
