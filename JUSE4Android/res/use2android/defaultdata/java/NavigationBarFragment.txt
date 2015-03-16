@@ -1,8 +1,0 @@
-package org.quasar.use2android.defaultdata.java;
-
-
-public interface NavigationBarFragment extends FragmentMethods{
-
-	public void setViewingObject(Object object);
-}
-

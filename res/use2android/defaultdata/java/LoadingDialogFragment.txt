@@ -1,0 +1,7 @@
+package org.quasar.use2android.defaultdata.java;
+
+import android.app.DialogFragment;
+
+public class LoadingDialogFragment extends DialogFragment{
+
+}

@@ -1,7 +1,0 @@
-package org.quasar.use2android.defaultdata.java;
-
-public interface PropertyChangeListener extends java.util.EventListener{
-
-	public void propertyChange(PropertyChangeEvent propertyChangeEvent);
-
-}
