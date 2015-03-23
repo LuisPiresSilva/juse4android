@@ -52,4 +52,13 @@ In order to run JUSE4Android java is required. It can be used as a java project 
 all other fields can be left in blank.
 
 ## How to use
+In order to just check an generated example you can, as mentioned previously, download the zip file and execute the JUSE4Android.jar file. As input you can use the supplied example (also available in the zip file) or create your own .use file. This GUI version has a small output console which will let you know if you have any syntax errors in your .use file.
+
+If you wish to check the project code and integrate in IDE's like eclipse, 
+ * you must add the USE project as an dependency to the JUSE4Android project
+ * you must add the jdom project as an depency to the JUSE4Android project
+both the latter are supplied in the the previously mentioned zip file.
+Lastly after the generation you must supply the server side project with the DB4O libraries which are also supplied in the zip file under "res/use2android/libs"
+The java file containing the main is the Prototype_CodeGeneration.java file located in the package "org.quasar.use2android"
+
 (contact us if you experience any problems)
