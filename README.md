@@ -57,6 +57,7 @@ In order to just check an generated example you can, as mentioned previously, do
 If you wish to check the project code and integrate in IDE's like eclipse, 
  * you must add the USE project as an dependency to the JUSE4Android project
  * you must add the jdom project as an depency to the JUSE4Android project
+
 both the latter are supplied in the the previously mentioned zip file.
 Lastly after the generation you must supply the server side project with the DB4O libraries which are also supplied in the zip file under "res/use2android/libs"
 The java file containing the main is the Prototype_CodeGeneration.java file located in the package "org.quasar.use2android"
