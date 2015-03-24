@@ -43,7 +43,7 @@ public final class Prototype_CodeGeneration
 	private final static String	DB4O_OPTIONAL_JAR	= "db4o-8.0.249.16098-optional-java5.jar";
 	
 	private static String	MODEL_DIRECTORY		= "";//fill here
-	private static String	MODEL_FILE			= "(name).use";//fill here
+	private static String	MODEL_FILE			= ".use";//fill here
 	private static String	TARGET_PACKAGE 		= "org.quasar.";//fill here (optional)
 	
 //	Server Information
