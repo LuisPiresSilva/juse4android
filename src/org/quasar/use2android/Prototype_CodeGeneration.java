@@ -18,20 +18,20 @@ public final class Prototype_CodeGeneration
 {
 	//note: change the RUN_JAR boolean to false if working in a java environment (i.e. this class is the main class)
 	//change it to true before exporting/creating the executable jar file
-	private static boolean	RUN_JAR = true;
+	private static boolean	RUN_JAR = false;
 	
-	private static String	USE_PROJECT = "USE3.0.6";
-	private static String	JUSE4ANDROIDPROJECT = "JUSE4Android";
+	private static String	USE_PROJECT = "USE3.0.6";//fill here (check your USE version)
+	private static String	JUSE4ANDROIDPROJECT = "JUSE4Android_git";//fill here (project name/folder)
 	
 	private static String	USE_BASE_DIRECTORY	= "";
 	
 	private static String	Authors				= "Luís Pires da Silva and Fernando Brito e Abreu";
 	
 	private static String	SOURCE_WORKSPACE	= "";
-	private static String	TARGET_WORKSPACE	= "C:\\D\\WorkSpace\\Eclipse mestrado";
+	private static String	TARGET_WORKSPACE	= "C:\\D\\WorkSpace\\Eclipse mestrado";//fill here
 	
-	private static String	AndroidProjectName	= "RoyalAndLoyalAndroid";
-	private static String	ServerProjectName	= "RoyalAndLoyalServer";
+	private static String	AndroidProjectName	= "";//fill here
+	private static String	ServerProjectName	= "";//fill here
 	
 	private final static String	BUSINESSLAYER_NAME		= "businessLayer";
 	private final static String	PRESENTATIONLAYER_NAME	= "presentationLayer";
@@ -42,16 +42,16 @@ public final class Prototype_CodeGeneration
 	private final static String	DB4O_CS_JAR			= "db4o-8.0.249.16098-cs-java5.jar";
 	private final static String	DB4O_OPTIONAL_JAR	= "db4o-8.0.249.16098-optional-java5.jar";
 	
-	private static String	MODEL_DIRECTORY		= "C:\\D\\WorkSpace\\DropBox\\Dropbox_Mestrado\\Dropbox\\LuisSilva_ISCTE\\Models specification-files\\RoyalAndLoyal";
-	private static String	MODEL_FILE			= "RoyalAndLoyal.use";
-	private static String	TARGET_PACKAGE 		= "org.quasar.";
+	private static String	MODEL_DIRECTORY		= "";//fill here
+	private static String	MODEL_FILE			= "(name).use";//fill here
+	private static String	TARGET_PACKAGE 		= "org.quasar.";//fill here (optional)
 	
 //	Server Information
-	private static String	DATABASE	= "RoyalAndLoyal";
-	private static String	USER		= "db4o";
-	private static String	PASS		= "db4o";
-	private static String	PORT 		= "4444";	
-	private static String	IP			= "80.172.235.96";
+	private static String	DATABASE	= "database";//fill here (optional)
+	private static String	USER		= "db4o";//fill here if used
+	private static String	PASS		= "db4o";//fill here if used
+	private static String	PORT 		= "4444";//fill here if used
+	private static String	IP			= "80.172.235.96";//fill here if used
 	
 	//used only in executable jar
 	private static String getJarFolder() {
